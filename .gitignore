@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Solana keypairs
+agent-keypair.json
+*-keypair.json
+*.json.bak
+
+# External Claude skill submodules
+.claude/skills/ext/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# TypeScript / tsup
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
