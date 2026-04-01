@@ -2,6 +2,10 @@
 
 A Claude Code plugin that turns the Solana Glossary into an intelligent, persistent teaching companion. Named after Pedro Marafiotti ([@kukasolana](https://x.com/kukasolana)), Superteam Brasil Lead.
 
+## Video Demo
+
+[![Kuka Demo](https://img.youtube.com/vi/Y-PWPEL4MYY/maxresdefault.jpg)](https://www.youtube.com/watch?v=Y-PWPEL4MYY)
+
 ## What Kuka Does
 
 - **Term Lookup** — Resolve any of the 1,001 glossary terms by ID, alias, or natural language search
