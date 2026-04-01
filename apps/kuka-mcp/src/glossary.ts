@@ -1,3 +1,12 @@
+// TODO: When @stbr/solana-glossary is published on npm, replace the JSON file
+// reads below with SDK imports for cleaner dependency management:
+//
+//   import { getTerm, searchTerms, getTermsByCategory, allTerms } from "@stbr/solana-glossary";
+//   import { getLocalizedTerms } from "@stbr/solana-glossary/i18n";
+//
+// The SDK provides the same data with built-in lookup maps and i18n support.
+// Current approach reads data/terms/*.json directly because the package is not yet published.
+
 import { readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 
