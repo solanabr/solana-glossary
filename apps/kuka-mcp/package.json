@@ -1,0 +1,38 @@
+{
+  "name": "@stbr/kuka-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for the Solana Glossary — 1,001 terms, knowledge graph, quizzes, context injection, i18n",
+  "main": "dist/server.js",
+  "bin": {
+    "kuka-mcp": "./dist/server.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/server.ts",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "author": {
+    "name": "Fabio Martinelli",
+    "url": "https://github.com/zupy-fmartinelli"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/solanabr/solana-glossary"
+  },
+  "keywords": [
+    "solana",
+    "glossary",
+    "mcp",
+    "ai-tools",
+    "education"
+  ]
+}
