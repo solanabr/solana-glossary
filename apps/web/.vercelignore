@@ -1,0 +1,27 @@
+# Build intermediário (não necessário para deploy)
+.next/
+node_modules/
+
+# Cache
+.cache/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+__tests__/
+coverage/
+*.test.*
+*.spec.*
+
+# Dev files
+README.md
+.eslintrc*
+.prettierrc*
+vitest.config.*
+
+# Git
+.git/
+.gitignore
