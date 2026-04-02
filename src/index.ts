@@ -1,4 +1,4 @@
-import type { GlossaryTerm, Category } from "./types";
+import type { GlossaryTerm, Category, Depth } from "./types";
 
 import coreProtocol from "../data/terms/core-protocol.json";
 import programmingModel from "../data/terms/programming-model.json";
@@ -15,7 +15,7 @@ import programmingFundamentals from "../data/terms/programming-fundamentals.json
 import aiMl from "../data/terms/ai-ml.json";
 import solanaEcosystem from "../data/terms/solana-ecosystem.json";
 
-export type { GlossaryTerm, Category } from "./types";
+export type { GlossaryTerm, Category, Depth } from "./types";
 
 export const allTerms: GlossaryTerm[] = [
   ...coreProtocol,
@@ -65,6 +65,16 @@ export function searchTerms(query: string): GlossaryTerm[] {
       t.id.includes(q) ||
       t.aliases?.some((a) => a.toLowerCase().includes(q)),
   );
+}
+
+/** Get all terms at a specific depth level */
+export function getTermsByDepth(depth: Depth): GlossaryTerm[] {
+  return allTerms.filter((t) => t.depth === depth);
+}
+
+/** Get all terms at or below a given depth level (progressive disclosure) */
+export function getTermsByMaxDepth(maxDepth: Depth): GlossaryTerm[] {
+  return allTerms.filter((t) => t.depth <= maxDepth);
 }
 
 /** Get all available categories */

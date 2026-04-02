@@ -94,6 +94,24 @@ getTermsByCategory("defi");           // 135 terms
 getTermsByCategory("core-protocol");  // 86 terms
 ```
 
+### `getTermsByDepth(depth: Depth): GlossaryTerm[]`
+
+Get all terms at a specific depth level.
+
+```typescript
+getTermsByDepth(1); // 97 surface-level terms
+getTermsByDepth(5); // 52 bottom-level terms
+```
+
+### `getTermsByMaxDepth(maxDepth: Depth): GlossaryTerm[]`
+
+Get all terms at or below a given depth level. Useful for progressive disclosure.
+
+```typescript
+getTermsByMaxDepth(2); // 367 terms (surface + shallow)
+getTermsByMaxDepth(5); // all 1001 terms
+```
+
 ### `getCategories(): Category[]`
 
 Returns all 14 category identifiers.
@@ -127,7 +145,7 @@ The complete array of all 1001 terms. Useful for building custom indexes or feed
 
 ## i18n
 
-The glossary ships with internationalization support. Translations override `term` and `definition` while keeping all structural fields (`id`, `category`, `related`, `aliases`) in English.
+The glossary ships with internationalization support. Translations override `term` and `definition` while keeping all structural fields (`id`, `category`, `depth`, `related`, `aliases`) in English.
 
 ```typescript
 import { getLocalizedTerms } from "@stbr/solana-glossary/i18n";
@@ -158,15 +176,32 @@ Terms without a translation automatically fall back to English.
 ## Term Schema
 
 ```typescript
+type Depth = 1 | 2 | 3 | 4 | 5;
+
 interface GlossaryTerm {
   id: string;          // URL-safe kebab-case identifier
   term: string;        // Display name
   definition: string;  // Plain-text definition (1-3 sentences)
   category: Category;  // One of 14 categories
+  depth: Depth;        // Knowledge depth: 1 (surface) to 5 (bottom)
   related?: string[];  // Cross-reference IDs
   aliases?: string[];  // Abbreviations and alternate names
 }
 ```
+
+---
+
+## Depth Levels
+
+Each term has a `depth` rating indicating the knowledge level needed to understand it:
+
+| Depth | Label | Audience | Examples |
+|-------|-------|----------|----------|
+| 1 | surface | Anyone in crypto | wallet, NFT, SOL, transaction |
+| 2 | shallow | Solana beginners | stake, validator, RPC, SPL token |
+| 3 | deep | Intermediate devs | Sealevel, Gulf Stream, Turbine, Anchor |
+| 4 | abyss | Advanced devs | PoH internals, BPF, CPI, PDAs |
+| 5 | bottom | Core / researchers | runtime syscalls, ZK compression internals |
 
 ---
 
@@ -197,6 +232,18 @@ const searchDocs = allTerms.map(t => ({
   category: t.category,
   tags: t.aliases ?? [],
 }));
+```
+
+### Progressive onboarding
+
+```typescript
+import { getTermsByMaxDepth } from "@stbr/solana-glossary";
+
+// Show only beginner-friendly terms
+const beginnerTerms = getTermsByMaxDepth(2);
+
+// Unlock more as the user progresses
+const intermediateTerms = getTermsByMaxDepth(3);
 ```
 
 ### Onboarding tooltips

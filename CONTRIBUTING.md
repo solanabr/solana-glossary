@@ -13,6 +13,7 @@ Thanks for helping expand the Solana knowledge base! Here's how to contribute.
   "term": "Your Term Name",
   "definition": "A clear, factual, 1-3 sentence definition.",
   "category": "<category>",
+  "depth": 3,
   "related": ["existing-term-1", "existing-term-2"],
   "aliases": ["Abbreviation"]
 }
@@ -26,6 +27,7 @@ Thanks for helping expand the Solana knowledge base! Here's how to contribute.
 ### Rules
 - `definition` must be plain text (no Markdown/HTML)
 - Keep definitions factual and concise (1-3 sentences)
+- `depth` is required, integer 1-5 (1=surface, 2=shallow, 3=deep, 4=abyss, 5=bottom — see README for details)
 - `related` must reference existing term IDs
 - Only include `aliases` if the term has common abbreviations
 - Do not include empty arrays for optional fields — omit them instead
@@ -63,6 +65,7 @@ npm run validate # Check for duplicates and dangling refs
 - [ ] Tests pass (`npm test`)
 - [ ] No duplicate IDs
 - [ ] No dangling related references
+- [ ] All terms have a valid depth (1-5)
 - [ ] Definitions are plain text, factual, 1-3 sentences
 
 ## Categories

@@ -36,8 +36,29 @@ for (const term of allTerms) {
 
 // Check required fields
 for (const term of allTerms) {
-  if (!term.id || !term.term || !term.definition || !term.category) {
+  if (
+    !term.id ||
+    !term.term ||
+    !term.definition ||
+    !term.category ||
+    !term.depth
+  ) {
     console.error(`Missing required field in: "${term.id || "(no id)"}"`);
+    errors++;
+  }
+}
+
+// Check depth is valid integer 1-5
+for (const term of allTerms) {
+  if (
+    typeof term.depth !== "number" ||
+    !Number.isInteger(term.depth) ||
+    term.depth < 1 ||
+    term.depth > 5
+  ) {
+    console.error(
+      `Invalid depth "${term.depth}" in: "${term.id}" (must be integer 1-5)`,
+    );
     errors++;
   }
 }

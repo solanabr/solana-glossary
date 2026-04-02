@@ -47,6 +47,21 @@ describe("data integrity", () => {
     }
   });
 
+  it("all terms have a valid depth (integer 1-5)", () => {
+    const invalid = allTerms.filter(
+      (t) => !Number.isInteger(t.depth) || t.depth < 1 || t.depth > 5,
+    );
+    expect(
+      invalid,
+      `Terms with invalid depth: ${invalid.map((t) => `${t.id}:${t.depth}`).join(", ")}`,
+    ).toHaveLength(0);
+  });
+
+  it("depth values are distributed across at least 4 levels", () => {
+    const depths = new Set(allTerms.map((t) => t.depth));
+    expect(depths.size).toBeGreaterThanOrEqual(4);
+  });
+
   it("no term has an empty aliases array", () => {
     const emptyAliases = allTerms.filter(
       (t) => Array.isArray(t.aliases) && t.aliases.length === 0,

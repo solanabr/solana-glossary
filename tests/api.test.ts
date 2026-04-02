@@ -2,10 +2,13 @@ import { describe, it, expect } from "vitest";
 import {
   getTerm,
   getTermsByCategory,
+  getTermsByDepth,
+  getTermsByMaxDepth,
   searchTerms,
   getCategories,
   allTerms,
 } from "../src/index";
+import type { Depth } from "../src/types";
 
 describe("getTerm", () => {
   it('returns a term with id "pda"', () => {
@@ -47,6 +50,44 @@ describe("getCategories", () => {
   it("returns exactly 14 categories", () => {
     const categories = getCategories();
     expect(categories).toHaveLength(14);
+  });
+});
+
+describe("getTermsByDepth", () => {
+  it("returns only terms with depth 1", () => {
+    const terms = getTermsByDepth(1);
+    expect(terms.length).toBeGreaterThan(0);
+    for (const t of terms) {
+      expect(t.depth).toBe(1);
+    }
+  });
+
+  it("returns terms for every valid depth level", () => {
+    for (const d of [1, 2, 3, 4, 5] as Depth[]) {
+      const terms = getTermsByDepth(d);
+      expect(terms.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe("getTermsByMaxDepth", () => {
+  it("maxDepth 5 returns all terms", () => {
+    expect(getTermsByMaxDepth(5)).toHaveLength(allTerms.length);
+  });
+
+  it("maxDepth N includes all terms from maxDepth N-1", () => {
+    for (const d of [2, 3, 4, 5] as Depth[]) {
+      const current = getTermsByMaxDepth(d);
+      const previous = getTermsByMaxDepth((d - 1) as Depth);
+      expect(current.length).toBeGreaterThanOrEqual(previous.length);
+    }
+  });
+
+  it("maxDepth 1 returns only depth-1 terms", () => {
+    const terms = getTermsByMaxDepth(1);
+    for (const t of terms) {
+      expect(t.depth).toBe(1);
+    }
   });
 });
 
