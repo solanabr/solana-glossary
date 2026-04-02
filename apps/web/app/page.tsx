@@ -74,7 +74,7 @@ export default function Home() {
       <Header lang={lang} onLangToggle={() => setLang(l => l === "en" ? "pt" : "en")} />
 
       {/* Hero */}
-      <section style={{ padding: "60px 24px 40px", maxWidth: 1200, margin: "0 auto" }}>
+      <section style={{ padding: "40px 16px 32px", maxWidth: 1200, margin: "0 auto", width: "100%" }}>
         <div style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ color: "var(--green)", fontFamily: "JetBrains Mono", fontSize: 13 }}>
             $ solana-glossary
@@ -119,7 +119,7 @@ export default function Home() {
       </section>
 
       {/* Results */}
-      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px" }}>
+      <section style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 16px" }}>
         <div style={{ marginBottom: 20, color: "var(--text-muted)", fontSize: 13 }}>
           {query || activeCategory
             ? <><span style={{ color: "var(--green)" }}>{filtered.length}</span> {lang === "pt" ? "resultados" : "results"}{query ? ` ${lang === "pt" ? "para" : "for"} "${query}"` : ""}{activeCategory ? ` ${lang === "pt" ? "em" : "in"} ${activeCategory}` : ""}</>

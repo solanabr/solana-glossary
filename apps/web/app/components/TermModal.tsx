@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { type GlossaryTerm } from "@stbr/solana-glossary";
+import TermGraph from "./TermGraph";
 
 type Props = {
   term: GlossaryTerm;
@@ -32,10 +33,11 @@ export default function TermModal({ term, originalTerm, color, onClose, onRelate
         onClick={e => e.stopPropagation()}
         style={{
           background: "var(--bg-2)", border: `1px solid ${color}44`,
-          borderRadius: 12, padding: 32, maxWidth: 640, width: "100%",
-          maxHeight: "80vh", overflowY: "auto",
+          borderRadius: 12, padding: "24px 16px", maxWidth: 640, width: "100%",
+          maxHeight: "85vh", overflowY: "auto",
           boxShadow: `0 0 40px ${color}22`,
           animation: "fadeIn 0.2s ease",
+          margin: "0 8px",
         }}
       >
         {/* header */}
@@ -86,6 +88,9 @@ export default function TermModal({ term, originalTerm, color, onClose, onRelate
             </p>
           )}
         </div>
+
+        {/* graph */}
+        <TermGraph term={originalTerm} color={color} onNodeClick={onRelatedClick} />
 
         {/* related */}
         {term.related && term.related.length > 0 && (

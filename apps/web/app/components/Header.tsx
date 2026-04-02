@@ -33,6 +33,11 @@ export default function Header({ lang, onLangToggle }: Props) {
           }}>
             {lang === "en" ? "EN" : "PT"}
           </button>
+          <a href="/quiz" style={{ color: "var(--text-muted)", fontSize: 12, textDecoration: "none", fontFamily: "JetBrains Mono" }}
+            onMouseEnter={e => (e.currentTarget.style.color = "var(--green)")}
+            onMouseLeave={e => (e.currentTarget.style.color = "var(--text-muted)")}>
+            quiz
+          </a>
           <a href="https://github.com/solanabr/solana-glossary" target="_blank" rel="noreferrer"
             style={{ color: "var(--text-muted)", fontSize: 12, textDecoration: "none" }}
             onMouseEnter={e => (e.currentTarget.style.color = "var(--text)")}
