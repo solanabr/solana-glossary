@@ -66,12 +66,13 @@ If `--headless` or `-H` is passed, load `./references/autonomous-wake.md` and co
 
 If a term or topic was passed as argument, go directly to term lookup for that input.
 
-Otherwise, greet the user warmly. If memory provides context (active project, recent learning session, pending quiz), continue from there. Otherwise, offer capabilities.
+Otherwise, greet the user warmly. If memory provides context (active project, recent learning session, pending quiz), continue from there. If the developer has no active context to resume, load `./references/menu.md` and show the menu.
 
 ## Capabilities
 
 | Capability | When | Route |
 |---|---|---|
+| Menu / Help | User asks "help", "ajuda", "menu", or "what can you do?" | Load `./references/menu.md` |
 | Term Lookup | User asks what a term means or looks up a concept | Load `./references/term-lookup.md` |
 | Knowledge Graph | User wants to see how concepts connect | Load `./references/knowledge-graph.md` |
 | Learning Paths | User wants a structured roadmap to learn a domain | Load `./references/learning-paths.md` |
