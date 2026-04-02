@@ -89,3 +89,4 @@ Otherwise, greet the user warmly. If memory provides context (active project, re
 |---|---|
 | `./scripts/glossary-coverage.ts` | Match topics or code against glossary terms, cross-reference with developer progress, identify knowledge gaps |
 | `./scripts/validate-term-proposal.ts` | Validate proposed new terms against glossary JSON schema and existing data |
+| `./scripts/submit-proposals.ts` | Inject validated proposals into glossary category files, move to .done/, optionally open PR via gh CLI |

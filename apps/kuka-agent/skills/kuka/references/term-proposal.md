@@ -48,12 +48,33 @@ Run `./scripts/validate-term-proposal.ts` to check:
 
 Save validated proposals to `{project-root}/.kuka/proposals/{id}.json`. Create the proposals directory if it doesn't exist.
 
-### Batch Submission
+### Local Injection
 
-When the developer wants to contribute proposals back to the glossary:
-- List all pending proposals from `.kuka/proposals/`
-- Show a summary for review
-- Proposals can be submitted as a PR or issue to `solanabr/solana-glossary`
+Proposals can be immediately injected into the developer's local glossary copy so they benefit from the new term right away, without waiting for upstream approval:
+
+```bash
+npx tsx ./scripts/submit-proposals.ts --proposals-dir .kuka/proposals --apply
+```
+
+This injects each valid proposal into its category JSON file alphabetically and moves processed proposals to `.kuka/proposals/.done/`.
+
+### Batch Submission (PR to upstream)
+
+When the developer wants to contribute proposals back to the community glossary:
+
+```bash
+# Dry run first — show plan without modifying files
+npx tsx ./scripts/submit-proposals.ts --proposals-dir .kuka/proposals --dry-run
+
+# Apply and open a PR to solanabr/solana-glossary
+npx tsx ./scripts/submit-proposals.ts --proposals-dir .kuka/proposals --pr --pr-repo solanabr/solana-glossary
+```
+
+The script:
+1. Validates all proposals (rejects duplicates, invalid categories, schema violations)
+2. Injects valid proposals into the correct category JSON files alphabetically
+3. Moves processed proposals to `.kuka/proposals/.done/`
+4. Creates a git branch, commits, and opens a PR via `gh` CLI with a detailed description listing all proposed terms
 
 ### Quality Standard
 

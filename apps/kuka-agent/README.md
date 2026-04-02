@@ -185,8 +185,11 @@ Kuka: teaches the concept, then...
 You: "Show my pending proposals"
 Kuka: lists all proposals with validation status
 
-You: "Submit proposals"
-Kuka: generates a batch ready for PR to solanabr/solana-glossary
+You: "Apply proposals locally"
+Kuka: injects into your glossary copy (instant, you benefit right away)
+
+You: "Submit proposals as PR"
+Kuka: opens a PR to solanabr/solana-glossary via gh CLI
 ```
 
 Every conversation makes the glossary better. The data expands through teaching.
@@ -199,6 +202,7 @@ Two TypeScript scripts power the deterministic operations:
 |--------|---------|
 | `scripts/glossary-coverage.ts` | Match topics/code against 1,001 terms, cross-reference with developer progress, identify knowledge gaps |
 | `scripts/validate-term-proposal.ts` | Validate proposed new terms against glossary JSON schema and existing data |
+| `scripts/submit-proposals.ts` | Inject validated proposals into glossary files and optionally open a PR via gh CLI |
 
 Both import directly from the `@stbr/solana-glossary` SDK — zero extra dependencies.
 
@@ -211,6 +215,18 @@ npx tsx apps/kuka-agent/skills/kuka/scripts/glossary-coverage.ts \
 # Validate a term proposal
 npx tsx apps/kuka-agent/skills/kuka/scripts/validate-term-proposal.ts \
   --proposal .kuka/proposals/jito-bundles.json
+
+# Dry run — see what would change
+npx tsx apps/kuka-agent/skills/kuka/scripts/submit-proposals.ts \
+  --proposals-dir .kuka/proposals --dry-run
+
+# Apply locally — inject into your glossary copy
+npx tsx apps/kuka-agent/skills/kuka/scripts/submit-proposals.ts \
+  --proposals-dir .kuka/proposals --apply
+
+# Apply and open a PR to the community glossary
+npx tsx apps/kuka-agent/skills/kuka/scripts/submit-proposals.ts \
+  --proposals-dir .kuka/proposals --pr --pr-repo solanabr/solana-glossary
 ```
 
 ## Tech Stack
