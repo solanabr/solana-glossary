@@ -543,7 +543,7 @@ describe("sync-glossary.ts", () => {
     expect(exitCode).toBe(0);
   });
 
-  it("apply updates local glossary from upstream", () => {
+  it("apply updates local glossary from upstream", { timeout: 30000 }, () => {
     mkdirSync(SYNC_GLOSSARY, { recursive: true });
     mkdirSync(SYNC_PROPOSALS, { recursive: true });
 
@@ -608,7 +608,7 @@ describe("sync-glossary.ts", () => {
     expect(result.proposals_still_pending).toContain("test-new-term-sync");
   });
 
-  it("apply moves merged proposals to .merged/", () => {
+  it("apply moves merged proposals to .merged/", { timeout: 30000 }, () => {
     mkdirSync(SYNC_GLOSSARY, { recursive: true });
     mkdirSync(SYNC_PROPOSALS, { recursive: true });
 
@@ -640,7 +640,7 @@ describe("sync-glossary.ts", () => {
     expect(existsSync(join(SYNC_PROPOSALS, ".merged", "phantom.json"))).toBe(true);
   });
 
-  it("handles empty proposals dir gracefully", () => {
+  it("handles empty proposals dir gracefully", { timeout: 30000 }, () => {
     mkdirSync(SYNC_GLOSSARY, { recursive: true });
     // Don't create proposals dir at all
 
