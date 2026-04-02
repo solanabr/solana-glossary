@@ -203,6 +203,7 @@ Two TypeScript scripts power the deterministic operations:
 | `scripts/glossary-coverage.ts` | Match topics/code against 1,001 terms, cross-reference with developer progress, identify knowledge gaps |
 | `scripts/validate-term-proposal.ts` | Validate proposed new terms against glossary JSON schema and existing data |
 | `scripts/submit-proposals.ts` | Inject validated proposals into glossary files and optionally open a PR via gh CLI |
+| `scripts/sync-glossary.ts` | Sync local glossary with upstream, reconcile proposals (merged/pending), update category files |
 
 Both import directly from the `@stbr/solana-glossary` SDK — zero extra dependencies.
 
@@ -227,6 +228,12 @@ npx tsx apps/kuka-agent/skills/kuka/scripts/submit-proposals.ts \
 # Apply and open a PR to the community glossary
 npx tsx apps/kuka-agent/skills/kuka/scripts/submit-proposals.ts \
   --proposals-dir .kuka/proposals --pr --pr-repo solanabr/solana-glossary
+
+# Sync local glossary with upstream (pull new community terms)
+npx tsx apps/kuka-agent/skills/kuka/scripts/sync-glossary.ts --apply
+
+# Dry-run sync — see what's new without changing files
+npx tsx apps/kuka-agent/skills/kuka/scripts/sync-glossary.ts --dry-run
 ```
 
 ## Tech Stack

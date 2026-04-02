@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { execSync } from "node:child_process";
-import { writeFileSync, readFileSync, mkdirSync, rmSync, existsSync, copyFileSync } from "node:fs";
+import { writeFileSync, readFileSync, mkdirSync, rmSync, existsSync, copyFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const SCRIPTS_DIR = "apps/kuka-agent/skills/kuka/scripts";
@@ -481,5 +481,176 @@ describe("submit-proposals.ts", () => {
     expect(result.plan[0].issues.some((i: string) => i.includes("not in glossary"))).toBe(true);
     // Warning still counts as valid (not fail)
     expect(result.valid).toBe(1);
+  });
+});
+
+describe("sync-glossary.ts", () => {
+  const SYNC_TMP = join(TMP_DIR, "sync");
+  const SYNC_GLOSSARY = join(SYNC_TMP, "terms");
+  const SYNC_PROPOSALS = join(SYNC_TMP, "proposals");
+
+  /**
+   * Create a minimal local glossary fixture with known terms,
+   * simulating the "upstream" by pointing --upstream to a local HTTP
+   * server would be complex, so we test the reconciliation and
+   * diffing logic directly using the real upstream fetch (network test).
+   *
+   * For offline/CI, we test --help and structural behaviors.
+   */
+
+  afterEach(() => {
+    rmSync(SYNC_TMP, { recursive: true, force: true });
+  });
+
+  it("shows help with --help", () => {
+    const { stdout, exitCode } = runScript("sync-glossary.ts", "--help");
+    expect(exitCode).toBe(0);
+    expect(stdout).toContain("Glossary Sync");
+    expect(stdout).toContain("--upstream");
+    expect(stdout).toContain("--dry-run");
+    expect(stdout).toContain("--apply");
+  });
+
+  it("dry-run fetches upstream and reports diff without modifying files", { timeout: 30000 }, () => {
+    // Use real upstream — tests network connectivity
+    mkdirSync(SYNC_GLOSSARY, { recursive: true });
+    mkdirSync(SYNC_PROPOSALS, { recursive: true });
+
+    // Create a minimal local glossary (just dev-tools with one term)
+    writeFileSync(
+      join(SYNC_GLOSSARY, "dev-tools.json"),
+      JSON.stringify([{
+        id: "anchor",
+        term: "Anchor",
+        definition: "A framework for Solana program development using Rust macros and IDL generation.",
+        category: "dev-tools",
+      }]),
+    );
+
+    const { stdout, exitCode } = runScript(
+      "sync-glossary.ts",
+      `--glossary-dir ${SYNC_GLOSSARY} --proposals-dir ${SYNC_PROPOSALS} --dry-run --verbose`,
+    );
+
+    const result = JSON.parse(stdout);
+    expect(result.script).toBe("sync-glossary");
+    expect(result.mode).toBe("dry-run");
+    expect(result.upstream_total_terms).toBeGreaterThan(900);
+    expect(result.local_total_terms).toBe(1);
+    expect(result.new_from_upstream.length).toBeGreaterThan(0);
+    // dry-run should NOT update categories
+    expect(result.updated_categories).toEqual([]);
+    expect(exitCode).toBe(0);
+  });
+
+  it("apply updates local glossary from upstream", () => {
+    mkdirSync(SYNC_GLOSSARY, { recursive: true });
+    mkdirSync(SYNC_PROPOSALS, { recursive: true });
+
+    // Start with empty local glossary
+    writeFileSync(join(SYNC_GLOSSARY, "dev-tools.json"), "[]");
+
+    const { stdout } = runScript(
+      "sync-glossary.ts",
+      `--glossary-dir ${SYNC_GLOSSARY} --proposals-dir ${SYNC_PROPOSALS} --apply`,
+    );
+    const result = JSON.parse(stdout);
+    expect(result.mode).toBe("apply");
+    expect(result.upstream_total_terms).toBeGreaterThan(900);
+    expect(result.updated_categories.length).toBeGreaterThan(0);
+
+    // Verify files were actually written
+    const devTools = JSON.parse(readFileSync(join(SYNC_GLOSSARY, "dev-tools.json"), "utf-8"));
+    expect(devTools.length).toBeGreaterThan(0);
+    expect(devTools[0].id).toBeDefined();
+    expect(devTools[0].definition).toBeDefined();
+  });
+
+  it("identifies proposals already merged upstream", { timeout: 30000 }, () => {
+    mkdirSync(SYNC_GLOSSARY, { recursive: true });
+    mkdirSync(SYNC_PROPOSALS, { recursive: true });
+
+    // Copy real glossary locally
+    for (const file of readdirSync(GLOSSARY_DIR)) {
+      if (file.endsWith(".json")) {
+        copyFileSync(join(GLOSSARY_DIR, file), join(SYNC_GLOSSARY, file));
+      }
+    }
+
+    // Create a proposal with an ID that already exists in upstream ("phantom")
+    writeFileSync(
+      join(SYNC_PROPOSALS, "phantom.json"),
+      JSON.stringify({
+        id: "phantom",
+        term: "Phantom Wallet",
+        definition: "The most popular Solana wallet with multi-chain support.",
+        category: "solana-ecosystem",
+      }),
+    );
+
+    // Also create a genuinely new proposal
+    writeFileSync(
+      join(SYNC_PROPOSALS, "test-new-term-sync.json"),
+      JSON.stringify({
+        id: "test-new-term-sync",
+        term: "Test New Term",
+        definition: "A brand new term that does not exist upstream and should remain pending.",
+        category: "dev-tools",
+      }),
+    );
+
+    const { stdout } = runScript(
+      "sync-glossary.ts",
+      `--glossary-dir ${SYNC_GLOSSARY} --proposals-dir ${SYNC_PROPOSALS} --dry-run`,
+    );
+    const result = JSON.parse(stdout);
+    expect(result.proposals_already_merged).toContain("phantom");
+    expect(result.proposals_still_pending).toContain("test-new-term-sync");
+  });
+
+  it("apply moves merged proposals to .merged/", () => {
+    mkdirSync(SYNC_GLOSSARY, { recursive: true });
+    mkdirSync(SYNC_PROPOSALS, { recursive: true });
+
+    // Copy real glossary
+    for (const file of readdirSync(GLOSSARY_DIR)) {
+      if (file.endsWith(".json")) {
+        copyFileSync(join(GLOSSARY_DIR, file), join(SYNC_GLOSSARY, file));
+      }
+    }
+
+    // Proposal for a term that exists upstream
+    writeFileSync(
+      join(SYNC_PROPOSALS, "phantom.json"),
+      JSON.stringify({
+        id: "phantom",
+        term: "Phantom",
+        definition: "The most popular Solana wallet.",
+        category: "solana-ecosystem",
+      }),
+    );
+
+    runScript(
+      "sync-glossary.ts",
+      `--glossary-dir ${SYNC_GLOSSARY} --proposals-dir ${SYNC_PROPOSALS} --apply`,
+    );
+
+    // Should be moved from proposals/ to proposals/.merged/
+    expect(existsSync(join(SYNC_PROPOSALS, "phantom.json"))).toBe(false);
+    expect(existsSync(join(SYNC_PROPOSALS, ".merged", "phantom.json"))).toBe(true);
+  });
+
+  it("handles empty proposals dir gracefully", () => {
+    mkdirSync(SYNC_GLOSSARY, { recursive: true });
+    // Don't create proposals dir at all
+
+    const { stdout, exitCode } = runScript(
+      "sync-glossary.ts",
+      `--glossary-dir ${SYNC_GLOSSARY} --proposals-dir ${join(SYNC_TMP, "nonexistent")} --dry-run`,
+    );
+    const result = JSON.parse(stdout);
+    expect(result.proposals_already_merged).toEqual([]);
+    expect(result.proposals_still_pending).toEqual([]);
+    expect(exitCode).toBe(0);
   });
 });
