@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Glossary Glance</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="pop">
+      <div class="pop__brand">
+        <span class="pop__logo">Glossary Glance</span>
+        <span class="pop__sub">Solana terms · hover for definitions</span>
+      </div>
+
+      <label class="pop__row">
+        <input type="checkbox" id="enabled" />
+        <span>Highlight terms on pages</span>
+      </label>
+
+      <label class="pop__row">
+        <span class="pop__label">Language</span>
+        <select id="locale">
+          <option value="en">English</option>
+          <option value="pt">Português</option>
+          <option value="es">Español</option>
+        </select>
+      </label>
+
+      <label class="pop__row">
+        <input type="checkbox" id="skipCode" />
+        <span>Skip &lt;code&gt; and &lt;pre&gt;</span>
+      </label>
+
+      <p class="pop__hint">
+        Reload open tabs after changing settings. Data:
+        <a href="https://github.com/solanabr/solana-glossary" target="_blank" rel="noreferrer">solana-glossary</a>
+      </p>
+
+      <button type="button" class="pop__link" id="openOptions">More options</button>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

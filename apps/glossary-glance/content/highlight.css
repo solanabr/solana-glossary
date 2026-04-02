@@ -1,0 +1,86 @@
+/* Non-intrusive highlights — sites keep their typography */
+mark.sgl-mark {
+  background: linear-gradient(
+    180deg,
+    transparent 62%,
+    rgba(153, 69, 255, 0.35) 62%,
+    rgba(153, 69, 255, 0.35) 92%,
+    transparent 92%
+  );
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  margin: 0;
+  border-radius: 2px;
+  cursor: help;
+  box-decoration-break: clone;
+}
+
+mark.sgl-mark:hover,
+mark.sgl-mark.sgl-mark--active {
+  background: linear-gradient(
+    180deg,
+    transparent 55%,
+    rgba(34, 197, 94, 0.45) 55%,
+    rgba(34, 197, 94, 0.45) 95%,
+    transparent 95%
+  );
+}
+
+#sgl-tooltip-host {
+  all: initial;
+  position: fixed;
+  z-index: 2147483646;
+  pointer-events: none;
+  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+#sgl-tooltip-host * {
+  box-sizing: border-box;
+}
+
+.sgl-tooltip {
+  pointer-events: none;
+  max-width: min(420px, 92vw);
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #0f0f1a;
+  color: #e8eaed;
+  border: 1px solid rgba(153, 69, 255, 0.45);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.sgl-tooltip__title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #c4b5fd;
+  margin-bottom: 6px;
+}
+
+.sgl-tooltip__cat {
+  display: inline-block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #22c55e;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.sgl-tooltip__def {
+  color: #c9ccd3;
+  margin: 0;
+}
+
+.sgl-tooltip__foot {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.sgl-tooltip__foot a {
+  color: #38bdf8;
+  pointer-events: auto;
+}

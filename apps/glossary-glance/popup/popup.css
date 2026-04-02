@@ -1,0 +1,70 @@
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  width: 300px;
+  font: 13px/1.4 system-ui, "Segoe UI", Roboto, sans-serif;
+  color: #e8eaed;
+  background: #0f0f1a;
+}
+.pop {
+  padding: 14px 16px 16px;
+}
+.pop__brand {
+  margin-bottom: 12px;
+}
+.pop__logo {
+  display: block;
+  font-weight: 800;
+  font-size: 15px;
+  color: #c4b5fd;
+}
+.pop__sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: #9ca3af;
+}
+.pop__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  cursor: pointer;
+}
+.pop__row input[type="checkbox"] {
+  accent-color: #9945ff;
+}
+.pop__label {
+  min-width: 64px;
+  color: #9ca3af;
+  font-size: 12px;
+}
+select {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #374151;
+  background: #111827;
+  color: #e8eaed;
+}
+.pop__hint {
+  margin: 12px 0 8px;
+  font-size: 11px;
+  color: #6b7280;
+}
+.pop__hint a {
+  color: #38bdf8;
+}
+.pop__link {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid rgba(153, 69, 255, 0.4);
+  border-radius: 8px;
+  background: transparent;
+  color: #c4b5fd;
+  cursor: pointer;
+  font-weight: 600;
+}
