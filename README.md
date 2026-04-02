@@ -230,3 +230,5 @@ MIT. See [LICENSE](LICENSE).
 ---
 
 Built with care by [Superteam Brazil](https://twitter.com/SuperteamBR).
+
+- [SOLOIA Voice Intelligence](https://soloia-app.vercel.app/) - Voice assistant and error decoder built with the SDK.
