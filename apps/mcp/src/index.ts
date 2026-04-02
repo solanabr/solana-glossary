@@ -275,6 +275,43 @@ server.tool(
   }
 );
 
+
+// ── tool: glossary_stats ─────────────────────────────────────────────────────
+server.tool(
+  "glossary_stats",
+  "Get statistics about the Solana Glossary — total terms, breakdown by category, and terms with most cross-references.",
+  {},
+  async () => {
+    const cats = getCategories();
+    const categoryStats = cats.map((c) => ({
+      category: c,
+      count: getTermsByCategory(c as never).length,
+    })).sort((a, b) => b.count - a.count);
+
+    const mostReferenced = [...allTerms]
+      .filter((t) => t.related && t.related.length > 0)
+      .sort((a, b) => (b.related?.length ?? 0) - (a.related?.length ?? 0))
+      .slice(0, 5);
+
+    const lines = [
+      `# Solana Glossary Stats`,
+      ``,
+      `**Total terms:** ${allTerms.length}`,
+      `**Categories:** ${cats.length}`,
+      `**Terms with cross-references:** ${allTerms.filter((t) => t.related?.length).length}`,
+      `**Terms with aliases:** ${allTerms.filter((t) => t.aliases?.length).length}`,
+      ``,
+      `## By Category`,
+      ...categoryStats.map((c) => `- **${c.category}**: ${c.count} terms`),
+      ``,
+      `## Most Cross-Referenced Terms`,
+      ...mostReferenced.map((t) => `- **${t.term}** (${t.related?.length} references)`),
+    ].join("\n");
+
+    return { content: [{ type: "text", text: lines }] };
+  }
+);
+
 // ── start ────────────────────────────────────────────────────────────────────
 const transport = new StdioServerTransport();
 await server.connect(transport);
