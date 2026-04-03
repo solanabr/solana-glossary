@@ -153,11 +153,11 @@ These screenshots show the bot running in Telegram and demonstrate the core prod
 
 ### Onboarding
 
-![Start](./Imagens/start.png)
+![Start Flow](./Imagens/Come%C3%A7ar.png)
 
 ![Choose Language](./Imagens/Choose%20Language.png)
 
-![Start Flow](./Imagens/Come%C3%A7ar.png)
+![Start](./Imagens/start.png)
 
 ### Search
 
@@ -347,34 +347,13 @@ For a stronger production setup, mount persistent storage or migrate state to Po
 - node-cron
 - Railway
 
-## Judging Criteria Positioning
+## Why This Submission Stands Out
 
-### Usefulness & Impact
-
-This bot solves a real onboarding and recall problem for Solana developers and learners by placing glossary access directly inside Telegram.
-
-### Quality & Polish
-
-The project includes:
-
-- live deployed demo
-- multilingual support
-- webhook deployment
-- category navigation
-- quiz flow
-- user memory features like favorites and history
-
-### Creativity
-
-Instead of a static glossary browser, this submission turns the dataset into a conversational learning and retention product with daily terms, quiz loops, streaks, and leaderboard dynamics.
-
-### SDK / Data Integration
-
-The implementation is directly grounded in the official Solana Glossary data layer and localized glossary content.
-
-### Documentation
-
-This root README is intended to be the complete submission entry point.
+- Solves a real onboarding and recall problem inside Telegram
+- Supports Portuguese, English, and Spanish for broader accessibility
+- Goes beyond a static glossary by adding quiz, streak, favorites, history, and leaderboard loops
+- Is grounded in the official Solana Glossary data layer and localized glossary content
+- Ships with a live deployed demo on Railway
 
 ## Known Limitations
 
@@ -384,10 +363,10 @@ This root README is intended to be the complete submission entry point.
 ## Next Improvements
 
 - add persistent storage
-- update the remaining failing tests
-- add richer screenshots and a short demo video
+- add the final demo video link
+- add PR and X / Twitter links after publication
 - improve timezone-aware scheduling
-- polish remaining text encoding issues
+- expand visual assets and onboarding polish
 
 ## Submission Assets
 
