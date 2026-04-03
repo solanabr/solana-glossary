@@ -1,8 +1,13 @@
-[phases.build]
-cmds = ["npm ci", "npm run build"]
-
 [phases.setup]
-nixPkgs = ["nodejs"]
+nixPkgs = ["nodejs", "npm"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+dependsOn = ["install"]
 
 [start]
 cmd = "node dist/server.js"
+dependsOn = ["build"]
