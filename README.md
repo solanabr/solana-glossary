@@ -179,14 +179,13 @@ These screenshots show the bot running in Telegram and demonstrate the core prod
 
 ![Random](./Imagens/random.png)
 
-### Term of the Day 
-
-![Term of the Day](./Imagens/termododia.png)
-
 ### Related
 
 ![Related](./Imagens/relacionados.png)
 
+### Term of the Day 
+
+![Term of the Day](./Imagens/termododia.png)
 
 ### Streak and Leaderboard
 
