@@ -1,11 +1,13 @@
 // src/db/index.ts
 import Database from "better-sqlite3";
+import { mkdirSync } from "fs";
 import { resolve } from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DB_PATH = resolve(__dirname, "../../data/bot.db");
+const DB_PATH = process.env["BOT_DB_PATH"] || resolve(__dirname, "../../data/bot.db");
+const DB_DIR = dirname(DB_PATH);
 
 export interface QuizSession {
   termId: string;
@@ -17,6 +19,7 @@ class DatabaseWrapper {
   private db: Database.Database;
 
   constructor() {
+    mkdirSync(DB_DIR, { recursive: true });
     this.db = new Database(DB_PATH);
     this.initSchema();
   }
