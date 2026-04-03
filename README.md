@@ -6,6 +6,7 @@ It makes Solana terminology easier to search, revisit, and retain through Telegr
 
 ## Live Demo
 
+- Telegram bot: `https://t.me/SolanaGlossaryBot`
 - Live health endpoint: `https://solana-glossary-production.up.railway.app/`
 - Deployment: Railway
 - Runtime: Telegram webhook bot
@@ -148,19 +149,35 @@ This keeps the project compliant with the campaign rule requiring usage of `@stb
 
 ## Screenshots / Assets
 
-Current asset included in the repo:
+These screenshots show the bot running in Telegram and demonstrate the core product flows.
 
-- `apps/telegram-bot/assets/chooselangugage.png`
+### Onboarding
 
-![Language picker](./apps/telegram-bot/assets/chooselangugage.png)
+![Start](./Imagens/start.png)
 
-Recommended final submission additions:
+![Choose Language](./Imagens/Choose%20Language.png)
 
-- onboarding screenshot
-- glossary lookup screenshot
-- category browser screenshot
-- quiz screenshot
-- leaderboard screenshot
+![Start Flow](./Imagens/Come%C3%A7ar.png)
+
+### Search
+
+![Glossary Search](./Imagens/glossario.png)
+
+### Categories
+
+![Category Browser](./Imagens/categorias.png)
+
+### Quiz
+
+![Quiz](./Imagens/quiz.png)
+
+### Favorites
+
+![Favorites](./Imagens/favorites.png)
+
+### Streak and Leaderboard
+
+![Streak and Leaderboard](./Imagens/streakEleaderboard.png)
 
 ## Architecture
 
@@ -180,22 +197,22 @@ High-level structure:
 
 ```text
 apps/telegram-bot/
-├─ src/
-│  ├─ bot.ts
-│  ├─ server.ts
-│  ├─ commands/
-│  ├─ handlers/
-│  ├─ i18n/
-│  ├─ glossary/
-│  ├─ db/
-│  ├─ scheduler/
-│  └─ utils/
-├─ tests/
-├─ assets/
-├─ package.json
-├─ package-lock.json
-├─ railpack.toml
-└─ nixpacks.toml
+|- src/
+|  |- bot.ts
+|  |- server.ts
+|  |- commands/
+|  |- handlers/
+|  |- i18n/
+|  |- glossary/
+|  |- db/
+|  |- scheduler/
+|  `- utils/
+|- tests/
+|- assets/
+|- package.json
+|- package-lock.json
+|- railpack.toml
+`- nixpacks.toml
 ```
 
 ## Internationalization
@@ -362,8 +379,6 @@ This root README is intended to be the complete submission entry point.
 ## Known Limitations
 
 - SQLite persistence is not durable on Railway without extra storage
-- two automated tests are currently out of sync with current runtime behavior
-- some source strings still need encoding cleanup
 - the live HTTP endpoint is a health surface, not a browser UI
 
 ## Next Improvements
@@ -373,6 +388,41 @@ This root README is intended to be the complete submission entry point.
 - add richer screenshots and a short demo video
 - improve timezone-aware scheduling
 - polish remaining text encoding issues
+
+## Submission Assets
+
+### Live Demo
+
+- `https://t.me/SolanaGlossaryBot`
+- `https://solana-glossary-production.up.railway.app/`
+
+### Video Demo
+
+- Coming soon
+- Recommended content:
+  - onboarding
+  - language selection
+  - glossary search
+  - category browsing
+  - quiz mode
+  - favorites / history
+  - streak / leaderboard
+
+### Pull Request
+
+- Coming soon
+
+### X / Twitter Post
+
+- Coming soon
+
+### Repository
+
+- `https://github.com/lrafasouza/solana-glossary`
+
+### Submission Summary
+
+This submission turns the Solana Glossary into a multilingual Telegram-native learning product instead of a static reference page. The bot supports free-text search, glossary lookup commands, category browsing, inline mode, daily terms, quizzes, favorites, history, streaks, and leaderboard mechanics. It is deployed live on Railway, supports Portuguese, English, and Spanish, and is grounded in the official Solana Glossary data layer. The goal is to improve onboarding, recall, and glossary accessibility for Solana developers and learners.
 
 ## Repository Notes
 
