@@ -363,6 +363,269 @@ server.tool(
   }
 );
 
+// 9. compare — Compare two terms side-by-side
+server.tool(
+  "compare",
+  "Compare two Solana terms side-by-side (definitions, categories, relations)",
+  {
+    termA: z.string().describe("First term ID or alias"),
+    termB: z.string().describe("Second term ID or alias"),
+    locale: z.string().optional().describe("Locale code (pt, es)"),
+  },
+  async ({ termA, termB, locale }) => {
+    const overrides = locale ? loadLocale(locale) : {};
+    function resolve(input: string): GlossaryTerm | undefined {
+      const lower = input.toLowerCase();
+      const id = termMap.has(input) ? input : termMap.has(lower) ? lower : aliasMap.get(lower);
+      if (!id) return undefined;
+      let t = termMap.get(id)!;
+      if (locale) t = localize(t, overrides);
+      return t;
+    }
+    const a = resolve(termA);
+    const b = resolve(termB);
+    if (!a || !b) {
+      const missing = [!a ? termA : null, !b ? termB : null].filter(Boolean).join(", ");
+      return { content: [{ type: "text", text: `Term(s) not found: ${missing}` }] };
+    }
+    const sharedRelated = (a.related ?? []).filter((r) => (b.related ?? []).includes(r));
+    const text = [
+      `## Comparison: ${a.term} vs ${b.term}\n`,
+      `| | **${a.term}** | **${b.term}** |`,
+      `|---|---|---|`,
+      `| Category | ${a.category} | ${b.category} |`,
+      `| Aliases | ${a.aliases?.join(", ") || "—"} | ${b.aliases?.join(", ") || "—"} |`,
+      `| Related | ${a.related?.length ?? 0} terms | ${b.related?.length ?? 0} terms |`,
+      `\n**${a.term}**: ${a.definition.slice(0, 200)}${a.definition.length > 200 ? "..." : ""}`,
+      `\n**${b.term}**: ${b.definition.slice(0, 200)}${b.definition.length > 200 ? "..." : ""}`,
+      sharedRelated.length > 0 ? `\n**Shared relations**: ${sharedRelated.join(", ")}` : "",
+    ].join("\n");
+    return { content: [{ type: "text", text }] };
+  }
+);
+
+// 10. flashcards — Generate flashcards for studying
+server.tool(
+  "flashcards",
+  "Generate Solana study flashcards (term → definition pairs)",
+  {
+    category: z.string().optional().describe("Category to generate from (random if omitted)"),
+    count: z.number().optional().describe("Number of flashcards (default 5, max 20)"),
+    locale: z.string().optional().describe("Locale code (pt, es)"),
+  },
+  async ({ category, count, locale }) => {
+    const overrides = locale ? loadLocale(locale) : {};
+    let pool = category ? allTerms.filter((t) => t.category === category) : allTerms;
+    pool = pool.filter((t) => t.definition.length > 20);
+    const n = Math.min(count ?? 5, 20, pool.length);
+    const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, n);
+
+    const cards = shuffled.map((t, i) => {
+      const term = locale ? localize(t, overrides) : t;
+      return `### Card ${i + 1}\n**Front**: What is **${term.term}**?\n**Back**: ${term.definition}`;
+    });
+
+    return { content: [{ type: "text", text: `## Solana Flashcards (${n} cards)\n\n${cards.join("\n\n")}` }] };
+  }
+);
+
+// 11. random — Get random terms
+server.tool(
+  "random",
+  "Get random Solana glossary terms for discovery",
+  {
+    count: z.number().optional().describe("Number of random terms (default 3, max 10)"),
+    category: z.string().optional().describe("Filter by category"),
+    locale: z.string().optional().describe("Locale code (pt, es)"),
+  },
+  async ({ count, category, locale }) => {
+    const overrides = locale ? loadLocale(locale) : {};
+    let pool = category ? allTerms.filter((t) => t.category === category) : allTerms;
+    const n = Math.min(count ?? 3, 10, pool.length);
+    const picked = [...pool].sort(() => Math.random() - 0.5).slice(0, n);
+    const formatted = picked.map((t) => formatTerm(locale ? localize(t, overrides) : t));
+    return { content: [{ type: "text", text: `## ${n} Random Terms\n\n${formatted.join("\n\n")}` }] };
+  }
+);
+
+// 12. suggest — Autocomplete/suggest terms based on partial input
+server.tool(
+  "suggest",
+  "Suggest Solana terms based on partial input (autocomplete)",
+  {
+    prefix: z.string().describe("Partial term or prefix to match"),
+    limit: z.number().optional().describe("Max suggestions (default 8)"),
+  },
+  async ({ prefix, limit }) => {
+    const p = prefix.toLowerCase();
+    const max = limit ?? 8;
+    const matches = allTerms.filter(
+      (t) =>
+        t.term.toLowerCase().startsWith(p) ||
+        t.id.startsWith(p) ||
+        t.aliases?.some((a) => a.toLowerCase().startsWith(p))
+    ).slice(0, max);
+
+    if (matches.length === 0) {
+      return { content: [{ type: "text", text: `No suggestions for "${prefix}".` }] };
+    }
+
+    const lines = matches.map((t) => `- **${t.term}** (${t.category})${t.aliases?.length ? ` [${t.aliases.join(", ")}]` : ""}`);
+    return { content: [{ type: "text", text: `Suggestions for "${prefix}":\n${lines.join("\n")}` }] };
+  }
+);
+
+// 13. bulk_lookup — Look up multiple terms at once
+server.tool(
+  "bulk_lookup",
+  "Look up multiple Solana terms at once (batch query)",
+  {
+    terms: z.array(z.string()).describe("Array of term IDs or aliases to look up"),
+    locale: z.string().optional().describe("Locale code (pt, es)"),
+  },
+  async ({ terms, locale }) => {
+    const overrides = locale ? loadLocale(locale) : {};
+    const results: string[] = [];
+    const notFound: string[] = [];
+
+    for (const input of terms) {
+      const lower = input.toLowerCase();
+      const id = termMap.has(input) ? input : termMap.has(lower) ? lower : aliasMap.get(lower);
+      if (!id) { notFound.push(input); continue; }
+      let t = termMap.get(id)!;
+      if (locale) t = localize(t, overrides);
+      results.push(formatTerm(t));
+    }
+
+    const parts: string[] = [];
+    if (results.length > 0) parts.push(results.join("\n\n---\n\n"));
+    if (notFound.length > 0) parts.push(`\n**Not found**: ${notFound.join(", ")}`);
+
+    return { content: [{ type: "text", text: parts.join("\n") || "No terms provided." }] };
+  }
+);
+
+// 14. export_terms — Export terms in various formats
+server.tool(
+  "export_terms",
+  "Export Solana glossary terms as JSON, CSV, or Markdown",
+  {
+    format: z.enum(["json", "csv", "markdown"]).describe("Export format"),
+    category: z.string().optional().describe("Filter by category (all if omitted)"),
+    locale: z.string().optional().describe("Locale code (pt, es)"),
+  },
+  async ({ format, category, locale }) => {
+    const overrides = locale ? loadLocale(locale) : {};
+    let pool = category ? allTerms.filter((t) => t.category === category) : allTerms;
+    if (locale) pool = pool.map((t) => localize(t, overrides));
+
+    let text: string;
+    if (format === "json") {
+      text = JSON.stringify(pool.map(({ id, term, definition, category: cat, aliases }) => ({ id, term, definition, category: cat, aliases })), null, 2);
+    } else if (format === "csv") {
+      const header = "id,term,category,definition";
+      const rows = pool.map((t) => `"${t.id}","${t.term}","${t.category}","${t.definition.replace(/"/g, '""')}"`);
+      text = [header, ...rows].join("\n");
+    } else {
+      const rows = pool.map((t) => `| ${t.id} | ${t.term} | ${t.category} | ${t.definition.slice(0, 80)}${t.definition.length > 80 ? "..." : ""} |`);
+      text = [`| ID | Term | Category | Definition |`, `|---|---|---|---|`, ...rows].join("\n");
+    }
+
+    return { content: [{ type: "text", text }] };
+  }
+);
+
+// 15. learning_path — Generate a learning path for a topic
+server.tool(
+  "learning_path",
+  "Generate a structured Solana learning path starting from a term",
+  {
+    topic: z.string().describe("Starting term or category for the learning path"),
+    locale: z.string().optional().describe("Locale code (pt, es)"),
+  },
+  async ({ topic, locale }) => {
+    const overrides = locale ? loadLocale(locale) : {};
+    // Try as category first
+    const catTerms = allTerms.filter((t) => t.category === topic);
+    let path: GlossaryTerm[] = [];
+
+    if (catTerms.length > 0) {
+      // Sort by: terms with most "referenced by" first (foundational concepts)
+      const refCount = new Map<string, number>();
+      for (const t of catTerms) {
+        for (const r of t.related ?? []) {
+          refCount.set(r, (refCount.get(r) ?? 0) + 1);
+        }
+      }
+      path = [...catTerms].sort((a, b) => (refCount.get(b.id) ?? 0) - (refCount.get(a.id) ?? 0)).slice(0, 10);
+    } else {
+      // Try as a term — build path from related terms
+      const lower = topic.toLowerCase();
+      const startId = termMap.has(topic) ? topic : termMap.has(lower) ? lower : aliasMap.get(lower);
+      if (!startId || !termMap.has(startId)) {
+        return { content: [{ type: "text", text: `Topic "${topic}" not found as term or category.` }] };
+      }
+      const visited = new Set<string>();
+      const queue = [startId];
+      while (queue.length > 0 && path.length < 10) {
+        const id = queue.shift()!;
+        if (visited.has(id)) continue;
+        visited.add(id);
+        const t = termMap.get(id);
+        if (!t) continue;
+        path.push(t);
+        for (const r of t.related ?? []) {
+          if (!visited.has(r)) queue.push(r);
+        }
+      }
+    }
+
+    if (locale) path = path.map((t) => localize(t, overrides));
+
+    const steps = path.map((t, i) => {
+      const level = i < 3 ? "Beginner" : i < 7 ? "Intermediate" : "Advanced";
+      return `### Step ${i + 1} — ${level}\n**${t.term}** (${t.category})\n${t.definition.slice(0, 200)}${t.definition.length > 200 ? "..." : ""}`;
+    });
+
+    return { content: [{ type: "text", text: `## Learning Path: ${topic}\n\n${steps.join("\n\n")}` }] };
+  }
+);
+
+// 16. difficulty — Rate terms by complexity for study planning
+server.tool(
+  "difficulty",
+  "Rate Solana terms by estimated difficulty (based on definition length, relations, category)",
+  {
+    category: z.string().optional().describe("Filter by category"),
+    level: z.enum(["beginner", "intermediate", "advanced"]).optional().describe("Filter by difficulty level"),
+    limit: z.number().optional().describe("Max results (default 10)"),
+  },
+  async ({ category, level, limit }) => {
+    const max = limit ?? 10;
+    let pool = category ? allTerms.filter((t) => t.category === category) : allTerms;
+
+    // Score complexity: longer definitions + more relations = harder
+    const scored = pool.map((t) => {
+      const defLen = t.definition.length;
+      const relCount = t.related?.length ?? 0;
+      const aliasCount = t.aliases?.length ?? 0;
+      const score = defLen * 0.1 + relCount * 10 + aliasCount * 5;
+      const difficulty = score < 20 ? "beginner" : score < 50 ? "intermediate" : "advanced";
+      return { term: t, score, difficulty };
+    });
+
+    let filtered = level ? scored.filter((s) => s.difficulty === level) : scored;
+    filtered.sort((a, b) => a.score - b.score);
+    const shown = filtered.slice(0, max);
+
+    const lines = shown.map((s) =>
+      `- **${s.term.term}** [${s.difficulty}] — ${s.term.definition.slice(0, 100)}${s.term.definition.length > 100 ? "..." : ""}`
+    );
+
+    return { content: [{ type: "text", text: `## Terms by Difficulty${level ? ` (${level})` : ""}\n\n${lines.join("\n")}` }] };
+  }
+);
+
 // ---------------------------------------------------------------------------
 // Resources — expose categories and stats as MCP resources
 // ---------------------------------------------------------------------------
