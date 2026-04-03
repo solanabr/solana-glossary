@@ -55,16 +55,7 @@ export async function startCommand(ctx: MyContext): Promise<void> {
 
 export async function sendWelcome(ctx: MyContext): Promise<void> {
   const text = ctx.t("start-welcome", { bot_username: ctx.me.username });
-
-  try {
-    await ctx.replyWithPhoto(IMAGES.welcomeBanner, {
-      caption: text,
-      parse_mode: "HTML",
-    });
-  } catch (err) {
-    // Fallback to text-only
-    await ctx.reply(text, { parse_mode: "HTML" });
-  }
+  await ctx.reply(text, { parse_mode: "HTML" });
 
   // Send onboarding tips as follow-up
   await ctx.reply(ctx.t("onboarding-tips"), { parse_mode: "HTML" });

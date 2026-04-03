@@ -45,7 +45,10 @@ btn-page = Page { $current }/{ $total }
 random-term-header = 🎲 Random term
 
 # Quiz
-quiz-question = 🧠 <b>Which term is described below?</b>\n\n<i>{ $definition }</i>
+quiz-question =
+    🧠 <b>Which term is described below?</b>
+
+    <i>{ $definition }</i>
 quiz-option-a = A) { $term }
 quiz-option-b = B) { $term }
 quiz-option-c = C) { $term }
@@ -74,7 +77,10 @@ streak-days = 🔥 { $count } day streak
 streak-first = 🔥 First day!
 
 # Did you mean
-did-you-mean = ❌ No results for that term.\n\nDid you mean: <code>{ $term }</code>?
+did-you-mean =
+    ❌ No results for that term.
+
+    Did you mean: <code>{ $term }</code>?
 btn-did-you-mean = Yes, show →
 
 # External links

@@ -11,19 +11,36 @@ export type LookupResult =
   | { type: "multiple"; terms: GlossaryTerm[] }
   | { type: "not-found" };
 
+/** Score a term by relevance to query (lower = better match) */
+function relevanceScore(term: GlossaryTerm, q: string): number {
+  const id = term.id.toLowerCase();
+  const name = term.term.toLowerCase();
+  if (id === q || name === q) return 0;
+  if (term.aliases?.some((a) => a.toLowerCase() === q)) return 0;
+  if (id.startsWith(q) || name.startsWith(q)) return 1;
+  if (term.aliases?.some((a) => a.toLowerCase().startsWith(q))) return 1;
+  if (id.includes(q) || name.includes(q)) return 2;
+  if (term.aliases?.some((a) => a.toLowerCase().includes(q))) return 2;
+  return 3; // definition match
+}
+
 export function lookupTerm(input: string): LookupResult {
   const trimmed = input.trim();
   if (!trimmed) return { type: "not-found" };
 
-  // Try exact lookup by ID or alias first (case-insensitive via SDK)
+  // Try exact lookup by ID or alias first
   const exact = getTerm(trimmed);
   if (exact) return { type: "found", term: exact };
 
-  // Fall back to full-text search
+  // Full-text search with relevance ranking
+  const q = trimmed.toLowerCase();
   const results = sdkSearch(trimmed);
   if (results.length === 0) return { type: "not-found" };
-  if (results.length === 1) return { type: "found", term: results[0] };
-  return { type: "multiple", terms: results.slice(0, 5) };
+
+  const ranked = [...results].sort((a, b) => relevanceScore(a, q) - relevanceScore(b, q));
+
+  if (ranked.length === 1) return { type: "found", term: ranked[0] };
+  return { type: "multiple", terms: ranked.slice(0, 5) };
 }
 
 /** Returns n random terms from the full glossary */
