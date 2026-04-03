@@ -27,8 +27,21 @@ describe("lookupTerm", () => {
       expect(result.terms.length).toBeLessThanOrEqual(5);
     }
     if (result.type === "found") {
-      expect(result.term.id).toContain("validator");
+      expect(result.term.id).toBe("validator");
     }
+  });
+
+  it("prefers exact display-name matches over weak definition matches", () => {
+    const result = lookupTerm("Superteam");
+    expect(result.type).toBe("found");
+    if (result.type === "found") {
+      expect(result.term.id).toBe("superteam");
+    }
+  });
+
+  it("does not overfit generic aliases into a single result", () => {
+    const result = lookupTerm("solana");
+    expect(result.type).toBe("multiple");
   });
 
   it("returns not-found for gibberish", () => {
