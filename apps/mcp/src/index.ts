@@ -10,6 +10,7 @@ import {
   allTerms,
 } from "@stbr/solana-glossary";
 import { getLocalizedTerms } from "@stbr/solana-glossary/i18n";
+import type { GlossaryTerm } from "@stbr/solana-glossary";
 
 const server = new McpServer({
   name: "solana-glossary",
@@ -168,7 +169,6 @@ server.tool(
   }
 );
 
-
 // ── tool: generate_quiz ──────────────────────────────────────────────────────
 server.tool(
   "generate_quiz",
@@ -188,9 +188,7 @@ server.tool(
       pool = getTermsByCategory(category as never);
     }
 
-    // shuffle and pick
     const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, count);
-
     const localized = lang === "pt" ? getLocalizedTerms("pt") : [];
 
     const questions = shuffled.map((term, i) => {
@@ -201,7 +199,6 @@ server.tool(
         if (loc) { displayTerm = loc.term; if (loc.definition) displayDef = loc.definition; }
       }
 
-      // pick 3 wrong answers
       const wrong = [...pool]
         .filter((t) => t.id !== term.id)
         .sort(() => Math.random() - 0.5)
@@ -219,13 +216,7 @@ server.tool(
       return `**Q${i + 1}.** ${displayDef}\n\n${options.map((o, idx) => `${String.fromCharCode(65 + idx)}) ${o}`).join("\n")}\n\n<details><summary>Answer</summary>${displayTerm}</details>`;
     });
 
-    const header = `# Solana Glossary Quiz${category ? ` — ${category}` : ""}
-
-${count} questions
-
----
-
-`;
+    const header = `# Solana Glossary Quiz${category ? ` — ${category}` : ""}\n\n${count} questions\n\n---\n\n`;
     return { content: [{ type: "text", text: header + questions.join("\n\n---\n\n") }] };
   }
 );
@@ -275,7 +266,6 @@ server.tool(
   }
 );
 
-
 // ── tool: glossary_stats ─────────────────────────────────────────────────────
 server.tool(
   "glossary_stats",
@@ -312,6 +302,223 @@ server.tool(
   }
 );
 
-// ── start ────────────────────────────────────────────────────────────────────
+// ── tool: fuzzy_search ───────────────────────────────────────────────────────
+server.tool(
+  "fuzzy_search",
+  "Fuzzy search for Solana terms using Levenshtein distance. Tolerates typos and misspellings — e.g. 'laminport' finds 'lamport', 'proff of history' finds 'proof-of-history'.",
+  {
+    query: z.string().describe("Search query, may contain typos, e.g. 'sysvar', 'laminport', 'tokn metadata'"),
+    limit: z.number().int().min(1).max(20).optional().default(5).describe("Max results (default 5)"),
+    threshold: z.number().min(0).max(1).optional().default(0.6).describe("Similarity threshold 0–1 (default 0.6, lower = more permissive)"),
+  },
+  async ({ query, limit, threshold }) => {
+    function levenshtein(a: string, b: string): number {
+      const m = a.length, n = b.length;
+      const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
+        Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+      );
+      for (let i = 1; i <= m; i++)
+        for (let j = 1; j <= n; j++)
+          dp[i][j] = a[i - 1] === b[j - 1]
+            ? dp[i - 1][j - 1]
+            : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+      return dp[m][n];
+    }
+
+    function similarity(a: string, b: string): number {
+      const maxLen = Math.max(a.length, b.length);
+      if (maxLen === 0) return 1;
+      return 1 - levenshtein(a.toLowerCase(), b.toLowerCase()) / maxLen;
+    }
+
+    const q = query.toLowerCase();
+    const scored = allTerms.map((t) => {
+      const candidates = [t.id, t.term.toLowerCase(), ...(t.aliases ?? []).map((a) => a.toLowerCase())];
+      const score = Math.max(...candidates.map((c) => similarity(q, c)));
+      return { term: t, score };
+    });
+
+    const results = scored
+      .filter(({ score }) => score >= threshold)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
+
+    if (!results.length) {
+      return { content: [{ type: "text", text: `No fuzzy matches found for "${query}" (threshold: ${threshold}). Try a lower threshold.` }] };
+    }
+
+    const lines = [
+      `# Fuzzy Search: "${query}" (${results.length} matches)`,
+      ``,
+      ...results.map(({ term: t, score }) =>
+        `## ${t.term} — ${(score * 100).toFixed(0)}% match\n**ID:** ${t.id} | **Category:** ${t.category}\n${t.definition.slice(0, 150)}${t.definition.length > 150 ? "..." : ""}`
+      ),
+    ].join("\n\n");
+
+    return { content: [{ type: "text", text: lines }] };
+  }
+);
+
+// ── tool: find_learning_path ─────────────────────────────────────────────────
+server.tool(
+  "find_learning_path",
+  "Find the shortest learning path between two Solana concepts using BFS graph traversal over the related-terms graph. Shows the conceptual bridge connecting two terms.",
+  {
+    from: z.string().describe("Starting term ID or alias, e.g. 'account'"),
+    to: z.string().describe("Target term ID or alias, e.g. 'pda'"),
+    max_depth: z.number().int().min(1).max(8).optional().default(6).describe("Max BFS depth (default 6)"),
+  },
+  async ({ from, to, max_depth }) => {
+    const start = getTerm(from);
+    const end = getTerm(to);
+
+    if (!start) return { content: [{ type: "text", text: `Term not found: "${from}". Use search_glossary to find the right ID.` }] };
+    if (!end) return { content: [{ type: "text", text: `Term not found: "${to}". Use search_glossary to find the right ID.` }] };
+    if (start.id === end.id) return { content: [{ type: "text", text: `Start and end are the same term: ${start.term}` }] };
+
+    // BFS over related-terms graph
+    const queue: string[][] = [[start.id]];
+    const visited = new Set<string>([start.id]);
+
+    while (queue.length > 0) {
+      const path = queue.shift()!;
+      if (path.length > max_depth) break;
+
+      const current = getTerm(path[path.length - 1]);
+      if (!current?.related?.length) continue;
+
+      for (const neighborId of current.related) {
+        if (visited.has(neighborId)) continue;
+        const newPath = [...path, neighborId];
+
+        if (neighborId === end.id) {
+          const termPath = newPath
+            .map((id) => getTerm(id))
+            .filter((t): t is GlossaryTerm => t !== undefined);
+
+          const lines = [
+            `# Learning Path: ${start.term} → ${end.term}`,
+            `**${termPath.length} steps** via related-terms graph`,
+            ``,
+            ...termPath.map((t, i) => [
+              `### Step ${i + 1}: ${t.term}`,
+              `**Category:** ${t.category}`,
+              t.definition.slice(0, 200) + (t.definition.length > 200 ? "..." : ""),
+            ].join("\n")),
+          ].join("\n\n");
+
+          return { content: [{ type: "text", text: lines }] };
+        }
+
+        visited.add(neighborId);
+        queue.push(newPath);
+      }
+    }
+
+    return {
+      content: [{
+        type: "text",
+        text: `No path found between "${start.term}" and "${end.term}" within ${max_depth} hops.\n\nTry increasing max_depth or finding an intermediate concept with search_glossary.`,
+      }],
+    };
+  }
+);
+
+// ── tool: compare_terms ──────────────────────────────────────────────────────
+server.tool(
+  "compare_terms",
+  "Compare 2–5 Solana terms side by side: definitions, categories, shared relationships, and unique connections.",
+  {
+    terms: z.array(z.string()).min(2).max(5).describe("Array of term IDs or aliases to compare, e.g. ['account', 'pda', 'signer']"),
+    lang: z.enum(["en", "pt"]).optional().default("en").describe("Language for output"),
+  },
+  async ({ terms, lang }) => {
+    const found = terms.map((id) => getTerm(id)).filter((t): t is GlossaryTerm => t !== undefined);
+    const notFound = terms.filter((id) => !getTerm(id));
+
+    if (notFound.length) {
+      return { content: [{ type: "text", text: `Terms not found: ${notFound.join(", ")}. Use search_glossary to find the right IDs.` }] };
+    }
+    if (found.length < 2) {
+      return { content: [{ type: "text", text: "Need at least 2 valid terms to compare." }] };
+    }
+
+    const allRelatedSets = found.map((t) => new Set(t.related ?? []));
+    const sharedByAll = found[0].related?.filter((r) => allRelatedSets.every((s) => s.has(r))) ?? [];
+
+    const lines = [
+      `# Comparison: ${found.map((t) => t.term).join(" vs ")}`,
+      ``,
+      `## Side-by-Side`,
+      `| Attribute | ${found.map((t) => `**${t.term}**`).join(" | ")} |`,
+      `|---|${found.map(() => "---|").join("")}`,
+      `| Category | ${found.map((t) => t.category).join(" | ")} |`,
+      `| Aliases | ${found.map((t) => t.aliases?.join(", ") || "—").join(" | ")} |`,
+      `| Related count | ${found.map((t) => t.related?.length ?? 0).join(" | ")} |`,
+      ``,
+      `## Definitions`,
+      ...found.map((t) => `### ${t.term}\n${t.definition}`),
+      ``,
+      sharedByAll.length
+        ? `## Shared Relationships\nAll terms relate to: **${sharedByAll.map((id) => getTerm(id)?.term ?? id).join(", ")}**`
+        : `## Shared Relationships\nNo direct shared relationships found between all terms.`,
+      ``,
+      `## Individual Connections`,
+      ...found.map((t) =>
+        `**${t.term}:** ${t.related?.map((id) => getTerm(id)?.term ?? id).join(", ") || "none"}`
+      ),
+    ].join("\n");
+
+    return { content: [{ type: "text", text: lines }] };
+  }
+);
+
+// ── tool: explain_concept ────────────────────────────────────────────────────
+server.tool(
+  "explain_concept",
+  "Deep-dive explanation of a Solana concept using DFS traversal of the related-terms graph. Builds rich contextual understanding by exploring connected concepts up to a configurable depth.",
+  {
+    term: z.string().describe("Term ID or alias to explain, e.g. 'pda', 'account', 'validator'"),
+    depth: z.number().int().min(1).max(4).optional().default(2).describe("DFS depth for exploring related concepts (default 2, max 4)"),
+    lang: z.enum(["en", "pt"]).optional().default("en").describe("Language"),
+  },
+  async ({ term, depth, lang }) => {
+    const root = getTerm(term);
+    if (!root) {
+      return { content: [{ type: "text", text: `Term not found: "${term}". Use search_glossary or fuzzy_search to find the right ID.` }] };
+    }
+
+    const visited = new Set<string>();
+    const sections: string[] = [];
+
+    function dfs(id: string, currentDepth: number, headingLevel: number): void {
+      if (visited.has(id) || currentDepth > depth) return;
+      visited.add(id);
+
+      const t = getTerm(id);
+      if (!t) return;
+
+      const prefix = "#".repeat(Math.min(headingLevel, 4));
+      sections.push(`${prefix} ${t.term}`);
+      sections.push(`**Category:** ${t.category}`);
+      sections.push(t.definition);
+      if (t.aliases?.length) sections.push(`*Also known as: ${t.aliases.join(", ")}*`);
+      sections.push("");
+
+      if (currentDepth < depth && t.related?.length) {
+        for (const childId of t.related.slice(0, 4)) {
+          dfs(childId, currentDepth + 1, headingLevel + 1);
+        }
+      }
+    }
+
+    dfs(root.id, 1, 1);
+
+    const header = `# Deep Explanation: ${root.term}\n*Exploring ${visited.size} connected concepts at depth ${depth}*\n\n`;
+    return { content: [{ type: "text", text: header + sections.join("\n") }] };
+  }
+);
+
+//  ── start ────────────────────────────────────────────────────────────────────
 const transport = new StdioServerTransport();
 await server.connect(transport);
