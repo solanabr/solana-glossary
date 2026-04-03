@@ -1,0 +1,36 @@
+{
+  "name": "@sjonassa/solana-glossary-mcp",
+  "version": "1.0.0",
+  "description": "MCP Server — Solana Glossary for AI agents. Exposes 1001 Solana terms to Claude, Cursor, and any MCP-compatible client.",
+  "keywords": ["solana", "glossary", "mcp", "ai", "modelcontextprotocol", "blockchain", "web3"],
+  "author": "Superteam Brazil",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "solana-glossary-mcp": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@stbr/solana-glossary": "github:solanabr/solana-glossary"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/solanabr/solana-glossary"
+  }
+}
