@@ -19,11 +19,10 @@ export async function handleLangCallback(ctx: MyContext): Promise<void> {
   const lang = data.slice("lang:".length) as SessionData["language"];
 
   ctx.session.language = lang;
-  await ctx.i18n.setLocale(lang!);
   await ctx.answerCallbackQuery();
 
   // Remove the language picker message and show welcome
-  await ctx.deleteMessage().catch(() => {});
+  await ctx.deleteMessage().catch(() => { });
   await sendWelcome(ctx);
 }
 

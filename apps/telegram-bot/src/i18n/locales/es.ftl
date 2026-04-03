@@ -25,7 +25,7 @@ help-message =
     🌐 <b>Idioma:</b>
     /idioma pt|en|es — cambiar idioma
 
-    💡 <b>Modo inline:</b> escribe <code>@{ $bot_username } &lt;term&gt;</code> en cualquier chat
+    💡 Escribe <code>@{ $bot_username } &lt;term&gt;</code> en cualquier chat o grupo!
 
 term-aliases = 🔗 Alias
 term-related = 📂 Relacionados
