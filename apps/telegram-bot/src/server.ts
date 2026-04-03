@@ -113,6 +113,12 @@ async function start() {
     // Webhook mode — used on Railway
     const app = express();
     app.use(express.json());
+
+    // Health check endpoint for Railway
+    app.get("/", (req, res) => {
+      res.status(200).json({ status: "ok", service: "solana-glossary-bot" });
+    });
+
     app.use("/webhook", webhookCallback(bot, "express"));
 
     app.listen(config.port, () => {
