@@ -22,10 +22,11 @@ export async function startCommand(ctx: MyContext): Promise<void> {
   if (deepLink) {
     const result = lookupTerm(deepLink);
     if (result.type === "found") {
-      const card = formatTermCard(result.term, ctx.t.bind(ctx));
+      const userId = ctx.from?.id;
+      const card = formatTermCard(result.term, ctx.t.bind(ctx), ctx.session.language || "en");
       await ctx.reply(card, {
         parse_mode: "HTML",
-        reply_markup: buildTermKeyboard(result.term.id, ctx.t.bind(ctx)),
+        reply_markup: buildTermKeyboard(result.term.id, ctx.t.bind(ctx), userId),
       });
       return;
     }
