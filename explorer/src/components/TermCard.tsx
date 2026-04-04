@@ -7,14 +7,15 @@ interface TermCardProps {
   term: GlossaryTerm;
 }
 
-export const TermCard: React.FC<TermCardProps> = ({ term }) => {
+export const TermCard = React.memo(({ term }: TermCardProps) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      layout
-      className="group bg-surface border border-border hover:border-solana-purple/50 p-6 rounded-2xl transition-all duration-300 hover:shadow-2xl hover:shadow-solana-purple/5"
+      transition={{ duration: 0.3 }}
+      className="group relative bg-white/5 backdrop-blur-xl border border-white/10 hover:border-solana-purple/40 p-6 rounded-2xl transition-all duration-500 hover:shadow-2xl hover:shadow-solana-purple/10 overflow-hidden"
     >
+      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-solana-green to-solana-purple transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
       <div className="flex justify-between items-start mb-4">
         <h3 className="text-2xl font-bold text-text-primary group-hover:text-solana-green transition-colors">
           {term.term}
@@ -57,4 +58,4 @@ export const TermCard: React.FC<TermCardProps> = ({ term }) => {
       )}
     </motion.div>
   );
-};
+});

@@ -4,16 +4,32 @@
   --color-solana-green: #14F195;
   --color-solana-purple: #9945FF;
   
-  --color-background: #0a0a0c;
-  --color-surface: #111114;
-  --color-surface-hover: #1a1a1f;
+  --color-background: #050508;
+  --color-surface: #111116;
+  --color-surface-hover: #1a1a24;
   
-  --color-text-primary: #f3f4f6;
-  --color-text-secondary: #9ca3af;
-  --color-text-tertiary: #6b7280;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #a1a1aa;
+  --color-text-tertiary: #71717a;
   
   --color-border: #27272a;
   --color-border-hover: #3f3f46;
+  
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'Space Grotesk', monospace;
+  
+  --animate-spin-slow: spin-slow 20s linear infinite;
+  --animate-spin-reverse: spin-reverse 25s linear infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg) translate(80px) rotate(0deg); }
+  to { transform: rotate(360deg) translate(80px) rotate(-360deg); }
+}
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg) translate(60px) rotate(-360deg); }
+  to { transform: rotate(0deg) translate(60px) rotate(0deg); }
 }
 
 @layer base {
@@ -24,6 +40,16 @@
   body {
     background-color: var(--color-background);
     color: var(--color-text-primary);
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

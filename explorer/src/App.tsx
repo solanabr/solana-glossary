@@ -4,16 +4,20 @@ import { Navbar } from './components/Navbar';
 import { SearchBar } from './components/SearchBar';
 import { CategoryFilter } from './components/CategoryFilter';
 import { TermCard } from './components/TermCard';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const GlossaryContent: React.FC = () => {
   const { filteredTerms, setSearchQuery } = useGlossary();
 
   return (
-    <div className="min-h-screen bg-background text-text-primary selection:bg-solana-purple selection:text-white">
+    <div className="min-h-screen bg-background text-text-primary selection:bg-solana-purple selection:text-white relative overflow-hidden">
+      {/* Animated Background Orbs */}
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-solana-green/10 rounded-full blur-[120px] mix-blend-screen opacity-50 animate-spin-slow pointer-events-none" />
+      <div className="absolute top-[10%] right-[-10%] w-[40%] h-[40%] bg-solana-purple/10 rounded-full blur-[120px] mix-blend-screen opacity-50 animate-spin-reverse pointer-events-none" />
+
       <Navbar />
       
-      <main className="container mx-auto px-6 py-12 max-w-7xl">
+      <main className="container mx-auto px-6 py-12 max-w-7xl relative z-10">
         <header className="text-center mb-16 px-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -26,8 +30,18 @@ const GlossaryContent: React.FC = () => {
             Explore the Ecosystem
           </h1>
           <p className="text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
-            1001 terms defining the future of decentralized finance, infrastructure, and the web3 economy—powered by Solana.
+            1001 terms defining the future of decentralized finance, infrastructure, and the web3 economy.
           </p>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-6 flex items-center justify-center gap-2 text-xs font-bold tracking-[0.2em] text-text-tertiary uppercase"
+          >
+            <span className="w-8 h-[1px] bg-border" />
+            POWERED BY <span className="bg-gradient-to-r from-solana-green to-solana-purple bg-clip-text text-transparent">SOLANA</span>
+            <span className="w-8 h-[1px] bg-border" />
+          </motion.div>
         </header>
 
         <section className="sticky top-24 z-30 mb-8 backdrop-blur-xl py-4 flex flex-col items-center">
@@ -47,16 +61,11 @@ const GlossaryContent: React.FC = () => {
 
         <section>
           {filteredTerms.length > 0 ? (
-            <motion.div 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-              layout
-            >
-              <AnimatePresence>
-                {filteredTerms.map((term) => (
-                  <TermCard key={term.id} term={term} />
-                ))}
-              </AnimatePresence>
-            </motion.div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTerms.map((term) => (
+                <TermCard key={term.id} term={term} />
+              ))}
+            </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="w-20 h-20 bg-surface rounded-3xl border border-border flex items-center justify-center text-text-tertiary mb-6">
