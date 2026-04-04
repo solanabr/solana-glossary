@@ -73,7 +73,7 @@ export function getTerm(idOrAlias: string): GlossaryTerm | undefined {
 /** Get localized term and definition. Falls back to original fields for English or missing translations */
 export function getTermLocalized(
   id: string,
-  locale: "pt" | "en" | "es"
+  locale: "pt" | "en" | "es",
 ): { term: string; definition: string } | undefined {
   const term = getTerm(id);
   if (!term) return undefined;

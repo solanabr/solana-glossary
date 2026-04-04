@@ -2,7 +2,7 @@
 import { InlineKeyboard } from "grammy";
 import { lookupTerm } from "../utils/search.js";
 import { formatTermCard } from "../utils/format.js";
-import { buildTermKeyboard } from "../utils/keyboard.js";
+import { buildMainMenuKeyboard, buildTermKeyboard } from "../utils/keyboard.js";
 import { IMAGES } from "../config.js";
 import type { MyContext } from "../context.js";
 
@@ -23,10 +23,18 @@ export async function startCommand(ctx: MyContext): Promise<void> {
     const result = lookupTerm(deepLink);
     if (result.type === "found") {
       const userId = ctx.from?.id;
-      const card = formatTermCard(result.term, ctx.t.bind(ctx), ctx.session.language || "en");
+      const card = formatTermCard(
+        result.term,
+        ctx.t.bind(ctx),
+        ctx.session.language || "en",
+      );
       await ctx.reply(card, {
         parse_mode: "HTML",
-        reply_markup: buildTermKeyboard(result.term.id, ctx.t.bind(ctx), userId),
+        reply_markup: buildTermKeyboard(
+          result.term.id,
+          ctx.t.bind(ctx),
+          userId,
+        ),
       });
       return;
     }
@@ -56,8 +64,29 @@ export async function startCommand(ctx: MyContext): Promise<void> {
 
 export async function sendWelcome(ctx: MyContext): Promise<void> {
   const text = ctx.t("start-welcome", { bot_username: ctx.me.username });
-  await ctx.reply(text, { parse_mode: "HTML" });
+  await ctx.reply(text, {
+    parse_mode: "HTML",
+    reply_markup: buildMainMenuKeyboard(ctx.t.bind(ctx)),
+  });
 
   // Send onboarding tips as follow-up
   await ctx.reply(ctx.t("onboarding-tips"), { parse_mode: "HTML" });
+}
+
+export async function sendMainMenu(
+  ctx: MyContext,
+  editMessage = false,
+): Promise<void> {
+  const text = ctx.t("start-welcome", { bot_username: ctx.me.username });
+  const options = {
+    parse_mode: "HTML" as const,
+    reply_markup: buildMainMenuKeyboard(ctx.t.bind(ctx)),
+  };
+
+  if (editMessage && ctx.callbackQuery) {
+    await ctx.editMessageText(text, options);
+    return;
+  }
+
+  await ctx.reply(text, options);
 }

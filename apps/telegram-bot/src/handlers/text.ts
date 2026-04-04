@@ -11,16 +11,28 @@ export async function handleTextMessage(ctx: MyContext): Promise<void> {
   const text = ctx.message?.text?.trim() ?? "";
   if (!text) return;
 
+  if (text.startsWith("/")) {
+    return;
+  }
+
+  ctx.session.awaitingGlossaryQuery = false;
+
   const result = lookupTerm(text);
 
   if (result.type === "not-found") {
-    await ctx.reply(ctx.t("term-not-found", { query: text }), { parse_mode: "HTML" });
+    await ctx.reply(ctx.t("term-not-found", { query: text }), {
+      parse_mode: "HTML",
+    });
     return;
   }
 
   if (result.type === "found") {
     const userId = ctx.from?.id;
-    const card = formatTermCard(result.term, ctx.t.bind(ctx), ctx.session.language || "en");
+    const card = formatTermCard(
+      result.term,
+      ctx.t.bind(ctx),
+      ctx.session.language || "en",
+    );
     await ctx.reply(card, {
       parse_mode: "HTML",
       reply_markup: buildTermKeyboard(result.term.id, ctx.t.bind(ctx), userId),
@@ -29,7 +41,10 @@ export async function handleTextMessage(ctx: MyContext): Promise<void> {
   }
 
   // Multiple results
-  const header = ctx.t("multiple-results", { count: result.terms.length, query: text });
+  const header = ctx.t("multiple-results", {
+    count: result.terms.length,
+    query: text,
+  });
   await ctx.reply(header, {
     parse_mode: "HTML",
     reply_markup: buildSelectKeyboard(result.terms),

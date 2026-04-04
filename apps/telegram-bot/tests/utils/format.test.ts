@@ -12,7 +12,8 @@ const mockT = (key: string) => key;
 const sampleTerm: GlossaryTerm = {
   id: "proof-of-history",
   term: "Proof of History (PoH)",
-  definition: "A cryptographic clock that proves events occurred at specific moments.",
+  definition:
+    "A cryptographic clock that proves events occurred at specific moments.",
   category: "core-protocol",
   aliases: ["PoH", "poh"],
   related: ["validator", "tower-bft"],

@@ -11,7 +11,8 @@ async function setCommands() {
       lang: "pt",
       commands: [
         { command: "start", description: "Iniciar o bot" },
-        { command: "glossario", description: "Buscar um termo em português" },
+        { command: "glossario", description: "Buscar um termo" },
+        { command: "path", description: "Trilha para desenvolvedores" },
         { command: "aleatorio", description: "Termo aleatório" },
         { command: "categorias", description: "Explorar as 14 categorias" },
         { command: "termododia", description: "Termo do dia" },
@@ -29,6 +30,7 @@ async function setCommands() {
       commands: [
         { command: "start", description: "Start the bot" },
         { command: "glossary", description: "Search a Solana term" },
+        { command: "path", description: "Developer learning paths" },
         { command: "random", description: "Random term" },
         { command: "categories", description: "Browse all 14 categories" },
         { command: "termofday", description: "Term of the day" },
@@ -46,6 +48,7 @@ async function setCommands() {
       commands: [
         { command: "start", description: "Iniciar el bot" },
         { command: "glosario", description: "Buscar un término en español" },
+        { command: "path", description: "Rutas para desarrolladores" },
         { command: "aleatorio", description: "Término aleatorio" },
         { command: "categorias", description: "Explorar las 14 categorías" },
         { command: "terminodelhoy", description: "Término del día" },
@@ -63,6 +66,7 @@ async function setCommands() {
       commands: [
         { command: "start", description: "Start the bot" },
         { command: "glossary", description: "Search a Solana term" },
+        { command: "path", description: "Developer learning paths" },
         { command: "random", description: "Random term" },
         { command: "categories", description: "Browse all 14 categories" },
         { command: "termofday", description: "Term of the day" },
@@ -80,7 +84,9 @@ async function setCommands() {
   const promises = commandSets.map((set) =>
     set.lang === "default"
       ? bot.api.setMyCommands(set.commands)
-      : bot.api.setMyCommands(set.commands, { language_code: set.lang as "pt" | "en" | "es" })
+      : bot.api.setMyCommands(set.commands, {
+          language_code: set.lang as "pt" | "en" | "es",
+        }),
   );
 
   const results = await Promise.allSettled(promises);
@@ -133,7 +139,9 @@ async function start() {
   }
 }
 
-setCommands().then(start).catch((err) => {
-  console.error("Failed to start bot:", err);
-  process.exit(1);
-});
+setCommands()
+  .then(start)
+  .catch((err) => {
+    console.error("Failed to start bot:", err);
+    process.exit(1);
+  });

@@ -3,7 +3,10 @@ import type { GlossaryTerm, Category } from "../glossary/index.js";
 import { getTermLocalized } from "../glossary/index.js";
 import type { MyContext } from "../context.js";
 
-export type TranslateFn = (key: string, params?: Record<string, string | number>) => string;
+export type TranslateFn = (
+  key: string,
+  params?: Record<string, string | number>,
+) => string;
 
 export function escapeHtml(text: string): string {
   return text
@@ -23,20 +26,22 @@ const DOCS_LINK_CATEGORIES = new Set([
   "core-protocol",
   "infrastructure",
   "network",
-  "defi"
+  "defi",
 ]);
 
 export function formatCategoryName(category: string): string {
   return category
     .split("-")
-    .map((word) => ACRONYMS[word] ?? word.charAt(0).toUpperCase() + word.slice(1))
+    .map(
+      (word) => ACRONYMS[word] ?? word.charAt(0).toUpperCase() + word.slice(1),
+    )
     .join(" ");
 }
 
 export function formatTermCard(
   term: GlossaryTerm,
   t: TranslateFn,
-  locale?: string
+  locale?: string,
 ): string {
   // Get localized content
   let displayTerm = term.term;
@@ -60,14 +65,14 @@ export function formatTermCard(
   if (term.aliases && term.aliases.length > 0) {
     lines.push(
       "",
-      `${t("term-aliases")}: ${term.aliases.map((a: string) => `<code>${escapeHtml(a)}</code>`).join(", ")}`
+      `${t("term-aliases")}: ${term.aliases.map((a: string) => `<code>${escapeHtml(a)}</code>`).join(", ")}`,
     );
   }
 
   if (term.related && term.related.length > 0) {
     const shown = term.related.slice(0, 5);
     lines.push(
-      `${t("term-related")}: ${shown.map((r: string) => `<code>${escapeHtml(r)}</code>`).join(" · ")}`
+      `${t("term-related")}: ${shown.map((r: string) => `<code>${escapeHtml(r)}</code>`).join(" · ")}`,
     );
   }
 
@@ -80,16 +85,19 @@ export function formatTermCard(
   return lines.join("\n");
 }
 
-export function formatCategoryList(categories: Category[], t: TranslateFn): string {
+export function formatCategoryList(
+  categories: Category[],
+  t: TranslateFn,
+): string {
   const rows = categories.map(
-    (cat) => `• <b>${formatCategoryName(cat)}</b> — <code>${cat}</code>`
+    (cat) => `• <b>${formatCategoryName(cat)}</b> — <code>${cat}</code>`,
   );
   return `${t("categories-header")}\n\n${rows.join("\n")}`;
 }
 
 export function formatTermList(terms: GlossaryTerm[], header: string): string {
   const rows = terms.map(
-    (term) => `• <b>${escapeHtml(term.term)}</b> — <code>${term.id}</code>`
+    (term) => `• <b>${escapeHtml(term.term)}</b> — <code>${term.id}</code>`,
   );
   return truncateAtLine(`${header}\n\n${rows.join("\n")}`, 4000);
 }

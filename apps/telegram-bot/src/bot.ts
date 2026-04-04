@@ -13,6 +13,7 @@ import { helpCommand } from "./commands/help.js";
 import { languageCommand } from "./commands/language.js";
 import { glossaryCommand } from "./commands/glossary.js";
 import { categoriesCommand, categoryCommand } from "./commands/categories.js";
+import { pathCommand } from "./commands/path.js";
 import { dailyTermCommand } from "./commands/daily.js";
 import { randomTermCommand } from "./commands/random.js";
 import { quizCommand } from "./commands/quiz.js";
@@ -29,6 +30,8 @@ import {
   handleSelectCallback,
   handleBrowseCatCallback,
   handleCatPageCallback,
+  handleNoopCallback,
+  handleMenuCallback,
   handleFavAddCallback,
   handleFavRemoveCallback,
   handleQuizAnswerCallback,
@@ -49,9 +52,12 @@ bot.api.config.use(autoRetry());
 // 2. Sessions: keyed by user ID so inline queries (no chat) also work
 bot.use(
   session<SessionData, MyContext>({
-    initial: (): SessionData => ({ language: undefined }),
+    initial: (): SessionData => ({
+      language: undefined,
+      awaitingGlossaryQuery: false,
+    }),
     getSessionKey: (ctx) => ctx.from?.id.toString(),
-  })
+  }),
 );
 
 // 3. i18n: locale detection from session → language_code → "en"
@@ -66,7 +72,7 @@ bot.use(
       await ctx?.reply(ctx.t("rate-limit"), { parse_mode: "HTML" });
     },
     keyGenerator: (ctx) => ctx.from?.id.toString() ?? "anonymous",
-  })
+  }),
 );
 
 // 5. Save user first_name for leaderboard
@@ -86,6 +92,7 @@ bot.command("help", helpCommand);
 
 bot.command(["idioma", "language"], languageCommand);
 bot.command(["glossario", "glossary", "glosario"], glossaryCommand);
+bot.command(["path", "trilha"], pathCommand);
 bot.command(["categorias", "categories"], categoriesCommand);
 bot.command(["categoria", "category"], categoryCommand);
 bot.command(["termododia", "termofday", "terminodelhoy"], dailyTermCommand);
@@ -105,6 +112,8 @@ bot.callbackQuery(/^category:/, handleCategoryCallback);
 bot.callbackQuery(/^select:/, handleSelectCallback);
 bot.callbackQuery(/^browse_cat:/, handleBrowseCatCallback);
 bot.callbackQuery(/^cat_page:/, handleCatPageCallback);
+bot.callbackQuery(/^noop:/, handleNoopCallback);
+bot.callbackQuery(/^menu:/, handleMenuCallback);
 bot.callbackQuery(/^fav_add:/, handleFavAddCallback);
 bot.callbackQuery(/^fav_remove:/, handleFavRemoveCallback);
 bot.callbackQuery(/^quiz_answer:/, handleQuizAnswerCallback);
@@ -131,5 +140,5 @@ bot.catch((err) => {
     update_id: update?.update_id,
     type: updateType,
   });
-  err.ctx?.reply(err.ctx.t("internal-error")).catch(() => { });
+  err.ctx?.reply(err.ctx.t("internal-error")).catch(() => {});
 });

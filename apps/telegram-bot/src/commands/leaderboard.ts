@@ -24,7 +24,9 @@ export async function leaderboardCommand(ctx: MyContext): Promise<void> {
     const name = isCurrentUser
       ? `<b>${user.first_name}</b> (You)`
       : user.first_name;
-    lines.push(ctx.t("leaderboard-entry", { medal, name, streak: user.max_streak }));
+    lines.push(
+      ctx.t("leaderboard-entry", { medal, name, streak: user.max_streak }),
+    );
   });
 
   await ctx.reply(lines.join("\n"), { parse_mode: "HTML" });
@@ -51,11 +53,22 @@ export async function rankCommand(ctx: MyContext): Promise<void> {
   lines.push("");
   lines.push(ctx.t("rank-nearby"));
 
-  nearby.forEach(user => {
+  nearby.forEach((user) => {
     if (user.isCurrentUser) {
-      lines.push(ctx.t("rank-you") + " — " + ctx.t("rank-entry-simple", { rank: "", streak: user.max_streak }).replace(/^ — /, ""));
+      lines.push(
+        ctx.t("rank-you") +
+          " — " +
+          ctx
+            .t("rank-entry-simple", { rank: "", streak: user.max_streak })
+            .replace(/^ — /, ""),
+      );
     } else {
-      lines.push(ctx.t("rank-entry-simple", { rank: `${user.rank}.`, streak: user.max_streak }));
+      lines.push(
+        ctx.t("rank-entry-simple", {
+          rank: `${user.rank}.`,
+          streak: user.max_streak,
+        }),
+      );
     }
   });
 

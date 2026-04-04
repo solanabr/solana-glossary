@@ -15,7 +15,11 @@ export async function randomTermCommand(ctx: MyContext): Promise<void> {
   }
 
   const header = ctx.t("random-term-header");
-  const card = formatTermCard(term, ctx.t.bind(ctx), ctx.session.language || "en");
+  const card = formatTermCard(
+    term,
+    ctx.t.bind(ctx),
+    ctx.session.language || "en",
+  );
 
   await ctx.reply(`${header}\n\n${card}`, {
     parse_mode: "HTML",

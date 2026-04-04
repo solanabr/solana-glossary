@@ -1,17 +1,34 @@
 // src/handlers/callbacks.ts
-import { getTerm, getTermsByCategory, getCategories } from "../glossary/index.js";
+import {
+  getTerm,
+  getTermsByCategory,
+  getCategories,
+} from "../glossary/index.js";
 import type { Category } from "../glossary/index.js";
 import { InlineKeyboard } from "grammy";
-import { formatTermCard, formatTermList, formatCategoryName } from "../utils/format.js";
+import {
+  formatTermCard,
+  formatTermList,
+  formatCategoryName,
+} from "../utils/format.js";
 import { buildTermKeyboard } from "../utils/keyboard.js";
-import { sendWelcome } from "../commands/start.js";
-import { sendCategoryTerms } from "../commands/categories.js";
+import { sendMainMenu, sendWelcome } from "../commands/start.js";
+import { sendCategoriesMenu, sendCategoryTerms } from "../commands/categories.js";
+import { glossaryCommand } from "../commands/glossary.js";
+import { randomTermCommand } from "../commands/random.js";
+import { quizCommand } from "../commands/quiz.js";
+import { helpCommand } from "../commands/help.js";
+import { pathCommand } from "../commands/path.js";
 import { db } from "../db/index.js";
 import type { MyContext, SessionData } from "../context.js";
 
 /** Strip HTML tags for use in plain-text callback popups */
 function stripHtml(text: string): string {
-  return text.replace(/<[^>]+>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+  return text
+    .replace(/<[^>]+>/g, "")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
 }
 
 // ── Language onboarding ───────────────────────────────────────────────────────
@@ -25,7 +42,7 @@ export async function handleLangCallback(ctx: MyContext): Promise<void> {
   await ctx.answerCallbackQuery();
 
   // Remove the language picker message and show welcome
-  await ctx.deleteMessage().catch(() => { });
+  await ctx.deleteMessage().catch(() => {});
   await sendWelcome(ctx);
 }
 
@@ -88,7 +105,11 @@ export async function handleSelectCallback(ctx: MyContext): Promise<void> {
     db.addHistory(userId, termId);
   }
 
-  const card = formatTermCard(term, ctx.t.bind(ctx), ctx.session.language || "en");
+  const card = formatTermCard(
+    term,
+    ctx.t.bind(ctx),
+    ctx.session.language || "en",
+  );
   await ctx.answerCallbackQuery();
   await ctx.reply(card, {
     parse_mode: "HTML",
@@ -99,16 +120,21 @@ export async function handleSelectCallback(ctx: MyContext): Promise<void> {
 // ── Category browser ──────────────────────────────────────────────────────────
 
 export async function handleBrowseCatCallback(ctx: MyContext): Promise<void> {
-  const category = (ctx.callbackQuery?.data ?? "").slice("browse_cat:".length) as Category;
+  const category = (ctx.callbackQuery?.data ?? "").slice(
+    "browse_cat:".length,
+  ) as Category;
 
   const categories = getCategories();
   if (!categories.includes(category)) {
-    await ctx.answerCallbackQuery({ text: ctx.t("category-not-found", { name: category }), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: ctx.t("category-not-found", { name: category }),
+      show_alert: true,
+    });
     return;
   }
 
   await ctx.answerCallbackQuery();
-  await sendCategoryTerms(ctx, category, 1, false);
+  await sendCategoryTerms(ctx, category, 1, true);
 }
 
 // ── Category pagination ─────────────────────────────────────────────────────
@@ -127,12 +153,58 @@ export async function handleCatPageCallback(ctx: MyContext): Promise<void> {
   // Validate category
   const categories = getCategories();
   if (!categories.includes(category)) {
-    await ctx.answerCallbackQuery({ text: ctx.t("category-not-found", { name: category }), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: ctx.t("category-not-found", { name: category }),
+      show_alert: true,
+    });
     return;
   }
 
   await sendCategoryTerms(ctx, category, page, true);
   await ctx.answerCallbackQuery();
+}
+
+export async function handleNoopCallback(ctx: MyContext): Promise<void> {
+  await ctx.answerCallbackQuery();
+}
+
+export async function handleMenuCallback(ctx: MyContext): Promise<void> {
+  const action = (ctx.callbackQuery?.data ?? "").slice("menu:".length);
+
+  await ctx.answerCallbackQuery();
+
+  switch (action) {
+    case "main":
+      ctx.session.awaitingGlossaryQuery = false;
+      await sendMainMenu(ctx, true);
+      return;
+    case "categories":
+      ctx.session.awaitingGlossaryQuery = false;
+      await sendCategoriesMenu(ctx, true);
+      return;
+    case "glossary":
+      ctx.match = "";
+      await glossaryCommand(ctx);
+      return;
+    case "random":
+      ctx.session.awaitingGlossaryQuery = false;
+      await randomTermCommand(ctx);
+      return;
+    case "quiz":
+      ctx.session.awaitingGlossaryQuery = false;
+      await quizCommand(ctx);
+      return;
+    case "help":
+      ctx.session.awaitingGlossaryQuery = false;
+      await helpCommand(ctx);
+      return;
+    case "path":
+      ctx.session.awaitingGlossaryQuery = false;
+      await pathCommand(ctx);
+      return;
+    default:
+      await ctx.reply(ctx.t("internal-error"));
+  }
 }
 
 // ── Favorites ────────────────────────────────────────────────────────────────
@@ -155,7 +227,10 @@ export async function handleFavAddCallback(ctx: MyContext): Promise<void> {
       reply_markup: buildTermKeyboard(termId, ctx.t.bind(ctx), userId),
     });
   } catch (err) {
-    await ctx.answerCallbackQuery({ text: ctx.t("favorites-limit"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: ctx.t("favorites-limit"),
+      show_alert: true,
+    });
   }
 }
 
@@ -204,29 +279,53 @@ export async function handleQuizAnswerCallback(ctx: MyContext): Promise<void> {
 
     // Send appropriate message based on streak state
     if (streak.isNewRecord) {
-      await ctx.reply(ctx.t("quiz-correct-new-record", { term: correctTerm?.term ?? "", max: streak.max }), {
-        parse_mode: "HTML",
-      });
+      await ctx.reply(
+        ctx.t("quiz-correct-new-record", {
+          term: correctTerm?.term ?? "",
+          max: streak.max,
+        }),
+        {
+          parse_mode: "HTML",
+        },
+      );
     } else if (streak.current > 1) {
-      await ctx.reply(ctx.t("quiz-correct-with-streak", { term: correctTerm?.term ?? "", current: streak.current }), {
-        parse_mode: "HTML",
-      });
+      await ctx.reply(
+        ctx.t("quiz-correct-with-streak", {
+          term: correctTerm?.term ?? "",
+          current: streak.current,
+        }),
+        {
+          parse_mode: "HTML",
+        },
+      );
     } else {
-      await ctx.reply(ctx.t("quiz-correct", { term: correctTerm?.term ?? "" }), {
-        parse_mode: "HTML",
-      });
+      await ctx.reply(
+        ctx.t("quiz-correct", { term: correctTerm?.term ?? "" }),
+        {
+          parse_mode: "HTML",
+        },
+      );
     }
 
     // Schedule streak warning for tomorrow (2h before midnight)
-    const { scheduleStreakWarning } = await import("../scheduler/notifications.js");
+    const { scheduleStreakWarning } =
+      await import("../scheduler/notifications.js");
     scheduleStreakWarning(userId);
 
     // Show the term card
     if (correctTerm) {
-      const card = formatTermCard(correctTerm, ctx.t.bind(ctx), ctx.session.language || "en");
+      const card = formatTermCard(
+        correctTerm,
+        ctx.t.bind(ctx),
+        ctx.session.language || "en",
+      );
       await ctx.reply(card, {
         parse_mode: "HTML",
-        reply_markup: buildTermKeyboard(correctTerm.id, ctx.t.bind(ctx), userId),
+        reply_markup: buildTermKeyboard(
+          correctTerm.id,
+          ctx.t.bind(ctx),
+          userId,
+        ),
       });
     }
     // Clear session
@@ -263,25 +362,42 @@ export async function handleQuizRetryCallback(ctx: MyContext): Promise<void> {
   // Get term and rebuild question
   const targetTerm = getTerm(session.termId);
   if (!targetTerm) {
-    await ctx.answerCallbackQuery({ text: ctx.t("internal-error"), show_alert: true });
+    await ctx.answerCallbackQuery({
+      text: ctx.t("internal-error"),
+      show_alert: true,
+    });
     return;
   }
 
   // Rebuild options from session
-  const options = session.options.map(id => getTerm(id)).filter((t): t is NonNullable<typeof t> => t !== undefined);
+  const options = session.options
+    .map((id) => getTerm(id))
+    .filter((t): t is NonNullable<typeof t> => t !== undefined);
 
   // Show question again
   const definitionSnippet = targetTerm.definition;
   const question = ctx.t("quiz-question", { definition: definitionSnippet });
 
   const keyboard = new InlineKeyboard()
-    .text(ctx.t("quiz-option-a", { term: options[0]?.term ?? "" }), `quiz_answer:0`)
+    .text(
+      ctx.t("quiz-option-a", { term: options[0]?.term ?? "" }),
+      `quiz_answer:0`,
+    )
     .row()
-    .text(ctx.t("quiz-option-b", { term: options[1]?.term ?? "" }), `quiz_answer:1`)
+    .text(
+      ctx.t("quiz-option-b", { term: options[1]?.term ?? "" }),
+      `quiz_answer:1`,
+    )
     .row()
-    .text(ctx.t("quiz-option-c", { term: options[2]?.term ?? "" }), `quiz_answer:2`)
+    .text(
+      ctx.t("quiz-option-c", { term: options[2]?.term ?? "" }),
+      `quiz_answer:2`,
+    )
     .row()
-    .text(ctx.t("quiz-option-d", { term: options[3]?.term ?? "" }), `quiz_answer:3`);
+    .text(
+      ctx.t("quiz-option-d", { term: options[3]?.term ?? "" }),
+      `quiz_answer:3`,
+    );
 
   await ctx.reply(ctx.t("quiz-try-again"), { parse_mode: "HTML" });
   await ctx.reply(question, {
@@ -314,7 +430,11 @@ export async function handleQuizResultCallback(ctx: MyContext): Promise<void> {
 
   // Show the term card
   if (correctTerm) {
-    const card = formatTermCard(correctTerm, ctx.t.bind(ctx), ctx.session.language || "en");
+    const card = formatTermCard(
+      correctTerm,
+      ctx.t.bind(ctx),
+      ctx.session.language || "en",
+    );
     await ctx.reply(card, {
       parse_mode: "HTML",
       reply_markup: buildTermKeyboard(correctTerm.id, ctx.t.bind(ctx), userId),

@@ -9,7 +9,7 @@ import { db } from "../db/index.js";
 export function buildTermKeyboard(
   termId: string,
   t: MyContext["t"],
-  userId?: number
+  userId?: number,
 ): InlineKeyboard {
   const keyboard = new InlineKeyboard();
 
@@ -53,7 +53,7 @@ export function buildCategoryPageKeyboard(
   category: Category,
   page: number,
   totalPages: number,
-  t: MyContext["t"]
+  t: MyContext["t"],
 ): InlineKeyboard {
   const keyboard = new InlineKeyboard();
 
@@ -68,5 +68,59 @@ export function buildCategoryPageKeyboard(
     keyboard.text(t("btn-next"), `cat_page:${category}:${page + 1}`);
   }
 
+  keyboard.row();
+  keyboard.text(t("btn-back-categories"), "menu:categories");
+  keyboard.text(t("btn-back-menu"), "menu:main");
+
   return keyboard;
+}
+
+export function buildCategoriesKeyboard(
+  categories: Category[],
+  t: MyContext["t"],
+): InlineKeyboard {
+  const keyboard = new InlineKeyboard();
+
+  categories.forEach((cat, i) => {
+    keyboard.text(formatCategoryLabel(cat), `browse_cat:${cat}`);
+    if (i % 2 === 1) keyboard.row();
+  });
+
+  keyboard.row();
+  keyboard.text(t("btn-back-menu"), "menu:main");
+
+  return keyboard;
+}
+
+export function buildMainMenuKeyboard(t: MyContext["t"]): InlineKeyboard {
+  return new InlineKeyboard()
+    .text(t("menu-glossary"), "menu:glossary")
+    .text(t("menu-categories"), "menu:categories")
+    .row()
+    .text(t("menu-random"), "menu:random")
+    .text(t("menu-quiz"), "menu:quiz")
+    .row()
+    .text(t("menu-path"), "menu:path")
+    .text(t("menu-help"), "menu:help");
+}
+
+export function buildPathKeyboard(t: MyContext["t"]): InlineKeyboard {
+  return new InlineKeyboard()
+    .text(t("path-track-core"), "browse_cat:core-protocol")
+    .text(t("path-track-dev"), "browse_cat:programming-model")
+    .row()
+    .text(t("path-track-tools"), "browse_cat:dev-tools")
+    .text(t("path-track-security"), "browse_cat:security")
+    .row()
+    .text(t("path-track-network"), "browse_cat:network")
+    .text(t("path-track-zk"), "browse_cat:zk-compression")
+    .row()
+    .text(t("btn-back-menu"), "menu:main");
+}
+
+function formatCategoryLabel(category: Category): string {
+  return category
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }

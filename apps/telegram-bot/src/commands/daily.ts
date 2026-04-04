@@ -39,7 +39,11 @@ export async function dailyTermCommand(ctx: MyContext): Promise<void> {
     ? `📅 <b>${ctx.t("daily-term-header")}</b>  ${streakText}\n\n`
     : `📅 <b>${ctx.t("daily-term-header")}</b>\n\n`;
 
-  const card = formatTermCard(term, ctx.t.bind(ctx), ctx.session.language || "en");
+  const card = formatTermCard(
+    term,
+    ctx.t.bind(ctx),
+    ctx.session.language || "en",
+  );
 
   await ctx.reply(header + card, {
     parse_mode: "HTML",

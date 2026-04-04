@@ -19,19 +19,25 @@ export function startNotificationScheduler(bot: Bot<MyContext>): void {
       try {
         const streak = db.getOrCreateStreak(notification.user_id);
 
-        if (notification.type === "streak_warning" && streak.current_streak > 0) {
+        if (
+          notification.type === "streak_warning" &&
+          streak.current_streak > 0
+        ) {
           // Note: For full i18n, we'd need to store user's language preference
           // and use the i18n system. Using English as default for notifications.
           await bot.api.sendMessage(
             notification.user_id,
             `🔥 Streak Alert! You have 2 hours to take the /quiz and keep your ${streak.current_streak} day streak.`,
-            { parse_mode: "HTML" }
+            { parse_mode: "HTML" },
           );
         }
 
         db.markNotificationSent(notification.id, now);
       } catch (err) {
-        console.error(`Failed to send notification to ${notification.user_id}:`, err);
+        console.error(
+          `Failed to send notification to ${notification.user_id}:`,
+          err,
+        );
       }
     }
 
@@ -48,7 +54,10 @@ export function startNotificationScheduler(bot: Bot<MyContext>): void {
   console.log("Notification scheduler started (every 15 minutes)");
 }
 
-export function scheduleStreakWarning(userId: number, timezone: string = "America/Sao_Paulo"): void {
+export function scheduleStreakWarning(
+  userId: number,
+  timezone: string = "America/Sao_Paulo",
+): void {
   // Calculate 22:00 in user's timezone (2h before midnight)
   const now = new Date();
   const userMidnight = new Date();
@@ -64,8 +73,9 @@ export function scheduleStreakWarning(userId: number, timezone: string = "Americ
   }
 
   // Cancel any existing pending streak warnings for this user
-  const existing = db.getPendingNotifications(new Date("2099-12-31"))
-    .filter(n => n.user_id === userId && n.type === "streak_warning");
+  const existing = db
+    .getPendingNotifications(new Date("2099-12-31"))
+    .filter((n) => n.user_id === userId && n.type === "streak_warning");
 
   // Schedule new warning
   db.scheduleNotification(userId, warningTime, "streak_warning");

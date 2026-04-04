@@ -1,9 +1,11 @@
 // src/commands/categories.ts
-import { InlineKeyboard } from "grammy";
 import { getCategories, getTermsByCategory } from "../glossary/index.js";
 import type { Category } from "../glossary/index.js";
 import { formatTermList, formatCategoryName } from "../utils/format.js";
-import { buildCategoryPageKeyboard } from "../utils/keyboard.js";
+import {
+  buildCategoriesKeyboard,
+  buildCategoryPageKeyboard,
+} from "../utils/keyboard.js";
 import type { MyContext } from "../context.js";
 
 const VALID_CATEGORIES = new Set<string>(getCategories());
@@ -12,17 +14,27 @@ const PAGE_SIZE = 15;
 export async function categoriesCommand(ctx: MyContext): Promise<void> {
   const categories = getCategories();
 
-  // Build 2-column inline keyboard of clickable category buttons
-  const keyboard = new InlineKeyboard();
-  categories.forEach((cat: string, i: number) => {
-    keyboard.text(formatCategoryName(cat), `browse_cat:${cat}`);
-    if (i % 2 === 1) keyboard.row();
-  });
-
   await ctx.reply(ctx.t("categories-choose"), {
     parse_mode: "HTML",
-    reply_markup: keyboard,
+    reply_markup: buildCategoriesKeyboard(categories, ctx.t.bind(ctx)),
   });
+}
+
+export async function sendCategoriesMenu(
+  ctx: MyContext,
+  editMessage = false,
+): Promise<void> {
+  const options = {
+    parse_mode: "HTML" as const,
+    reply_markup: buildCategoriesKeyboard(getCategories(), ctx.t.bind(ctx)),
+  };
+
+  if (editMessage && ctx.callbackQuery) {
+    await ctx.editMessageText(ctx.t("categories-choose"), options);
+    return;
+  }
+
+  await ctx.reply(ctx.t("categories-choose"), options);
 }
 
 export async function categoryCommand(ctx: MyContext): Promise<void> {
@@ -34,7 +46,9 @@ export async function categoryCommand(ctx: MyContext): Promise<void> {
   }
 
   if (!VALID_CATEGORIES.has(input)) {
-    await ctx.reply(ctx.t("category-not-found", { name: input }), { parse_mode: "HTML" });
+    await ctx.reply(ctx.t("category-not-found", { name: input }), {
+      parse_mode: "HTML",
+    });
     return;
   }
 
@@ -45,7 +59,7 @@ export async function sendCategoryTerms(
   ctx: MyContext,
   category: Category,
   page = 1,
-  editMessage = false
+  editMessage = false,
 ): Promise<void> {
   const allTerms = getTermsByCategory(category);
   const totalPages = Math.ceil(allTerms.length / PAGE_SIZE);
@@ -57,10 +71,16 @@ export async function sendCategoryTerms(
     count: allTerms.length,
   });
 
-  const text = formatTermList(pageTerms, `${header} (${ctx.t("btn-page", { current: page, total: totalPages })})`);
-  const keyboard = totalPages > 1
-    ? buildCategoryPageKeyboard(category, page, totalPages, ctx.t.bind(ctx))
-    : undefined;
+  const text = formatTermList(
+    pageTerms,
+    `${header} (${ctx.t("btn-page", { current: page, total: totalPages })})`,
+  );
+  const keyboard = buildCategoryPageKeyboard(
+    category,
+    page,
+    totalPages,
+    ctx.t.bind(ctx),
+  );
 
   if (editMessage && ctx.callbackQuery) {
     await ctx.editMessageText(text, {

@@ -12,7 +12,7 @@ export async function historyCommand(ctx: MyContext): Promise<void> {
   }
 
   const historyIds = db.getHistory(userId);
-  
+
   if (historyIds.length === 0) {
     await ctx.reply(ctx.t("history-empty"));
     return;

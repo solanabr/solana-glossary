@@ -12,7 +12,7 @@ export async function favoritesCommand(ctx: MyContext): Promise<void> {
   }
 
   const favIds = db.getFavorites(userId);
-  
+
   if (favIds.length === 0) {
     await ctx.reply(ctx.t("favorites-empty"));
     return;

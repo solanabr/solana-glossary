@@ -7,11 +7,9 @@ import type { MyContext } from "../context.js";
 
 function buildInlineResult(term: GlossaryTerm, t: MyContext["t"]) {
   const card = formatTermCard(term, t);
-  return InlineQueryResultBuilder
-    .article(term.id, term.term, {
-      description: term.definition.slice(0, 120),
-    })
-    .text(card, { parse_mode: "HTML" });
+  return InlineQueryResultBuilder.article(term.id, term.term, {
+    description: term.definition.slice(0, 120),
+  }).text(card, { parse_mode: "HTML" });
 }
 
 export async function handleInlineQuery(ctx: MyContext): Promise<void> {

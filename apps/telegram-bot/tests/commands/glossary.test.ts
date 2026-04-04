@@ -13,11 +13,12 @@ describe("glossaryCommand", () => {
     expect(opts).toMatchObject({ parse_mode: "HTML" });
   });
 
-  it("replies with usage hint when no argument given", async () => {
+  it("prompts for a query when no argument given", async () => {
     const ctx = createMockCtx({ match: "" });
     await glossaryCommand(ctx);
     const [text] = (ctx.reply as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(text).toBe("[usage-glossary]");
+    expect(text).toBe("[prompt-glossary-query]");
+    expect(ctx.session.awaitingGlossaryQuery).toBe(true);
   });
 
   it("replies with not-found when term does not exist", async () => {

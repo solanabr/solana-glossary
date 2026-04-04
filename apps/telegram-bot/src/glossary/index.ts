@@ -29,7 +29,9 @@ export const allTerms: GlossaryTerm[] = [
   ...readJsonFile<GlossaryTerm[]>("./data/terms/solana-ecosystem.json"),
 ];
 
-const termMap = new Map<string, GlossaryTerm>(allTerms.map((term) => [term.id, term]));
+const termMap = new Map<string, GlossaryTerm>(
+  allTerms.map((term) => [term.id, term]),
+);
 
 const aliasMap = new Map<string, string>();
 for (const term of allTerms) {
@@ -46,11 +48,15 @@ interface I18nEntry {
 const ptMap = new Map<string, I18nEntry>();
 const esMap = new Map<string, I18nEntry>();
 
-for (const [id, entry] of Object.entries(readJsonFile<Record<string, I18nEntry>>("./data/i18n/pt.json"))) {
+for (const [id, entry] of Object.entries(
+  readJsonFile<Record<string, I18nEntry>>("./data/i18n/pt.json"),
+)) {
   ptMap.set(id, entry as I18nEntry);
 }
 
-for (const [id, entry] of Object.entries(readJsonFile<Record<string, I18nEntry>>("./data/i18n/es.json"))) {
+for (const [id, entry] of Object.entries(
+  readJsonFile<Record<string, I18nEntry>>("./data/i18n/es.json"),
+)) {
   esMap.set(id, entry as I18nEntry);
 }
 
@@ -61,7 +67,7 @@ export function getTerm(idOrAlias: string): GlossaryTerm | undefined {
 
 export function getTermLocalized(
   id: string,
-  locale: "pt" | "en" | "es"
+  locale: "pt" | "en" | "es",
 ): { term: string; definition: string } | undefined {
   const term = getTerm(id);
   if (!term) return undefined;
@@ -92,7 +98,7 @@ export function searchTerms(query: string): GlossaryTerm[] {
       term.term.toLowerCase().includes(q) ||
       term.definition.toLowerCase().includes(q) ||
       term.id.includes(q) ||
-      term.aliases?.some((alias) => alias.toLowerCase().includes(q))
+      term.aliases?.some((alias) => alias.toLowerCase().includes(q)),
   );
 }
 

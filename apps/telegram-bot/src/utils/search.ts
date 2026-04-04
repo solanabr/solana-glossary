@@ -39,7 +39,11 @@ type SearchScore = {
     | "definition-token";
 };
 
-function scoreTerm(term: GlossaryTerm, query: string, queryTokens: string[]): SearchScore | null {
+function scoreTerm(
+  term: GlossaryTerm,
+  query: string,
+  queryTokens: string[],
+): SearchScore | null {
   const id = normalize(term.id);
   const idCompact = compact(term.id);
   const name = normalize(term.term);
@@ -51,36 +55,59 @@ function scoreTerm(term: GlossaryTerm, query: string, queryTokens: string[]): Se
   const queryCompact = compact(query);
   const allPrimaryText = `${id} ${name} ${aliases.join(" ")}`.trim();
 
-  if (id === query || name === query) return { score: 0, directness: 0, kind: "exact-primary" };
-  if (idCompact === queryCompact || nameCompact === queryCompact) return { score: 1, directness: 0, kind: "exact-primary" };
+  if (id === query || name === query)
+    return { score: 0, directness: 0, kind: "exact-primary" };
+  if (idCompact === queryCompact || nameCompact === queryCompact)
+    return { score: 1, directness: 0, kind: "exact-primary" };
 
   const aliasExactIndex = aliases.findIndex((alias) => alias === query);
-  if (aliasExactIndex !== -1) return { score: 2, directness: 1, kind: "exact-alias" };
-  if (aliasesCompact.some((alias) => alias === queryCompact)) return { score: 3, directness: 1, kind: "exact-alias" };
+  if (aliasExactIndex !== -1)
+    return { score: 2, directness: 1, kind: "exact-alias" };
+  if (aliasesCompact.some((alias) => alias === queryCompact))
+    return { score: 3, directness: 1, kind: "exact-alias" };
 
-  if (id.startsWith(query) || name.startsWith(query)) return { score: 4, directness: 2, kind: "prefix-primary" };
-  if (idCompact.startsWith(queryCompact) || nameCompact.startsWith(queryCompact)) return { score: 5, directness: 2, kind: "prefix-primary" };
-  if (aliases.some((alias) => alias.startsWith(query))) return { score: 6, directness: 3, kind: "prefix-alias" };
+  if (id.startsWith(query) || name.startsWith(query))
+    return { score: 4, directness: 2, kind: "prefix-primary" };
+  if (
+    idCompact.startsWith(queryCompact) ||
+    nameCompact.startsWith(queryCompact)
+  )
+    return { score: 5, directness: 2, kind: "prefix-primary" };
+  if (aliases.some((alias) => alias.startsWith(query)))
+    return { score: 6, directness: 3, kind: "prefix-alias" };
 
-  const tokenStarts = queryTokens.every((token) =>
-    tokenize(term.term).some((word) => word.startsWith(token)) ||
-    tokenize(term.id).some((word) => word.startsWith(token)) ||
-    (term.aliases ?? []).some((alias) => tokenize(alias).some((word) => word.startsWith(token)))
+  const tokenStarts = queryTokens.every(
+    (token) =>
+      tokenize(term.term).some((word) => word.startsWith(token)) ||
+      tokenize(term.id).some((word) => word.startsWith(token)) ||
+      (term.aliases ?? []).some((alias) =>
+        tokenize(alias).some((word) => word.startsWith(token)),
+      ),
   );
   if (tokenStarts) return { score: 7, directness: 4, kind: "token-prefix" };
 
-  if (name.includes(query) || id.includes(query)) return { score: 8, directness: 5, kind: "contains-primary" };
-  if (aliases.some((alias) => alias.includes(query))) return { score: 9, directness: 6, kind: "contains-alias" };
+  if (name.includes(query) || id.includes(query))
+    return { score: 8, directness: 5, kind: "contains-primary" };
+  if (aliases.some((alias) => alias.includes(query)))
+    return { score: 9, directness: 6, kind: "contains-alias" };
 
-  const tokenCoverage = queryTokens.filter((token) => allPrimaryText.includes(token)).length;
+  const tokenCoverage = queryTokens.filter((token) =>
+    allPrimaryText.includes(token),
+  ).length;
   if (tokenCoverage === queryTokens.length && queryTokens.length > 0) {
     return { score: 10, directness: 7, kind: "token-coverage" };
   }
 
-  if (definition.includes(query)) return { score: 50, directness: 8, kind: "definition" };
+  if (definition.includes(query))
+    return { score: 50, directness: 8, kind: "definition" };
 
-  const definitionTokenCoverage = queryTokens.filter((token) => definition.includes(token)).length;
-  if (definitionTokenCoverage === queryTokens.length && queryTokens.length > 0) {
+  const definitionTokenCoverage = queryTokens.filter((token) =>
+    definition.includes(token),
+  ).length;
+  if (
+    definitionTokenCoverage === queryTokens.length &&
+    queryTokens.length > 0
+  ) {
     return { score: 60, directness: 9, kind: "definition-token" };
   }
 
@@ -103,10 +130,14 @@ export function lookupTerm(input: string): LookupResult {
 
   const ranked = allTerms
     .map((term) => ({ term, match: scoreTerm(term, query, queryTokens) }))
-    .filter((entry): entry is { term: GlossaryTerm; match: SearchScore } => entry.match !== null)
+    .filter(
+      (entry): entry is { term: GlossaryTerm; match: SearchScore } =>
+        entry.match !== null,
+    )
     .sort((a, b) => {
       if (a.match.score !== b.match.score) return a.match.score - b.match.score;
-      if (a.match.directness !== b.match.directness) return a.match.directness - b.match.directness;
+      if (a.match.directness !== b.match.directness)
+        return a.match.directness - b.match.directness;
       return a.term.term.localeCompare(b.term.term);
     });
 
@@ -132,7 +163,10 @@ export function lookupTerm(input: string): LookupResult {
     return { type: "found", term: ranked[0].term };
   }
 
-  return { type: "multiple", terms: ranked.slice(0, 5).map((entry) => entry.term) };
+  return {
+    type: "multiple",
+    terms: ranked.slice(0, 5).map((entry) => entry.term),
+  };
 }
 
 /** Returns n random terms from the full glossary */
@@ -158,7 +192,7 @@ function levenshteinDistance(a: string, b: string): number {
         matrix[i][j] = Math.min(
           matrix[i - 1][j - 1] + 1,
           matrix[i][j - 1] + 1,
-          matrix[i - 1][j] + 1
+          matrix[i - 1][j] + 1,
         );
       }
     }
