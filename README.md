@@ -24,6 +24,10 @@ It supports two distinct product surfaces:
 - **DM mode** for direct lookup, guided learning, quiz practice, progress tracking, favorites, history, and daily discovery
 - **Group mode** for reply-to-explain, contextual teaching in active chats, group onboarding, and social retention loops like group streaks and local leaderboards
 
+It also supports a lightweight sharing surface:
+
+- **Inline mode** for pulling glossary cards directly into any Telegram conversation with `@SolanaGlossaryBot`
+
 ## Why This Bot Exists
 
 The core problem is not lack of information. Solana already has docs, videos, threads, and glossaries. The real problem is delivery:
@@ -36,6 +40,7 @@ This bot solves that by turning the glossary into an interactive Telegram produc
 
 - instant term lookup in DMs
 - reply-based explanation inside groups
+- inline glossary sharing inside normal chats with friends
 - multilingual onboarding in English, Portuguese, and Spanish
 - habit-forming learning loops through quiz, streaks, daily term, favorites, history, and leaderboards
 
@@ -108,6 +113,24 @@ Group mode is the community learning surface. It is optimized for active chats, 
 - `/streak` includes group-level participation and group streak context
 - The bot tracks group members and daily participation for social learning loops
 
+## Inline Experience
+
+Inline mode is the fastest way to pull glossary content into a live chat without asking your friend to leave the conversation.
+
+### Best inline flow
+
+- In any Telegram chat, type `@SolanaGlossaryBot pda`
+- Telegram opens inline results from the bot
+- Pick the matching glossary result
+- Send the card directly into the conversation
+
+### Inline-specific behavior
+
+- Empty inline queries return random terms as inspiration
+- Typed queries return the best glossary match or a close fallback
+- Inline responses are optimized for speed, so they use the standard glossary card instead of slower live-enriched data
+- Inline results are personal and language-aware
+
 ## Commands
 
 ### Core Commands
@@ -146,6 +169,7 @@ Group mode is the community learning surface. It is optimized for active chats, 
 
 - In private chats, plain text without `/` is treated as a glossary search
 - `/explain` is most useful when replying to a group message
+- Inline mode works with `@SolanaGlossaryBot <term>` in any Telegram chat
 - `/compare` accepts two concepts separated by `vs`, `x`, comma, or pipe
 - `/category` expects a category id such as `defi`, `security`, or `core-protocol`
 - The bot supports English, Portuguese, and Spanish command aliases where implemented
@@ -182,6 +206,14 @@ Group mode is the community learning surface. It is optimized for active chats, 
 3. Use group onboarding prompts and menu navigation
 4. Let the bot handle repeated "what does this term mean?" questions
 5. Encourage lightweight engagement with quiz and ranking
+
+### 5. Pulling a term into a chat with a friend
+
+1. You are chatting with a friend in Telegram
+2. Type `@SolanaGlossaryBot proof of history`
+3. Telegram shows matching inline results from the bot
+4. Select the glossary card you want
+5. Send it directly into the conversation
 
 ## What Makes This Different
 
@@ -336,56 +368,89 @@ Current screenshots now cover the core product story for the bounty, including D
 
 ### Onboarding
 
+The onboarding flow sets the tone quickly: language selection, a clear starting point, and an immediate path into glossary search and guided usage.
+
 ![Start Flow](./Imagens/Come%C3%A7ar.png)
 ![Choose Language](./Imagens/Choose%20Language.png)
 ![Start](./Imagens/start.png)
 
 ### DM Lookup
 
+Direct lookup in DM is the fastest solo-learning entrypoint. Users can search a term, read the card, and continue exploring without leaving Telegram.
+
 ![Glossary Search](./Imagens/glossario.png)
 
+### Inline Mode
+
+Inline mode is the shareable surface: type `@SolanaGlossaryBot <term>` in a normal conversation, choose a result, and send the glossary card into the chat with a friend.
+
+![Inline Search](./Imagens/inline1.png)
+![Inline Result](./Imagens/inline2.png)
+
 ### Explain
+
+`/explain` is the strongest group-learning feature. It turns a live message into an instant teaching moment without breaking the conversation flow.
 
 ![Explain in Group Context](./Imagens/explain.png)
 
 ### Compare
 
+Comparison helps users understand similar concepts side by side, which is especially useful for onboarding devs and advanced learners.
+
 ![Compare Concepts](./Imagens/compare.png)
 
 ### Categories
 
+Category browsing gives structure to the glossary and helps users move from one-off lookup into deeper exploration by domain.
+
 ![Category Browser](./Imagens/categorias.png)
 
 ### Learning Paths
+
+Learning paths turn the glossary into a guided curriculum, making the bot useful not only for lookup but also for progressive education.
 
 ![Learning Path Overview](./Imagens/path1.png)
 ![Learning Path Progress](./Imagens/path2.png)
 
 ### Quiz
 
+Quiz mode transforms passive reading into active recall and creates a natural retention loop inside Telegram.
+
 ![Quiz](./Imagens/quiz.png)
 
 ### Favorites
+
+Favorites make the bot practical for repeated study by letting users save high-value concepts for later review.
 
 ![Favorites](./Imagens/favorites.png)
 
 ### Random Discovery
 
+Random discovery gives users a lightweight way to keep learning even when they do not know what to search for next.
+
 ![Random](./Imagens/random.png)
 
 ### Related Terms
+
+Related-term navigation helps users follow the concept graph naturally and understand how Solana ideas connect.
 
 ![Related](./Imagens/relacionados.png)
 
 ### Daily Term
 
+The daily term creates a simple recurring habit and gives the product a low-friction “come back every day” loop.
+
 ![Term of the Day](./Imagens/termododia.png)
 
 ### Streak And Leaderboard
 
+Streaks and leaderboard mechanics add progression and light competition, reinforcing retention for both individuals and communities.
+
 ![Streak and Leaderboard](./Imagens/streakEleaderboard.png)
 
 ### Group Onboarding
+
+Group onboarding shows the bot working as a community tool, not just a private assistant, with prompts that help teams adopt it inside shared chats.
 
 ![Group Onboarding](./Imagens/Group.png)
 
