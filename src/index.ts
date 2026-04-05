@@ -86,3 +86,13 @@ export function getCategories(): Category[] {
     "solana-ecosystem",
   ];
 }
+
+export {
+  injectGlossaryContext,
+  detectTerms,
+  rankTerms,
+  expandTerms,
+  buildContext,
+  optimizePrompt,
+} from "./context/index";
+export type { ContextMode, StructuredContext, InjectOptions } from "./context/index";
