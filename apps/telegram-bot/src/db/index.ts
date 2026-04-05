@@ -829,6 +829,7 @@ class DatabaseWrapper {
 
     const newStreak = streak.current_streak + 1;
     const newMax = Math.max(newStreak, streak.max_streak);
+    const justCrossedThreshold = streak.current_streak === 0;
 
     this.db
       .prepare(
@@ -845,7 +846,7 @@ class DatabaseWrapper {
       newStreak,
       newMax,
       isNewRecord: newMax > streak.max_streak,
-      justCrossedThreshold: true,
+      justCrossedThreshold,
     };
   }
 
@@ -888,6 +889,14 @@ class DatabaseWrapper {
     this.db
       .prepare("UPDATE scheduled_notifications SET sent_at = ? WHERE id = ?")
       .run(sentAt.toISOString(), id);
+  }
+
+  clearPendingNotifications(userId: number, type: string): void {
+    this.db
+      .prepare(
+        "DELETE FROM scheduled_notifications WHERE user_id = ? AND type = ? AND sent_at IS NULL",
+      )
+      .run(userId, type);
   }
 
   clearOldNotifications(days: number = 7): void {

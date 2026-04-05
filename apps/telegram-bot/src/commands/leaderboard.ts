@@ -56,7 +56,7 @@ async function sendGroupLeaderboard(
   top10.forEach((user, index) => {
     const medal = MEDALS[index] || `${index + 1}.`;
     const isCurrentUser = user.user_id === userId;
-    const prefix = isCurrentUser ? "→ " : "";
+    const prefix = isCurrentUser ? "-> " : "";
     const name = isCurrentUser ? `<b>${user.first_name}</b>` : user.first_name;
     lines.push(
       `${prefix}${ctx.t("leaderboard-entry", {
@@ -105,11 +105,9 @@ export async function rankCommand(ctx: MyContext): Promise<void> {
   nearby.forEach((user) => {
     if (user.isCurrentUser) {
       lines.push(
-        ctx.t("rank-you") +
-          " — " +
-          ctx
-            .t("rank-entry-simple", { rank: "", streak: user.max_streak })
-            .replace(/^ — /, ""),
+        `${ctx.t("rank-you")} - ${ctx
+          .t("rank-entry-simple", { rank: "", streak: user.max_streak })
+          .replace(/^\s*[-—]\s*/, "")}`,
       );
       return;
     }

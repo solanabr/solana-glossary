@@ -1,7 +1,5 @@
-// src/utils/format.ts
 import type { GlossaryTerm, Category } from "../glossary/index.js";
 import { getTermLocalized } from "../glossary/index.js";
-import type { MyContext } from "../context.js";
 
 export type TranslateFn = (
   key: string,
@@ -43,7 +41,6 @@ export function formatTermCard(
   t: TranslateFn,
   locale?: string,
 ): string {
-  // Get localized content
   let displayTerm = term.term;
   let displayDefinition = term.definition;
 
@@ -76,7 +73,6 @@ export function formatTermCard(
     );
   }
 
-  // External links for specific categories
   if (DOCS_LINK_CATEGORIES.has(term.category)) {
     const docsUrl = `https://solana.com/docs/terminology#${term.id}`;
     lines.push("", `🔗 <a href="${docsUrl}">${t("term-read-more-label")}</a>`);
@@ -90,23 +86,22 @@ export function formatCategoryList(
   t: TranslateFn,
 ): string {
   const rows = categories.map(
-    (cat) => `• <b>${formatCategoryName(cat)}</b> — <code>${cat}</code>`,
+    (cat) => `• <b>${formatCategoryName(cat)}</b> - <code>${cat}</code>`,
   );
   return `${t("categories-header")}\n\n${rows.join("\n")}`;
 }
 
 export function formatTermList(terms: GlossaryTerm[], header: string): string {
   const rows = terms.map(
-    (term) => `• <b>${escapeHtml(term.term)}</b> — <code>${term.id}</code>`,
+    (term) => `• <b>${escapeHtml(term.term)}</b> - <code>${term.id}</code>`,
   );
   return truncateAtLine(`${header}\n\n${rows.join("\n")}`, 4000);
 }
 
-/** Truncate at the last line break before maxLength to avoid cutting HTML tags mid-tag */
 export function truncateAtLine(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   const slice = text.slice(0, maxLength);
   const lastNewline = slice.lastIndexOf("\n");
   const safe = lastNewline > 0 ? slice.slice(0, lastNewline) : slice;
-  return safe + "\n…";
+  return safe + "\n...";
 }

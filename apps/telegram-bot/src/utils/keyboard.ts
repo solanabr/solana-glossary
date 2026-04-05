@@ -196,5 +196,5 @@ function formatCategoryLabel(category: Category): string {
 function formatProgressBar(current: number, total: number): string {
   const width = 8;
   const filled = total === 0 ? 0 : Math.round((current / total) * width);
-  return `${"█".repeat(filled)}${"░".repeat(width - filled)}`;
+  return `${"#".repeat(filled)}${"-".repeat(width - filled)}`;
 }

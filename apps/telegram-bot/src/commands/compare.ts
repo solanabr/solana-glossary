@@ -1,8 +1,12 @@
-import { InlineKeyboard } from "grammy";
 import { findClosest, lookupTerm } from "../utils/search.js";
 import { escapeHtml, formatCategoryName } from "../utils/format.js";
 import type { GlossaryTerm } from "../glossary/index.js";
 import type { MyContext } from "../context.js";
+
+type CompareResolution =
+  | { kind: "found"; term: GlossaryTerm }
+  | { kind: "ambiguous"; terms: GlossaryTerm[] }
+  | { kind: "suggestion"; suggestion?: GlossaryTerm };
 
 export async function compareCommand(ctx: MyContext): Promise<void> {
   const raw = (ctx.match as string).trim();
@@ -17,30 +21,54 @@ export async function compareCommand(ctx: MyContext): Promise<void> {
     return;
   }
 
-  const { leftQuery, rightQuery } = parsed;
-  const leftResolved = resolveSingleTerm(leftQuery);
-  const rightResolved = resolveSingleTerm(rightQuery);
+  const leftResolved = resolveSingleTerm(parsed.leftQuery);
+  const rightResolved = resolveSingleTerm(parsed.rightQuery);
 
-  if (!leftResolved.term && !rightResolved.term) {
+  if (leftResolved.kind === "ambiguous") {
+    await ctx.reply(
+      buildAmbiguousCompareMessage(
+        ctx,
+        parsed.leftQuery,
+        leftResolved.terms,
+        "left",
+      ),
+      { parse_mode: "HTML" },
+    );
+    return;
+  }
+
+  if (rightResolved.kind === "ambiguous") {
+    await ctx.reply(
+      buildAmbiguousCompareMessage(
+        ctx,
+        parsed.rightQuery,
+        rightResolved.terms,
+        "right",
+      ),
+      { parse_mode: "HTML" },
+    );
+    return;
+  }
+
+  if (leftResolved.kind !== "found" && rightResolved.kind !== "found") {
     await ctx.reply(ctx.t("compare-not-found-both"), { parse_mode: "HTML" });
     return;
   }
 
-  if (!leftResolved.term) {
-    await replyCompareNotFound(ctx, leftQuery, leftResolved.suggestion);
+  if (leftResolved.kind !== "found") {
+    await replyCompareNotFound(ctx, parsed.leftQuery, leftResolved.suggestion);
     return;
   }
 
-  if (!rightResolved.term) {
-    await replyCompareNotFound(ctx, rightQuery, rightResolved.suggestion);
+  if (rightResolved.kind !== "found") {
+    await replyCompareNotFound(ctx, parsed.rightQuery, rightResolved.suggestion);
     return;
   }
 
   if (leftResolved.term.id === rightResolved.term.id) {
-    await ctx.reply(
-      ctx.t("compare-same-term", { term: leftResolved.term.id }),
-      { parse_mode: "HTML" },
-    );
+    await ctx.reply(ctx.t("compare-same-term", { term: leftResolved.term.id }), {
+      parse_mode: "HTML",
+    });
     return;
   }
 
@@ -51,9 +79,9 @@ export async function compareCommand(ctx: MyContext): Promise<void> {
       term2: rightResolved.term.id,
     }),
     "",
-    formatCompareSection("⚡", leftResolved.term),
+    formatCompareSection("A", leftResolved.term),
     "",
-    formatCompareSection("🏦", rightResolved.term),
+    formatCompareSection("B", rightResolved.term),
     sharedRelated.length > 0
       ? `\n${ctx.t("compare-shared-related", {
           terms: sharedRelated
@@ -92,14 +120,13 @@ function parseCompareInput(
   };
 }
 
-function resolveSingleTerm(query: string): {
-  term?: GlossaryTerm;
-  suggestion?: GlossaryTerm;
-} {
+function resolveSingleTerm(query: string): CompareResolution {
   const result = lookupTerm(query);
-  if (result.type === "found") return { term: result.term };
-  if (result.type === "multiple") return { term: result.terms[0] };
-  return { suggestion: findClosest(query) };
+  if (result.type === "found") return { kind: "found", term: result.term };
+  if (result.type === "multiple") {
+    return { kind: "ambiguous", terms: result.terms };
+  }
+  return { kind: "suggestion", suggestion: findClosest(query) };
 }
 
 async function replyCompareNotFound(
@@ -108,10 +135,6 @@ async function replyCompareNotFound(
   suggestion?: GlossaryTerm,
 ): Promise<void> {
   if (suggestion) {
-    const keyboard = new InlineKeyboard().text(
-      ctx.t("btn-did-you-mean"),
-      `select:${suggestion.id}`,
-    );
     await ctx.reply(
       ctx.t("compare-not-found-one", {
         query,
@@ -119,7 +142,6 @@ async function replyCompareNotFound(
       }),
       {
         parse_mode: "HTML",
-        reply_markup: keyboard,
       },
     );
     return;
@@ -130,7 +152,32 @@ async function replyCompareNotFound(
   });
 }
 
-function formatCompareSection(icon: string, term: GlossaryTerm): string {
+function buildAmbiguousCompareMessage(
+  ctx: MyContext,
+  query: string,
+  terms: GlossaryTerm[],
+  side: "left" | "right",
+): string {
+  const sideLabel =
+    side === "left" ? ctx.t("compare-side-left") : ctx.t("compare-side-right");
+  const options = terms
+    .slice(0, 5)
+    .map((term) => `• <code>${escapeHtml(term.id)}</code>`)
+    .join("\n");
+
+  return [
+    ctx.t("compare-ambiguous-header", {
+      side: sideLabel,
+      query,
+    }),
+    "",
+    options,
+    "",
+    ctx.t("compare-ambiguous-footer"),
+  ].join("\n");
+}
+
+function formatCompareSection(label: string, term: GlossaryTerm): string {
   const definition = getDefinitionPreview(term.definition);
   const aliases =
     term.aliases && term.aliases.length > 0
@@ -140,7 +187,7 @@ function formatCompareSection(icon: string, term: GlossaryTerm): string {
       : "";
 
   return [
-    `${icon} <b>${escapeHtml(term.term)}</b>`,
+    `<b>${label}. ${escapeHtml(term.term)}</b>`,
     `Category: ${escapeHtml(formatCategoryName(term.category))}`,
     escapeHtml(definition),
     aliases,

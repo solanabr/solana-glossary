@@ -184,6 +184,10 @@ compare-not-found-one = ❌ Term not found: <b>{ $query }</b>. Did you mean <cod
 compare-not-found-one-no-suggestion = ❌ Term not found: <b>{ $query }</b>. Use <code>/glossary</code> to search.
 compare-not-found-both = ❌ Neither term was recognized. Use <code>/categories</code> to explore.
 compare-same-term = 💡 You compared a term with itself. Try <code>/glossary { $term }</code> for the full card.
+compare-side-left = first
+compare-side-right = second
+compare-ambiguous-header = ⚠️ <b>The { $side } term is ambiguous:</b> <code>{ $query }</code>
+compare-ambiguous-footer = Refine the command with a more specific term ID.
 
 categories-choose =
     📚 <b>Solana Glossary — 14 Categories</b>
@@ -247,7 +251,9 @@ explain-no-reply =
     3. Send <code>/explain</code>
 
     The bot will explain the Solana terms found in that message.
+    You can also send <code>/explain &lt;term&gt;</code> directly.
 explain-not-found = ❌ No recognizable Solana terms found in that message.
+explain-summary = 💬 I found { $count } term(s) in this message: { $terms }
 group-welcome =
     👋 <b>Solana Glossary Bot is here.</b>
 

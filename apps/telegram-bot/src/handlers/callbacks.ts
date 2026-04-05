@@ -592,7 +592,6 @@ export async function handleQuizAnswerCallback(ctx: MyContext): Promise<void> {
       reply_markup: keyboard,
     });
     // Don't clear session yet - user might want to retry
-    await ctx.answerCallbackQuery();
     return;
   }
 }

@@ -76,4 +76,14 @@ describe("lookupTerm", () => {
       "validator",
     ]);
   });
+
+  it("handles common plural acronyms used in group chats", () => {
+    const matches = findTermsInText("PDAs e CPIs aparecem muito em Solana.");
+    expect(matches.map((term) => term.id)).toEqual(["pda", "cpi"]);
+  });
+
+  it("handles compact term names with digits", () => {
+    const matches = findTermsInText("token2022 precisa de priority fees");
+    expect(matches.map((term) => term.id)).toContain("token-2022");
+  });
 });

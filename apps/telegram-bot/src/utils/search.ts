@@ -10,6 +10,8 @@ export function normalize(text: string): string {
   return text
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
+    .replace(/([a-zA-Z])(\d)/g, "$1 $2")
+    .replace(/(\d)([a-zA-Z])/g, "$1 $2")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
@@ -20,7 +22,24 @@ function compact(text: string): string {
 }
 
 export function tokenize(text: string): string[] {
-  return normalize(text).split(/\s+/).filter(Boolean);
+  return normalize(text)
+    .split(/\s+/)
+    .filter(Boolean)
+    .map(singularizeToken);
+}
+
+function singularizeToken(token: string): string {
+  if (token.length <= 3) return token;
+  if (token.endsWith("ies") && token.length > 4) {
+    return `${token.slice(0, -3)}y`;
+  }
+  if (token.endsWith("ses") && token.length > 4) {
+    return token.slice(0, -2);
+  }
+  if (token.endsWith("s") && !token.endsWith("ss")) {
+    return token.slice(0, -1);
+  }
+  return token;
 }
 
 type TextMatch = {
@@ -247,16 +266,16 @@ const phraseIndex = new Map<
   { term: GlossaryTerm; kind: TextMatch["kind"] }
 >();
 for (const term of allTerms) {
-  const name = normalize(term.term);
-  const id = normalize(term.id);
+  const name = tokenize(term.term).join(" ");
+  const id = tokenize(term.id).join(" ");
   if (!phraseIndex.has(name)) phraseIndex.set(name, { term, kind: "name" });
   if (!phraseIndex.has(id)) phraseIndex.set(id, { term, kind: "name" });
   for (const alias of term.aliases ?? []) {
-    const na = normalize(alias);
+    const na = tokenize(alias).join(" ");
     if (!phraseIndex.has(na)) phraseIndex.set(na, { term, kind: "alias" });
   }
   for (const localizedName of getLocalizedTermNames(term.id)) {
-    const ln = normalize(localizedName);
+    const ln = tokenize(localizedName).join(" ");
     if (ln && !phraseIndex.has(ln)) phraseIndex.set(ln, { term, kind: "name" });
   }
 }

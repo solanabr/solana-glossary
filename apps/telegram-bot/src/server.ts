@@ -1,4 +1,3 @@
-// src/server.ts
 import express from "express";
 import { webhookCallback } from "grammy";
 import { bot } from "./bot.js";
@@ -15,12 +14,12 @@ async function setCommands() {
         { command: "explicar", description: "Explicar termos de uma mensagem" },
         { command: "comparar", description: "Comparar dois conceitos Solana" },
         { command: "path", description: "Trilha para desenvolvedores" },
-        { command: "aleatorio", description: "Termo aleatório" },
+        { command: "aleatorio", description: "Termo aleatorio" },
         { command: "categorias", description: "Explorar as 14 categorias" },
         { command: "termododia", description: "Termo do dia" },
         { command: "quiz", description: "Iniciar quiz" },
         { command: "favoritos", description: "Meus termos salvos" },
-        { command: "historico", description: "Últimos termos vistos" },
+        { command: "historico", description: "Ultimos termos vistos" },
         { command: "streak", description: "Ver seu streak de quizzes" },
         { command: "leaderboard", description: "Ranking global" },
         { command: "idioma", description: "Trocar idioma (pt, en, es)" },
@@ -51,16 +50,16 @@ async function setCommands() {
       lang: "es",
       commands: [
         { command: "start", description: "Iniciar el bot" },
-        { command: "glosario", description: "Buscar un término en español" },
-        { command: "explicar", description: "Explicar términos de un mensaje" },
+        { command: "glosario", description: "Buscar un termino en espanol" },
+        { command: "explicar", description: "Explicar terminos de un mensaje" },
         { command: "comparar", description: "Comparar dos conceptos Solana" },
         { command: "path", description: "Rutas para desarrolladores" },
-        { command: "aleatorio", description: "Término aleatorio" },
-        { command: "categorias", description: "Explorar las 14 categorías" },
-        { command: "terminodelhoy", description: "Término del día" },
+        { command: "aleatorio", description: "Termino aleatorio" },
+        { command: "categorias", description: "Explorar las 14 categorias" },
+        { command: "terminodelhoy", description: "Termino del dia" },
         { command: "quiz", description: "Iniciar cuestionario" },
-        { command: "favoritos", description: "Mis términos guardados" },
-        { command: "historial", description: "Términos vistos recientemente" },
+        { command: "favoritos", description: "Mis terminos guardados" },
+        { command: "historial", description: "Terminos vistos recientemente" },
         { command: "streak", description: "Ver tu racha de quizzes" },
         { command: "leaderboard", description: "Ranking global" },
         { command: "idioma", description: "Cambiar idioma (pt, en, es)" },
@@ -102,9 +101,9 @@ async function setCommands() {
   results.forEach((result, index) => {
     const lang = commandSets[index].lang;
     if (result.status === "fulfilled") {
-      console.log(`✓ Commands registered for ${lang}`);
+      console.log(`Commands registered for ${lang}`);
     } else {
-      console.error(`✗ Failed to set commands for ${lang}:`, result.reason);
+      console.error(`Failed to set commands for ${lang}:`, result.reason);
     }
   });
 }
@@ -116,17 +115,16 @@ async function start() {
     await bot.api.setChatMenuButton({
       menu_button: { type: "commands" },
     });
-    console.log("✓ Chat menu button configured");
+    console.log("Chat menu button configured");
   } catch (err) {
-    console.error("✗ Failed to set chat menu button:", err);
+    console.error("Failed to set chat menu button:", err);
   }
 
   if (config.isProduction) {
-    // Webhook mode used on Railway.
     const app = express();
     app.use(express.json());
 
-    app.get("/", (req, res) => {
+    app.get("/", (_req, res) => {
       res.status(200).json({ status: "ok", service: "solana-glossary-bot" });
     });
 
@@ -138,13 +136,13 @@ async function start() {
 
     await bot.api.setWebhook(`${config.webhookDomain}/webhook`);
     console.log(`Webhook set to ${config.webhookDomain}/webhook`);
-  } else {
-    // Long polling mode used locally.
-    console.log("Starting bot in long polling mode...");
-    await bot.start({
-      onStart: (info) => console.log(`Bot @${info.username} started`),
-    });
+    return;
   }
+
+  console.log("Starting bot in long polling mode...");
+  await bot.start({
+    onStart: (info) => console.log(`Bot @${info.username} started`),
+  });
 }
 
 setCommands()

@@ -50,16 +50,13 @@ function buildGroupStreakSection(
   chatId: number,
   userId: number,
 ): string {
-  if (!db.hasGroupMembership(chatId, userId)) {
-    return ctx.t("group-streak-no-participation");
-  }
-
   db.maybeResetGroupStreak(chatId);
   const groupStreak = db.getOrCreateGroupStreak(chatId);
   const today = new Intl.DateTimeFormat("sv-SE", {
     timeZone: "America/Sao_Paulo",
   }).format(new Date());
   const participantsToday = db.getGroupDailyParticipants(chatId, today);
+  const hasParticipation = db.hasGroupMembership(chatId, userId);
   const calendar = db
     .getGroupStreakCalendar(chatId)
     .map((active) => (active ? "✅" : "❌"))
@@ -77,6 +74,8 @@ function buildGroupStreakSection(
     ctx.t("group-streak-calendar-label"),
     calendar,
     "",
-    ctx.t("group-rank-cta"),
+    hasParticipation
+      ? ctx.t("group-rank-cta")
+      : ctx.t("group-streak-no-participation"),
   ].join("\n");
 }

@@ -58,25 +58,25 @@ export function scheduleStreakWarning(
   userId: number,
   timezone: string = "America/Sao_Paulo",
 ): void {
-  // Calculate 22:00 in user's timezone (2h before midnight)
   const now = new Date();
-  const userMidnight = new Date();
-  userMidnight.setHours(0, 0, 0, 0);
-  userMidnight.setDate(userMidnight.getDate() + 1);
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const parts = Object.fromEntries(
+    formatter.formatToParts(now).map((part) => [part.type, part.value]),
+  );
+  const year = Number(parts.year);
+  const month = Number(parts.month);
+  const day = Number(parts.day);
 
-  const warningTime = new Date(userMidnight);
-  warningTime.setHours(22, 0, 0, 0);
-
-  // If it's already past 22:00, schedule for tomorrow
+  let warningTime = new Date(Date.UTC(year, month - 1, day, 22, 0, 0));
   if (now > warningTime) {
-    warningTime.setDate(warningTime.getDate() + 1);
+    warningTime = new Date(Date.UTC(year, month - 1, day + 1, 22, 0, 0));
   }
 
-  // Cancel any existing pending streak warnings for this user
-  const existing = db
-    .getPendingNotifications(new Date("2099-12-31"))
-    .filter((n) => n.user_id === userId && n.type === "streak_warning");
-
-  // Schedule new warning
+  db.clearPendingNotifications(userId, "streak_warning");
   db.scheduleNotification(userId, warningTime, "streak_warning");
 }
