@@ -251,6 +251,13 @@ explain-no-reply =
 
     El bot explicará los términos Solana presentes en ese mensaje.
     También puedes enviar <code>/explicar &lt;término&gt;</code> directamente.
+explain-missing-reply-context =
+    ⚠️ <b>Recibí el comando, pero no recibí el contexto del mensaje respondido.</b>
+
+    En este grupo, Telegram no le entregó al bot el contenido del mensaje al que <code>/explicar</code> respondió.
+
+    Prueba usar <code>/explicar &lt;término&gt;</code> directamente.
+    Si esto sigue pasando, revisa la configuración del bot y los permisos del grupo.
 explain-not-found = ❌ No encontré términos Solana reconocibles en ese mensaje.
 explain-summary = 💬 Encontré { $count } término(s) en este mensaje: { $terms }
 group-welcome =

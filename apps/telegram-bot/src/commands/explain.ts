@@ -12,9 +12,24 @@ export async function explainCommand(ctx: MyContext): Promise<void> {
     "";
   const inlineQuery = typeof ctx.match === "string" ? ctx.match.trim() : "";
   const sourceText = replyText || inlineQuery;
+  const isGroup = ctx.chat?.type === "group" || ctx.chat?.type === "supergroup";
 
   if (!sourceText) {
-    await ctx.reply(ctx.t("explain-no-reply"), { parse_mode: "HTML" });
+    if (isGroup) {
+      console.warn("explain_missing_reply_context", {
+        chat_id: ctx.chat?.id,
+        user_id: ctx.from?.id,
+        message_text: ctx.message?.text ?? "",
+      });
+      await ctx.reply(ctx.t("explain-missing-reply-context"), {
+        parse_mode: "HTML",
+      });
+      return;
+    }
+
+    await ctx.reply(ctx.t("explain-no-reply"), {
+      parse_mode: "HTML",
+    });
     return;
   }
 

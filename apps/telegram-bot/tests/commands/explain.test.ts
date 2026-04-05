@@ -3,8 +3,15 @@ import { explainCommand } from "../../src/commands/explain.js";
 import { createMockCtx } from "../helpers.js";
 
 describe("explainCommand", () => {
-  it("prompts the user when there is no replied message", async () => {
+  it("shows missing context guidance in groups when reply content is absent", async () => {
     const ctx = createMockCtx({ text: "/explicar", chatType: "group" });
+    await explainCommand(ctx);
+    const [text] = (ctx.reply as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(text).toBe("[explain-missing-reply-context]");
+  });
+
+  it("keeps usage guidance in DMs when no reply or inline term is provided", async () => {
+    const ctx = createMockCtx({ text: "/explain", chatType: "private" });
     await explainCommand(ctx);
     const [text] = (ctx.reply as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(text).toBe("[explain-no-reply]");
