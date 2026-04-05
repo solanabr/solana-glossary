@@ -9,7 +9,13 @@ export async function streakCommand(ctx: MyContext): Promise<void> {
   }
 
   const streak = db.getOrCreateStreak(userId);
-  const calendarDays = buildPersonalCalendar(streak.last_daily_date);
+  const calendarDays = db
+    .getUserStreakCalendar(userId)
+    .map((active, index, all) => {
+      if (active) return "✅";
+      if (index === all.length - 1) return "⏳";
+      return "❌";
+    });
   const fireIntensity =
     streak.current_streak >= 30
       ? "🔥🔥🔥"
@@ -39,27 +45,6 @@ export async function streakCommand(ctx: MyContext): Promise<void> {
   await ctx.reply(sections.join("\n\n"), { parse_mode: "HTML" });
 }
 
-function buildPersonalCalendar(lastDailyDate: string | null): string[] {
-  const calendarDays: string[] = [];
-  const today = new Date();
-
-  for (let index = 6; index >= 0; index--) {
-    const checkDate = new Date(today);
-    checkDate.setDate(today.getDate() - index);
-    const dateStr = checkDate.toISOString().split("T")[0];
-
-    if (lastDailyDate && dateStr === lastDailyDate) {
-      calendarDays.push("✅");
-    } else if (index === 0) {
-      calendarDays.push("⏳");
-    } else {
-      calendarDays.push("❌");
-    }
-  }
-
-  return calendarDays;
-}
-
 function buildGroupStreakSection(
   ctx: MyContext,
   chatId: number,
@@ -69,6 +54,7 @@ function buildGroupStreakSection(
     return ctx.t("group-streak-no-participation");
   }
 
+  db.maybeResetGroupStreak(chatId);
   const groupStreak = db.getOrCreateGroupStreak(chatId);
   const today = new Intl.DateTimeFormat("sv-SE", {
     timeZone: "America/Sao_Paulo",

@@ -1,11 +1,7 @@
 // src/commands/start.ts
 import { InlineKeyboard } from "grammy";
 import { lookupTerm } from "../utils/search.js";
-import {
-  buildMainMenuKeyboard,
-  buildTermKeyboard,
-  buildTipsKeyboard,
-} from "../utils/keyboard.js";
+import { buildMainMenuKeyboard, buildTermKeyboard } from "../utils/keyboard.js";
 import { IMAGES } from "../config.js";
 import type { MyContext } from "../context.js";
 import { buildEnrichedTermCard } from "../utils/term-card.js";
@@ -74,10 +70,7 @@ export async function sendWelcome(ctx: MyContext): Promise<void> {
   });
 
   // Send onboarding tips as follow-up
-  await ctx.reply(ctx.t("onboarding-tips"), {
-    parse_mode: "HTML",
-    reply_markup: buildTipsKeyboard(ctx.t.bind(ctx)),
-  });
+  await ctx.reply(ctx.t("onboarding-tips"), { parse_mode: "HTML" });
 }
 
 export async function sendMainMenu(

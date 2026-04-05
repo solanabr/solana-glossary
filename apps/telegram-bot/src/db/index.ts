@@ -87,6 +87,12 @@ class DatabaseWrapper {
         options TEXT NOT NULL
       );
 
+      CREATE TABLE IF NOT EXISTS user_daily_activity (
+        user_id INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        PRIMARY KEY (user_id, date)
+      );
+
       CREATE TABLE IF NOT EXISTS user_path_progress (
         user_id INTEGER NOT NULL,
         path_id TEXT NOT NULL,
@@ -414,12 +420,14 @@ class DatabaseWrapper {
             "UPDATE streaks SET max_streak = ?, updated_at = unixepoch() WHERE user_id = ?",
           )
           .run(streak.current_streak, userId);
+        this.recordUserDailyActivity(userId, today);
         return {
           current: streak.current_streak,
           max: streak.current_streak,
           isNewRecord: false,
         };
       }
+      this.recordUserDailyActivity(userId, today);
       return {
         current: streak.current_streak,
         max: streak.max_streak,
@@ -453,7 +461,33 @@ class DatabaseWrapper {
       )
       .run(today, newCurrent, newMax, userId);
 
+    this.recordUserDailyActivity(userId, today);
+
     return { current: newCurrent, max: newMax, isNewRecord };
+  }
+
+  private recordUserDailyActivity(userId: number, date: string): void {
+    this.db
+      .prepare(
+        "INSERT OR IGNORE INTO user_daily_activity (user_id, date) VALUES (?, ?)",
+      )
+      .run(userId, date);
+  }
+
+  getUserStreakCalendar(userId: number): boolean[] {
+    const today = new Date().toISOString().slice(0, 10);
+    const days = Array.from({ length: 7 }, (_, index) =>
+      this.shiftDate(today, index - 6),
+    );
+
+    return days.map((date) => {
+      const row = this.db
+        .prepare(
+          "SELECT 1 FROM user_daily_activity WHERE user_id = ? AND date = ? LIMIT 1",
+        )
+        .get(userId, date);
+      return Boolean(row);
+    });
   }
 
   private canUseFreeze(freezeResetDate: string | null): boolean {

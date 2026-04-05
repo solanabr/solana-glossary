@@ -219,10 +219,13 @@ export async function handleTipsCallback(ctx: MyContext): Promise<void> {
   await ctx.answerCallbackQuery();
 
   if (!topicKey) {
-    await ctx.editMessageText(ctx.t("tips-menu-title"), {
-      parse_mode: "HTML",
-      reply_markup: buildTipsKeyboard(ctx.t.bind(ctx)),
-    });
+    await ctx.editMessageText(
+      ctx.t("help-message", { bot_username: ctx.me.username }),
+      {
+        parse_mode: "HTML",
+        reply_markup: buildTipsKeyboard(ctx.t.bind(ctx)),
+      },
+    );
     return;
   }
 
@@ -570,9 +573,12 @@ export async function handleQuizAnswerCallback(ctx: MyContext): Promise<void> {
     db.clearQuizSession(userId);
   } else {
     if (isGroup) {
-      await ctx.answerCallbackQuery({
-        text: stripHtml(ctx.t("quiz-wrong-retry")),
-        show_alert: true,
+      db.clearQuizSession(userId);
+      await ctx.editMessageReplyMarkup({ reply_markup: undefined }).catch(
+        () => {},
+      );
+      await ctx.reply(ctx.t("quiz-result", { term: correctTerm?.term ?? "" }), {
+        parse_mode: "HTML",
       });
       return;
     }
@@ -586,6 +592,8 @@ export async function handleQuizAnswerCallback(ctx: MyContext): Promise<void> {
       reply_markup: keyboard,
     });
     // Don't clear session yet - user might want to retry
+    await ctx.answerCallbackQuery();
+    return;
   }
 }
 
