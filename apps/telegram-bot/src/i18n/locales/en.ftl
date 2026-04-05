@@ -396,3 +396,16 @@ start-language-picker =
 start-language-option-pt = 🇧🇷 Portuguese
 start-language-option-en = 🇺🇸 English
 start-language-option-es = 🇪🇸 Spanish
+
+group-language-picker =
+    🌐 <b>Choose this group's language</b>
+
+    Pick the language for this group.
+    After that, I'll send the menu and the group onboarding in the selected language.
+group-language-changed = ✅ Group language updated.
+group-onboarding-tips =
+    💡 <b>Quick start in groups</b>
+
+    Use <code>/explain</code> by replying to a message.
+    Use <code>/compare term1 term2</code> to compare concepts.
+    Use <code>/quiz</code> for fast practice in the group.

@@ -32,6 +32,7 @@ import { db, GROUP_STREAK_THRESHOLD } from "../db/index.js";
 import type { MyContext, SessionData } from "../context.js";
 import { getLearningPath } from "../data/paths.js";
 import { buildEnrichedTermCard } from "../utils/term-card.js";
+import { sendGroupWelcome } from "./group.js";
 
 /** Strip HTML tags for use in plain-text callback popups */
 function stripHtml(text: string): string {
@@ -51,13 +52,24 @@ async function answerInvalidCallback(ctx: MyContext): Promise<void> {
 export async function handleLangCallback(ctx: MyContext): Promise<void> {
   const data = ctx.callbackQuery?.data ?? "";
   const lang = data.slice("lang:".length) as SessionData["language"];
+  const isGroup = ctx.chat?.type === "group" || ctx.chat?.type === "supergroup";
+  const chatId = ctx.chat?.id;
 
-  ctx.session.language = lang;
+  if (isGroup && chatId) {
+    db.setGroupLanguage(chatId, lang!);
+  } else {
+    ctx.session.language = lang;
+  }
   await ctx.i18n.useLocale(lang!);
   await ctx.answerCallbackQuery();
 
-  // Remove the language picker message and show welcome
   await ctx.deleteMessage().catch(() => {});
+  if (isGroup && chatId) {
+    await ctx.reply(ctx.t("group-language-changed"), { parse_mode: "HTML" });
+    await sendGroupWelcome(ctx);
+    return;
+  }
+
   await sendWelcome(ctx);
 }
 

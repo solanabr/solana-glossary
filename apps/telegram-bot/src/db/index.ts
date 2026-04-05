@@ -51,6 +51,13 @@ class DatabaseWrapper {
         created_at INTEGER DEFAULT (unixepoch())
       );
 
+      CREATE TABLE IF NOT EXISTS group_settings (
+        chat_id INTEGER PRIMARY KEY,
+        language TEXT,
+        created_at INTEGER DEFAULT (unixepoch()),
+        updated_at INTEGER DEFAULT (unixepoch())
+      );
+
       CREATE TABLE IF NOT EXISTS favorites (
         user_id INTEGER NOT NULL,
         term_id TEXT NOT NULL,
@@ -234,6 +241,25 @@ class DatabaseWrapper {
         "INSERT INTO users (user_id, language) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET language = excluded.language",
       )
       .run(userId, lang);
+  }
+
+  getGroupLanguage(chatId: number): string | undefined {
+    const row = this.db
+      .prepare("SELECT language FROM group_settings WHERE chat_id = ?")
+      .get(chatId) as { language: string | null } | undefined;
+    return row?.language ?? undefined;
+  }
+
+  setGroupLanguage(chatId: number, lang: string): void {
+    this.db
+      .prepare(
+        `INSERT INTO group_settings (chat_id, language, updated_at)
+         VALUES (?, ?, unixepoch())
+         ON CONFLICT(chat_id) DO UPDATE SET
+           language = excluded.language,
+           updated_at = unixepoch()`,
+      )
+      .run(chatId, lang);
   }
 
   setFirstName(userId: number, firstName: string): void {
