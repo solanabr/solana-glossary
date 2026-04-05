@@ -47,9 +47,12 @@ type TextMatch = {
   position: number;
   kind: "name" | "alias";
   span: number;
+  phrase: string;
 };
 
 const MAX_TERM_TOKENS = 6;
+const GENERIC_ALIAS_TOKENS = new Set(["solana"]);
+const SHADOWABLE_TEXT_TOKENS = new Set(["consensu"]);
 
 type SearchScore = {
   score: number;
@@ -296,7 +299,7 @@ export function findTermsInText(text: string): GlossaryTerm[] {
       if (!hit) continue;
 
       const { term, kind } = hit;
-      const next: TextMatch = { term, position: i, kind, span };
+      const next: TextMatch = { term, position: i, kind, span, phrase };
       const existing = matches.get(term.id);
 
       if (
@@ -310,7 +313,7 @@ export function findTermsInText(text: string): GlossaryTerm[] {
     }
   }
 
-  return [...matches.values()]
+  return selectRelevantTextMatches([...matches.values()])
     .sort((a, b) => {
       if (a.position !== b.position) return a.position - b.position;
       return matchPriority(a) - matchPriority(b);
@@ -321,4 +324,67 @@ export function findTermsInText(text: string): GlossaryTerm[] {
 function matchPriority(match: TextMatch): number {
   if (match.kind === "name") return -match.span;
   return 10 - match.span;
+}
+
+function selectRelevantTextMatches(matches: TextMatch[]): TextMatch[] {
+  const sorted = [...matches].sort((a, b) => {
+    if (a.position !== b.position) return a.position - b.position;
+    return matchPriority(a) - matchPriority(b);
+  });
+
+  const selected: TextMatch[] = [];
+
+  for (const match of sorted) {
+    if (isGenericAliasMatch(match)) {
+      continue;
+    }
+
+    if (isRedundantAliasExpansion(match, selected)) {
+      continue;
+    }
+
+    if (isGenericConceptShadowed(match, selected)) {
+      continue;
+    }
+
+    selected.push(match);
+  }
+
+  return selected;
+}
+
+function isGenericAliasMatch(match: TextMatch): boolean {
+  return match.kind === "alias" && GENERIC_ALIAS_TOKENS.has(match.phrase);
+}
+
+function isGenericConceptShadowed(
+  match: TextMatch,
+  selected: TextMatch[],
+): boolean {
+  if (match.span > 1 || !SHADOWABLE_TEXT_TOKENS.has(match.phrase)) {
+    return false;
+  }
+
+  return selected.some(
+    (candidate) =>
+      candidate.position < match.position &&
+      candidate.span > match.span &&
+      (candidate.kind === "name" || candidate.span >= 2),
+  );
+}
+
+function isRedundantAliasExpansion(
+  match: TextMatch,
+  selected: TextMatch[],
+): boolean {
+  if (match.kind !== "alias" || match.span !== 1) {
+    return false;
+  }
+
+  return selected.some(
+    (candidate) =>
+      candidate.position <= match.position &&
+      candidate.span > match.span &&
+      tokenize(candidate.phrase).includes(match.phrase),
+  );
 }
