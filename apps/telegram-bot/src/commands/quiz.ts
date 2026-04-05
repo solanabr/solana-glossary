@@ -208,6 +208,6 @@ function getDifficultyLabel(
     case 5:
       return ctx.t("quiz-difficulty-expert");
     default:
-      return ctx.t("quiz-difficulty-intermediate");
+      return "";
   }
 }

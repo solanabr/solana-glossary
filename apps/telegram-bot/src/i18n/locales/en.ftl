@@ -6,7 +6,7 @@ start-welcome =
     💬 <code>/explain</code> — reply to any message to decode terms on the spot
     💻 <code>/path</code> — guided learning paths, pick up where you left off
     🧠 <code>/quiz</code> — daily quiz to build your streak
-    🔄 <code>/compare poh pos</code> — compare any two concepts side by side
+    🔀 <code>/compare poh pos</code> — compare any two concepts side by side
 
 help-message =
     📘 <b>Solana Glossary Bot</b>
@@ -14,7 +14,7 @@ help-message =
     💬 <b>Explain in context:</b>
     <code>/explain</code> — reply to a message to explain Solana terms on the spot
 
-    🔄 <b>Compare concepts:</b>
+    🔀 <b>Compare concepts:</b>
     <code>/compare &lt;term1&gt; &lt;term2&gt;</code> — side-by-side comparison
 
     💻 <b>Learn with paths:</b>
@@ -69,13 +69,6 @@ quiz-correct-new-record =
     🎉 <b>New record!</b> { $max } days!
 
     🔥 Streak: <b>{ $max }</b> days
-quiz-correct-group =
-    ✅ { $name } got it right! It was <b>{ $term }</b>.
-    🔥 Streak: <b>{ $current }</b> days
-quiz-correct-group-new-record =
-    ✅ { $name } got it right! It was <b>{ $term }</b>.
-    🎉 <b>New record!</b> { $max } days!
-    🔥 Streak: <b>{ $current }</b> days
 quiz-wrong = ❌ <b>Wrong.</b> The answer was <b>{ $term }</b>.
 quiz-wrong-retry =
     ❌ <b>Not quite right!</b>
@@ -175,7 +168,7 @@ usage-glossary =
     💡 Usage: <code>/glossary &lt;term&gt;</code>
     Example: <code>/glossary proof-of-history</code>
 usage-compare =
-    🔄 Usage: <code>/compare &lt;term1&gt; &lt;term2&gt;</code>
+    🔀 Usage: <code>/compare &lt;term1&gt; &lt;term2&gt;</code>
     Example: <code>/compare poh pos</code>
 usage-quiz =
     🧠 Usage: <code>/quiz</code> · <code>/quiz easy</code> · <code>/quiz medium</code> · <code>/quiz hard</code>
@@ -185,7 +178,7 @@ prompt-glossary-query =
     Send the term now.
     Example: <code>proof-of-history</code>
 
-compare-header = 🔄 <b>{ $term1 }</b> vs <b>{ $term2 }</b>
+compare-header = 🔀 <b>{ $term1 }</b> vs <b>{ $term2 }</b>
 compare-shared-related = 🔗 Related to both: { $terms }
 compare-not-found-one = ❌ Term not found: <b>{ $query }</b>. Did you mean <code>{ $suggestion }</code>?
 compare-not-found-one-no-suggestion = ❌ Term not found: <b>{ $query }</b>. Use <code>/glossary</code> to search.
@@ -283,7 +276,7 @@ tips-menu-title =
     Choose an item to see how to use it.
 tips-menu-back = ← Back to tips
 tips-btn-explain = 💬 Explain
-tips-btn-compare = 🔄 Compare
+tips-btn-compare = 🔀 Compare
 tips-btn-path = 💻 Path
 tips-btn-quiz = 🧠 Quiz
 tips-btn-glossary = 🔍 Glossary
@@ -300,7 +293,7 @@ tips-explain =
 
     Example: reply to a message about "turbine" and send <code>/explain</code>.
 tips-compare =
-    🔄 <b>How to use /compare</b>
+    🔀 <b>How to use /compare</b>
 
     Compare two concepts side by side:
     <code>/compare poh pos</code>

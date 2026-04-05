@@ -22,7 +22,7 @@ import {
 } from "../commands/quiz.js";
 import { helpCommand } from "../commands/help.js";
 import { sendPathMenu, sendPathStep } from "../commands/path.js";
-import { db } from "../db/index.js";
+import { db, GROUP_STREAK_THRESHOLD } from "../db/index.js";
 import type { MyContext, SessionData } from "../context.js";
 import { getLearningPath } from "../data/paths.js";
 import { buildEnrichedTermCard } from "../utils/term-card.js";
@@ -427,6 +427,9 @@ export async function handleQuizAnswerCallback(ctx: MyContext): Promise<void> {
   const answerIdx = parseInt(data.slice("quiz_answer:".length), 10);
   const isCorrect = answerIdx === session.correctIdx;
 
+  // Acknowledge the callback immediately — Telegram requires this within ~3s.
+  await ctx.answerCallbackQuery();
+
   const correctTerm = getTerm(session.options[session.correctIdx]);
   const isGroup = ctx.chat?.type === "group" || ctx.chat?.type === "supergroup";
   const chatId = ctx.chat?.id;
@@ -455,28 +458,31 @@ export async function handleQuizAnswerCallback(ctx: MyContext): Promise<void> {
       const groupStreak = db.getOrCreateGroupStreak(chatId);
 
       if (
-        participation.participantsToday >= 2 &&
+        participation.participantsToday >= GROUP_STREAK_THRESHOLD &&
         groupStreak.last_active_date !== participation.date
       ) {
         const incremented = db.incrementGroupStreak(chatId);
         groupStreakValue = incremented.newStreak;
         groupStreakJustAdvanced = incremented.justCrossedThreshold;
 
-        if (incremented.newStreak === 1) {
-          await ctx.reply(ctx.t("group-streak-started"), {
-            parse_mode: "HTML",
-          });
-        } else {
-          await ctx.reply(
-            buildGroupMilestoneMessage(
-              ctx,
-              incremented.newStreak,
-              participation.participantsToday,
-            ),
-            {
+        const GROUP_STREAK_MILESTONES = new Set([1, 3, 7, 14, 30]);
+        if (GROUP_STREAK_MILESTONES.has(incremented.newStreak)) {
+          if (incremented.newStreak === 1) {
+            await ctx.reply(ctx.t("group-streak-started"), {
               parse_mode: "HTML",
-            },
-          );
+            });
+          } else {
+            await ctx.reply(
+              buildGroupMilestoneMessage(
+                ctx,
+                incremented.newStreak,
+                participation.participantsToday,
+              ),
+              {
+                parse_mode: "HTML",
+              },
+            );
+          }
         }
       } else {
         groupStreakValue = groupStreak.current_streak;
@@ -581,8 +587,6 @@ export async function handleQuizAnswerCallback(ctx: MyContext): Promise<void> {
     });
     // Don't clear session yet - user might want to retry
   }
-
-  await ctx.answerCallbackQuery();
 }
 
 export async function handleQuizRetryCallback(ctx: MyContext): Promise<void> {

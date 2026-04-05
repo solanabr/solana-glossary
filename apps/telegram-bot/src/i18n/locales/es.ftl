@@ -6,7 +6,7 @@ start-welcome =
     💬 <code>/explicar</code> — responde cualquier mensaje para decodificar términos al instante
     💻 <code>/path</code> — rutas guiadas, retoma donde te quedaste
     🧠 <code>/quiz</code> — quiz diario para construir tu racha
-    🔄 <code>/comparar poh pos</code> — compara dos conceptos lado a lado
+    🔀 <code>/comparar poh pos</code> — compara dos conceptos lado a lado
 
 help-message =
     📘 <b>Solana Glossary Bot</b>
@@ -14,7 +14,7 @@ help-message =
     💬 <b>Explica en contexto:</b>
     <code>/explicar</code> — responde a un mensaje para explicar términos Solana al instante
 
-    🔄 <b>Compara conceptos:</b>
+    🔀 <b>Compara conceptos:</b>
     <code>/comparar &lt;termino1&gt; &lt;termino2&gt;</code> — comparación lado a lado
 
     💻 <b>Aprende con rutas:</b>
@@ -69,13 +69,6 @@ quiz-correct-new-record =
     🎉 <b>¡Nuevo récord!</b> { $max } días!
 
     🔥 Racha: <b>{ $max }</b> días
-quiz-correct-group =
-    ✅ { $name } acertó. Era <b>{ $term }</b>.
-    🔥 Racha: <b>{ $current }</b> días
-quiz-correct-group-new-record =
-    ✅ { $name } acertó. Era <b>{ $term }</b>.
-    🎉 <b>¡Nuevo récord!</b> { $max } días!
-    🔥 Racha: <b>{ $current }</b> días
 quiz-wrong-retry =
     ❌ <b>¡Casi!</b>
 
@@ -174,7 +167,7 @@ usage-glossary =
     💡 Uso: <code>/glosario &lt;término&gt;</code>
     Ejemplo: <code>/glosario proof-of-history</code>
 usage-compare =
-    🔄 Uso: <code>/comparar &lt;termino1&gt; &lt;termino2&gt;</code>
+    🔀 Uso: <code>/comparar &lt;termino1&gt; &lt;termino2&gt;</code>
     Ejemplo: <code>/comparar poh pos</code>
 usage-quiz =
     🧠 Uso: <code>/quiz</code> · <code>/quiz easy</code> · <code>/quiz medium</code> · <code>/quiz hard</code>
@@ -184,7 +177,7 @@ prompt-glossary-query =
     Envía el término ahora.
     Ejemplo: <code>proof-of-history</code>
 
-compare-header = 🔄 <b>{ $term1 }</b> vs <b>{ $term2 }</b>
+compare-header = 🔀 <b>{ $term1 }</b> vs <b>{ $term2 }</b>
 compare-shared-related = 🔗 Relacionado con ambos: { $terms }
 compare-not-found-one = ❌ Término no encontrado: <b>{ $query }</b>. ¿Quisiste decir <code>{ $suggestion }</code>?
 compare-not-found-one-no-suggestion = ❌ Término no encontrado: <b>{ $query }</b>. Usa <code>/glosario</code> para buscar.
@@ -282,7 +275,7 @@ tips-menu-title =
     Elige un elemento para ver cómo usarlo.
 tips-menu-back = ← Volver a tips
 tips-btn-explain = 💬 Explicar
-tips-btn-compare = 🔄 Comparar
+tips-btn-compare = 🔀 Comparar
 tips-btn-path = 💻 Path
 tips-btn-quiz = 🧠 Quiz
 tips-btn-glossary = 🔍 Glosario
@@ -299,7 +292,7 @@ tips-explain =
 
     Ejemplo: responde a un mensaje sobre "turbine" y envía <code>/explicar</code>.
 tips-compare =
-    🔄 <b>Cómo usar /comparar</b>
+    🔀 <b>Cómo usar /comparar</b>
 
     Compara dos conceptos lado a lado:
     <code>/comparar poh pos</code>
