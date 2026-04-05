@@ -1,0 +1,51 @@
+name: Deploy to cPanel via FTP
+
+on:
+  push:
+    branches:
+      - feat/escape-room-solana
+    paths:
+      - "examples/escape-room-solana/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build SDK
+        run: npm install && npm run build
+        working-directory: .
+
+      - name: Install app dependencies
+        run: npm install
+        working-directory: examples/escape-room-solana
+
+      - name: Build app
+        run: npm run build
+        working-directory: examples/escape-room-solana
+        env:
+          VITE_BASE_PATH: /solanabr-glossario/
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SOLANA_RPC_URL: ${{ secrets.VITE_SOLANA_RPC_URL }}
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 2121
+          local-dir: examples/escape-room-solana/dist/
+          server-dir: ${{ secrets.FTP_PATH }}
+          dangerous-clean-slate: true
