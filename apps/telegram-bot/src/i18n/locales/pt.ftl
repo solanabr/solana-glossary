@@ -12,16 +12,24 @@ help-message =
     📘 <b>Solana Glossary Bot</b>
 
     <b>Entender</b>
-    <code>/explicar</code> · <code>/glossario &lt;termo&gt;</code> · <code>/comparar termo1 termo2</code>
+    <code>/glossario &lt;termo&gt;</code> — busca direta por conceito
+    <code>/explicar</code> — explica termos em uma reply
+    <code>/comparar termo1 termo2</code> — compara dois conceitos lado a lado
 
     <b>Aprender</b>
-    <code>/path</code> · <code>/quiz</code>
+    <code>/path</code> — abre trilhas guiadas
+    <code>/quiz</code> — prática rápida com opções de rodada
 
     <b>Progresso</b>
-    <code>/streak</code> · <code>/leaderboard</code>
+    <code>/streak</code> — mostra sua consistência
+    <code>/leaderboard</code> — mostra sua posição no ranking
 
     <b>Biblioteca</b>
-    <code>/categorias</code> · <code>/favoritos</code> · <code>/historico</code> · <code>/aleatorio</code> · <code>/termododia</code>
+    <code>/categorias</code> — explora o glossário por tema
+    <code>/favoritos</code> — revisita termos salvos
+    <code>/historico</code> — vê os últimos termos abertos
+    <code>/aleatorio</code> — descobre um termo aleatório
+    <code>/termododia</code> — destaca um termo do dia
 
     🌐 Idioma: <code>/idioma pt|en|es</code>
 
