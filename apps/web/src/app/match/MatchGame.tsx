@@ -927,7 +927,7 @@ export default function MatchGame() {
         {!loading &&
           !loadError &&
           (phase === "wonGame" || phase === "lost") && (
-            <div className="mx-auto max-w-md text-center">
+            <div className="mx-auto w-full max-w-2xl px-4 text-center sm:px-6">
               <h2 className="font-display text-2xl font-bold text-sol-text sm:text-3xl">
                 <span
                   className={
@@ -977,12 +977,12 @@ export default function MatchGame() {
                   </div>
                 </div>
               </div>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-stretch sm:justify-center sm:gap-4">
                 <a
                   href={twitterUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-sol-line px-5 py-2.5 text-[13px] font-medium text-sol-text hover:border-sol-blue/40 hover:text-sol-blue"
+                  className="inline-flex min-h-[2.75rem] min-w-0 flex-1 items-center justify-center gap-2 rounded-xl border border-sol-line px-6 py-3 text-[13px] font-medium text-sol-text hover:border-sol-blue/40 hover:text-sol-blue sm:min-w-[12rem] sm:max-w-[16rem] sm:flex-none"
                 >
                   <svg
                     className="h-4 w-4"
@@ -1001,13 +1001,13 @@ export default function MatchGame() {
                     setLevel(0);
                     setPhase("menu");
                   }}
-                  className="rounded-xl bg-sol-blue px-5 py-2.5 text-[13px] font-semibold text-sol-darker hover:opacity-90"
+                  className="min-h-[2.75rem] min-w-0 flex-1 rounded-xl bg-sol-blue px-6 py-3 text-[13px] font-semibold text-sol-darker hover:opacity-90 sm:min-w-[12rem] sm:max-w-[16rem] sm:flex-none"
                 >
                   {t.match_play_again}
                 </button>
                 <Link
                   href="/"
-                  className="inline-flex items-center justify-center rounded-xl border border-sol-line px-5 py-2.5 text-[13px] font-medium text-sol-subtle hover:text-sol-text"
+                  className="inline-flex min-h-[2.75rem] min-w-0 flex-1 items-center justify-center rounded-xl border border-sol-line px-6 py-3 text-[13px] font-medium text-sol-subtle hover:text-sol-text sm:min-w-[12rem] sm:max-w-[16rem] sm:flex-none"
                 >
                   {t.match_back}
                 </Link>

@@ -385,7 +385,7 @@ export const UI_LABELS: Record<Locale, UiDict> = {
     match_lost: "Tempo esgotado",
     match_time_up: "O tempo acabou antes de combinares todos os pares.",
     match_result: "Resultado",
-    match_share_x: "Partilhar no X",
+    match_share_x: "Compartilhar no X",
     match_back: "Voltar ao glossário",
     match_share_text:
       "🎮 Solana Glossary Match · {level} · ⏱ {time} · ✓ {matches} acertos · ✗ {errors} erros · {score} pts",
