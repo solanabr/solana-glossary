@@ -318,5 +318,12 @@
     "definition": "An RPC connection routed through a validator or RPC node that holds delegated stake, granting the connection higher priority under Solana's Stake-Weighted Quality of Service (SWQoS) system. Transactions submitted via staked connections receive preferential bandwidth allocation to the leader's TPU, significantly improving landing rates during periods of network congestion. RPC providers like Helius and Triton offer staked connections as a premium feature for production applications.",
     "category": "infrastructure",
     "related": ["stake-weighted-qos", "rpc-node", "transaction-landing"]
+  },
+  {
+    "id": "shredstream-proxy",
+    "term": "Shredstream Proxy",
+    "definition": "A low-latency relay layer that receives shred feeds from validator-adjacent infrastructure and forwards them into downstream search, trading, or analytics systems without requiring each consumer to maintain its own direct shred connection. Teams use shredstream proxy patterns to normalize transport, centralize access control, and fan out raw block data to internal services that care about block contents before standard RPC surfaces catch up.",
+    "category": "infrastructure",
+    "related": ["shred", "turbine", "yellowstone"]
   }
 ]
