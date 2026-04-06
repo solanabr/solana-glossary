@@ -467,7 +467,7 @@ I built a Telegram-native Solana Glossary Bot that turns the glossary into a liv
 
 ### Twitter Post
 
-soon
+https://x.com/raffxsolana/status/2041161218954592311?s=20
 
 ## Contributing
 
