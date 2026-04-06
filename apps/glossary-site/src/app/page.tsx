@@ -68,6 +68,31 @@ export default function HomePage() {
           <p className="text-[#A0A0B0] text-base sm:text-lg">
             1001 termos · 14 categorias · PT · ES
           </p>
+          <div className="mt-5">
+            <Link
+              href="/grafo"
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-80"
+              style={{
+                background: "linear-gradient(135deg, #9945FF22, #14F19522)",
+                border: "1px solid rgba(153,69,255,0.3)",
+                color: "#14F195",
+              }}
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <circle cx="5" cy="12" r="2" />
+                <circle cx="19" cy="5" r="2" />
+                <circle cx="19" cy="19" r="2" />
+                <path strokeLinecap="round" d="M7 11.5l10-5M7 12.5l10 5" />
+              </svg>
+              Explorar Grafo de Conhecimento
+            </Link>
+          </div>
         </div>
       </header>
 

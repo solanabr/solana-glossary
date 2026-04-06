@@ -36,7 +36,15 @@ export default function RootLayout({
           >
             Glossário Solana
           </Link>
-          <LocaleSwitcher />
+          <div className="flex items-center gap-4">
+            <Link
+              href="/grafo"
+              className="text-sm text-[#A0A0B0] hover:text-white transition-colors hidden sm:block"
+            >
+              Grafo
+            </Link>
+            <LocaleSwitcher />
+          </div>
         </nav>
         <div className="pt-14 flex-1 flex flex-col">{children}</div>
       </body>
