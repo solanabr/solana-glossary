@@ -4,7 +4,11 @@ import { getTerm } from "@stbr/solana-glossary";
 import type { GlossaryTerm } from "@stbr/solana-glossary";
 import { getTermLocalized } from "@/lib/i18n";
 import { CATEGORY_LABELS, CATEGORY_COLORS } from "@/lib/categories";
+import { TERM_CONTEXTS } from "@/lib/term-context";
 import CopyContextButton from "@/components/CopyContextButton";
+import TermProgress from "@/components/TermProgress";
+
+const SITE_URL = "https://solana-glossary-lek6.vercel.app";
 
 export async function generateMetadata({
   params,
@@ -36,20 +40,28 @@ export default async function TermPage({
   const term = getTermLocalized(id, locale);
   if (!term) notFound();
 
-  // Related terms also shown in the same locale
   const relatedTerms = (term.related ?? [])
     .map((relId) => getTermLocalized(relId, locale))
     .filter((t): t is GlossaryTerm => t !== undefined);
 
   const catColor = CATEGORY_COLORS[term.category] ?? "#9945FF";
   const catLabel = CATEGORY_LABELS[term.category] ?? term.category;
+  const ctx = TERM_CONTEXTS[term.id];
+
+  // Twitter share
+  const termUrl = `${SITE_URL}/termo/${term.id}?lang=${locale}`;
+  const shareText = `Acabei de aprender sobre "${term.term}" no Glossário Solana 🔥 ${termUrl} #Solana #Web3 #SuperteamBR`;
+  const twitterHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`;
 
   return (
     <main className="flex-1 w-full">
       <div className="max-w-3xl mx-auto px-4 py-10 space-y-8">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-[#A0A0B0]">
-          <Link href="/" className="hover:text-white transition-colors">
+          <Link
+            href={`/?lang=${locale}`}
+            className="hover:text-white transition-colors"
+          >
             Home
           </Link>
           <span>/</span>
@@ -58,7 +70,7 @@ export default async function TermPage({
           <span className="text-white truncate max-w-[200px]">{term.term}</span>
         </nav>
 
-        {/* Category badge + copy button */}
+        {/* Category badge + actions */}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <span
             className="inline-flex rounded-full px-3 py-1 text-sm font-medium"
@@ -66,7 +78,25 @@ export default async function TermPage({
           >
             {catLabel}
           </span>
-          <CopyContextButton category={term.category} />
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Share on X */}
+            <a
+              href={twitterHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-white/8 bg-[#1A1A24] px-3 py-2 text-xs font-medium text-[#A0A0B0] hover:text-white hover:border-white/20 transition-colors"
+            >
+              <svg
+                className="h-3.5 w-3.5"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.632L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
+              </svg>
+              Compartilhar
+            </a>
+            <CopyContextButton category={term.category} />
+          </div>
         </div>
 
         {/* Title */}
@@ -92,13 +122,60 @@ export default async function TermPage({
         {/* Divider */}
         <div className="h-px bg-white/8" />
 
-        {/* Definition */}
-        <p className="text-[#E0E0E8] text-lg leading-8">{term.definition}</p>
+        {/* ── 4 Context Layers ── */}
+        <div className="space-y-6">
+          {/* Layer 1: O que é */}
+          <ContextLayer icon="📖" label="O que é" color={catColor}>
+            <p className="text-[#E0E0E8] text-base leading-8">
+              {term.definition}
+            </p>
+          </ContextLayer>
+
+          {ctx && (
+            <>
+              {/* Layer 2: Como pensar sobre isso */}
+              <ContextLayer
+                icon="💡"
+                label="Como pensar sobre isso"
+                color="#FFB347"
+              >
+                <p className="text-[#E0E0E8] text-base leading-8">
+                  {ctx.analogy}
+                </p>
+              </ContextLayer>
+
+              {/* Layer 3: Por que builders usam */}
+              <ContextLayer
+                icon="🛠️"
+                label="Por que builders usam"
+                color="#14F195"
+              >
+                <p className="text-[#E0E0E8] text-base leading-8">
+                  {ctx.builderUse}
+                </p>
+              </ContextLayer>
+
+              {/* Layer 4: Erro comum */}
+              <ContextLayer icon="⚠️" label="Erro comum" color="#FF4757">
+                <p className="text-[#E0E0E8] text-base leading-8">
+                  {ctx.commonMistake}
+                </p>
+              </ContextLayer>
+            </>
+          )}
+        </div>
 
         {/* Related Terms */}
         {relatedTerms.length > 0 && (
           <section className="space-y-4">
             <div className="h-px bg-white/8" />
+
+            {/* Progress bar */}
+            <TermProgress
+              termId={term.id}
+              relatedIds={relatedTerms.map((t) => t.id)}
+            />
+
             <h2 className="text-white font-semibold text-xl">
               Termos Relacionados
             </h2>
@@ -113,7 +190,7 @@ export default async function TermPage({
         {/* Back button */}
         <div className="pt-4">
           <Link
-            href="/"
+            href={`/?lang=${locale}`}
             className="inline-flex items-center gap-2 text-sm text-[#A0A0B0] hover:text-white transition-colors group"
           >
             <svg
@@ -129,11 +206,41 @@ export default async function TermPage({
                 d="M19 12H5M12 5l-7 7 7 7"
               />
             </svg>
-            Voltar
+            Voltar ao glossário
           </Link>
         </div>
       </div>
     </main>
+  );
+}
+
+function ContextLayer({
+  icon,
+  label,
+  color,
+  children,
+}: {
+  icon: string;
+  label: string;
+  color: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl bg-[#1A1A24] border border-white/8 overflow-hidden">
+      <div
+        className="flex items-center gap-2 px-5 py-3 border-b border-white/8"
+        style={{ background: `${color}0D` }}
+      >
+        <span className="text-base">{icon}</span>
+        <span
+          className="text-xs font-semibold uppercase tracking-wide"
+          style={{ color }}
+        >
+          {label}
+        </span>
+      </div>
+      <div className="px-5 py-4">{children}</div>
+    </div>
   );
 }
 
