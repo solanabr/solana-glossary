@@ -19,6 +19,11 @@ interface GlossaryContextType {
   locale: string;
   setLocale: (locale: string) => void;
   filteredTerms: GlossaryTerm[];
+  paginatedTerms: GlossaryTerm[];
+  currentPage: number;
+  setCurrentPage: (page: number) => void;
+  totalPages: number;
+  pageSize: number;
 }
 
 const GlossaryContext = createContext<GlossaryContextType | undefined>(undefined);
@@ -27,6 +32,8 @@ export const GlossaryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [locale, setLocale] = useState('en');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | 'all'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 24;
   
   const categories = useMemo(() => sdk.getCategories(), []);
   
@@ -67,6 +74,18 @@ export const GlossaryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return result;
   }, [terms, searchQuery, selectedCategory]);
 
+  const paginatedTerms = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredTerms.slice(start, start + pageSize);
+  }, [filteredTerms, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(filteredTerms.length / pageSize);
+
+  // Reset to page 1 when search or category changes
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedCategory]);
+
   return (
     <GlossaryContext.Provider value={{
       terms,
@@ -77,7 +96,12 @@ export const GlossaryProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setSelectedCategory,
       locale,
       setLocale,
-      filteredTerms
+      filteredTerms,
+      paginatedTerms,
+      currentPage,
+      setCurrentPage,
+      totalPages,
+      pageSize
     }}>
       {children}
     </GlossaryContext.Provider>

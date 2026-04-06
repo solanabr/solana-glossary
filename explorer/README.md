@@ -2,7 +2,7 @@
 
 A premium, interactive frontend for browsing the **1001+ terms** in the `@stbr/solana-glossary` SDK. Built as a production-grade discovery engine with a dark-mode-first glassmorphism design, debounced search, multi-language support, and responsive layouts.
 
-> **Live Demo**: _[https://solana-glossary-explorer.vercel.app](https://solana-glossary-explorer.vercel.app)_ _(update after deployment)_
+> **Live Demo**: [https://solana-glossary-explorer.vercel.app](https://solana-glossary-explorer.vercel.app)
 
 ---
 

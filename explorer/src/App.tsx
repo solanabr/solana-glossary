@@ -4,10 +4,11 @@ import { Navbar } from './components/Navbar';
 import { SearchBar } from './components/SearchBar';
 import { CategoryFilter } from './components/CategoryFilter';
 import { TermCard } from './components/TermCard';
+import { Pagination } from './components/Pagination';
 import { motion } from 'framer-motion';
 
 const GlossaryContent: React.FC = () => {
-  const { filteredTerms, setSearchQuery } = useGlossary();
+  const { filteredTerms, paginatedTerms, setSearchQuery } = useGlossary();
 
   return (
     <div className="min-h-screen bg-background text-text-primary selection:bg-solana-purple selection:text-white relative overflow-hidden">
@@ -61,11 +62,14 @@ const GlossaryContent: React.FC = () => {
 
         <section>
           {filteredTerms.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTerms.map((term) => (
-                <TermCard key={term.id} term={term} />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {paginatedTerms.map((term) => (
+                  <TermCard key={term.id} term={term} />
+                ))}
+              </div>
+              <Pagination />
+            </>
           ) : (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="w-20 h-20 bg-surface rounded-3xl border border-border flex items-center justify-center text-text-tertiary mb-6">
