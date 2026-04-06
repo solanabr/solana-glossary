@@ -15,6 +15,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
     { href: "/explore", label: copy.nav.explore },
     { href: "/paths", label: copy.nav.paths },
     { href: "/learn", label: copy.nav.learn },
+    { href: "/copilot", label: copy.nav.copilot },
     { href: "/about", label: copy.nav.about },
   ];
 

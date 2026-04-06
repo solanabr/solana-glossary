@@ -9,6 +9,16 @@ npm run capture:screenshots --workspace @stbr/glossary-os
 
 This script waits for the local app, opens a headless browser, and saves updated PNGs to [`../screenshots`](../screenshots).
 
+It captures:
+
+- landing
+- explore
+- term page
+- inline Copilot on a term page
+- dedicated Copilot workspace
+- builder paths
+- builder path detail
+
 Optional overrides:
 
 ```bash

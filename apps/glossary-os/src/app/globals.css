@@ -1683,6 +1683,208 @@ html[data-theme="light"] .confused-card {
     linear-gradient(180deg, rgba(250, 246, 255, 0.94), rgba(239, 241, 255, 0.9));
 }
 
+.copilot-panel {
+  display: grid;
+  gap: 1.2rem;
+}
+
+.copilot-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.copilot-field {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.copilot-textarea {
+  width: 100%;
+  min-height: 7rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: rgba(8, 12, 24, 0.82);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.copilot-textarea:focus {
+  outline: 2px solid rgba(112, 209, 255, 0.35);
+  outline-offset: 2px;
+}
+
+html[data-theme="light"] .copilot-textarea {
+  background: rgba(250, 252, 255, 0.96);
+}
+
+.copilot-code-shell {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+.copilot-code-shell summary {
+  cursor: pointer;
+  padding: 0.95rem 1rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.copilot-code-shell[open] summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.copilot-code-body {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+}
+
+.copilot-code-textarea {
+  min-height: 12rem;
+  font-family: "SFMono-Regular", "Consolas", monospace;
+  font-size: 0.92rem;
+}
+
+.copilot-actions {
+  align-items: center;
+}
+
+.copilot-submit[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.copilot-loading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.copilot-answer {
+  display: grid;
+  gap: 1rem;
+}
+
+.copilot-answer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.copilot-answer-card {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.copilot-rich-text {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.copilot-inline-link {
+  color: var(--accent-2);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.copilot-inline-link:hover {
+  color: var(--accent);
+}
+
+html[data-theme="light"] .copilot-inline-link {
+  color: #2956d8;
+}
+
+html[data-theme="light"] .copilot-inline-link:hover {
+  color: #7c3aed;
+}
+
+.copilot-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.copilot-list-item {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.copilot-list-item p {
+  margin: 0;
+}
+
+.copilot-caveat-card {
+  border-color: rgba(255, 191, 36, 0.25);
+}
+
+.copilot-error {
+  border-color: rgba(255, 112, 112, 0.22);
+}
+
+.copilot-page-layout {
+  display: grid;
+  gap: 1.4rem;
+}
+
+.copilot-page-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.9fr);
+  gap: 1rem;
+}
+
+.copilot-page-picker,
+.copilot-page-anchor {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.copilot-picker-input {
+  min-height: auto;
+}
+
+.copilot-term-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.copilot-term-item {
+  display: grid;
+  gap: 0.15rem;
+  width: 100%;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ink);
+  text-align: left;
+  transition: 180ms ease;
+}
+
+.copilot-term-item strong {
+  color: var(--ink);
+}
+
+.copilot-term-item span {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+.copilot-term-item:hover,
+.copilot-term-item-active {
+  transform: translateY(-1px);
+  border-color: rgba(112, 209, 255, 0.35);
+  background: rgba(112, 209, 255, 0.08);
+}
+
+html[data-theme="light"] .copilot-term-item {
+  background: rgba(249, 251, 255, 0.98);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hero-panel,
   .section-card,
@@ -1697,7 +1899,8 @@ html[data-theme="light"] .confused-card {
   .sequence-card,
   .action-button,
   .secondary-button,
-  .clear-search-button {
+  .clear-search-button,
+  .copilot-term-item {
     animation: none;
     transition: none;
   }
@@ -1711,7 +1914,8 @@ html[data-theme="light"] .confused-card {
   .result-card:hover,
   .sequence-card:hover,
   .action-button:hover,
-  .secondary-button:hover {
+  .secondary-button:hover,
+  .copilot-term-item:hover {
     transform: none;
   }
 }
@@ -1732,7 +1936,9 @@ html[data-theme="light"] .confused-card {
   .hero-stat-strip,
   .hero-preview-grid,
   .about-detail-grid,
-  .hero-differentiator-grid {
+  .hero-differentiator-grid,
+  .copilot-answer-grid,
+  .copilot-page-grid {
     grid-template-columns: 1fr;
   }
 

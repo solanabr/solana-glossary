@@ -1,3 +1,4 @@
+import { GlossaryCopilot } from "@/components/glossary-copilot";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -250,6 +251,8 @@ export default async function TermPage({
           <pre className="context-preview">{compactContext}</pre>
         </article>
       </section>
+
+      <GlossaryCopilot locale={currentLocale} termId={term.id} />
 
       {conceptGraph.length > 0 ? (
         <section className="section-frame">

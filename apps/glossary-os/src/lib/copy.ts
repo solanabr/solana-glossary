@@ -10,6 +10,7 @@ type Copy = {
     explore: string;
     paths: string;
     learn: string;
+    copilot: string;
     about: string;
     languageLabel: string;
     themeLabel: string;
@@ -192,6 +193,39 @@ type Copy = {
     oneCorrect: string;
     onboardingSteps: string[];
   };
+  copilot: {
+    eyebrow: string;
+    title: string;
+    lead: string;
+    pageTitle: string;
+    pageLead: string;
+    pickerTitle: string;
+    pickerBody: string;
+    activeTermTitle: string;
+    activeTermBody: string;
+    switchTerm: string;
+    openTermPage: string;
+    questionLabel: string;
+    questionPlaceholder: string;
+    codeLabel: string;
+    codeHint: string;
+    codePlaceholder: string;
+    submit: string;
+    submitting: string;
+    copyAnswer: string;
+    answerCopied: string;
+    copyFailed: string;
+    errorTitle: string;
+    genericError: string;
+    loadingTitle: string;
+    loadingBody: string;
+    emptyTitle: string;
+    emptyBody: string;
+    explanationTitle: string;
+    keyConceptsTitle: string;
+    nextTermsTitle: string;
+    caveatTitle: string;
+  };
   about: {
     eyebrow: string;
     title: string;
@@ -218,6 +252,7 @@ const copyByLocale: Record<Locale, Copy> = {
       explore: "Explore",
       paths: "Builder Paths",
       learn: "Learn",
+      copilot: "Copilot",
       about: "About",
       languageLabel: "Language selector",
       themeLabel: "Theme",
@@ -404,6 +439,39 @@ const copyByLocale: Record<Locale, Copy> = {
         "Take the quiz to reinforce vocabulary before moving on.",
       ],
     },
+    copilot: {
+      eyebrow: "Glossary Copilot",
+      title: "Ask grounded Solana questions directly inside the term page.",
+      lead: "This panel turns the glossary into a context-aware AI interface. It uses the current term, related concepts, confusions, next steps, and optional code snippets to answer with grounded developer explanations.",
+      pageTitle: "Glossary Copilot, outside the term page.",
+      pageLead: "Use this workspace when you want to interrogate Solana concepts more freely. Pick a glossary term, ask a question, and keep the answer grounded in the official glossary graph.",
+      pickerTitle: "Choose the concept you want to anchor the answer to.",
+      pickerBody: "The Copilot works best when it starts from a glossary node. Switch terms here before asking broader questions or pasting code.",
+      activeTermTitle: "Active glossary anchor",
+      activeTermBody: "The selected term defines the first layer of retrieval context for the answer.",
+      switchTerm: "Switch term",
+      openTermPage: "Open term page",
+      questionLabel: "Question",
+      questionPlaceholder: "Ask how this concept works, when to use it, or how it connects to the rest of Solana.",
+      codeLabel: "Explain this code",
+      codeHint: "Optional. Paste Anchor or Solana code and the Copilot will map detected concepts back to the glossary before answering.",
+      codePlaceholder: "Paste Anchor or Solana code here to get a glossary-grounded explanation.",
+      submit: "Ask AI",
+      submitting: "Thinking...",
+      copyAnswer: "Copy answer",
+      answerCopied: "Answer copied",
+      copyFailed: "Clipboard failed",
+      errorTitle: "Copilot error",
+      genericError: "The Copilot could not answer right now.",
+      loadingTitle: "Grounding answer",
+      loadingBody: "Glossary Copilot is building context and composing a response.",
+      emptyTitle: "Ask about this term",
+      emptyBody: "Start with a concrete Solana question. You can also attach a code snippet if you want a more implementation-oriented explanation.",
+      explanationTitle: "Explanation",
+      keyConceptsTitle: "Key concepts",
+      nextTermsTitle: "Suggested next terms",
+      caveatTitle: "Scope note",
+    },
     about: {
       eyebrow: "About this frontend",
       title: "A Solana glossary frontend built as a navigation system for builders.",
@@ -446,6 +514,7 @@ const copyByLocale: Record<Locale, Copy> = {
       explore: "Explorar",
       paths: "Trilhas",
       learn: "Aprender",
+      copilot: "Copilot",
       about: "Sobre",
       languageLabel: "Seletor de idioma",
       themeLabel: "Tema",
@@ -632,6 +701,39 @@ const copyByLocale: Record<Locale, Copy> = {
         "Faça o quiz para reforçar o vocabulário antes de seguir.",
       ],
     },
+    copilot: {
+      eyebrow: "Glossary Copilot",
+      title: "Faça perguntas de Solana com contexto direto na página do termo.",
+      lead: "Este painel transforma o glossário em uma interface de IA orientada por contexto. Ele usa o termo atual, conceitos relacionados, confusões comuns, próximos passos e snippets de código opcionais para responder com explicações aterradas para devs.",
+      pageTitle: "Glossary Copilot fora da página do termo.",
+      pageLead: "Use este workspace quando quiser interrogar conceitos de Solana com mais liberdade. Escolha um termo do glossário, faça a pergunta e mantenha a resposta grounded no grafo oficial do glossário.",
+      pickerTitle: "Escolha o conceito que vai ancorar a resposta.",
+      pickerBody: "O Copilot funciona melhor quando começa de um nó do glossário. Troque de termo aqui antes de fazer perguntas mais amplas ou colar código.",
+      activeTermTitle: "Âncora ativa do glossário",
+      activeTermBody: "O termo selecionado define a primeira camada de contexto recuperado para a resposta.",
+      switchTerm: "Trocar termo",
+      openTermPage: "Abrir página do termo",
+      questionLabel: "Pergunta",
+      questionPlaceholder: "Pergunte como esse conceito funciona, quando usar ou como ele se conecta ao resto de Solana.",
+      codeLabel: "Explique este código",
+      codeHint: "Opcional. Cole código Anchor ou Solana e o Copilot vai mapear os conceitos detectados de volta para o glossário antes de responder.",
+      codePlaceholder: "Cole aqui um trecho de código Anchor ou Solana para receber uma explicação grounded no glossário.",
+      submit: "Perguntar para IA",
+      submitting: "Pensando...",
+      copyAnswer: "Copiar resposta",
+      answerCopied: "Resposta copiada",
+      copyFailed: "Falha ao copiar",
+      errorTitle: "Erro do Copilot",
+      genericError: "O Copilot não conseguiu responder agora.",
+      loadingTitle: "Aterrando a resposta",
+      loadingBody: "O Glossary Copilot está montando o contexto e compondo a resposta.",
+      emptyTitle: "Pergunte sobre este termo",
+      emptyBody: "Comece com uma pergunta concreta sobre Solana. Você também pode anexar um snippet de código se quiser uma explicação mais orientada à implementação.",
+      explanationTitle: "Explicação",
+      keyConceptsTitle: "Conceitos-chave",
+      nextTermsTitle: "Próximos termos sugeridos",
+      caveatTitle: "Nota de escopo",
+    },
     about: {
       eyebrow: "Sobre este frontend",
       title: "Um frontend do glossário Solana construído como sistema de navegação para builders.",
@@ -674,6 +776,7 @@ const copyByLocale: Record<Locale, Copy> = {
       explore: "Explorar",
       paths: "Rutas",
       learn: "Aprender",
+      copilot: "Copilot",
       about: "Acerca de",
       languageLabel: "Selector de idioma",
       themeLabel: "Tema",
@@ -859,6 +962,39 @@ const copyByLocale: Record<Locale, Copy> = {
         "Lee la secuencia en orden y abre términos cuando haga falta.",
         "Haz el quiz para reforzar el vocabulario antes de seguir.",
       ],
+    },
+    copilot: {
+      eyebrow: "Glossary Copilot",
+      title: "Haz preguntas de Solana con contexto directamente dentro de la página del término.",
+      lead: "Este panel convierte el glosario en una interfaz de IA guiada por contexto. Usa el término actual, conceptos relacionados, confusiones comunes, siguientes pasos y snippets opcionales de código para responder con explicaciones sólidas para developers.",
+      pageTitle: "Glossary Copilot fuera de la página del término.",
+      pageLead: "Usa este workspace cuando quieras interrogar conceptos de Solana con más libertad. Elige un término del glosario, haz tu pregunta y mantén la respuesta grounded en el grafo oficial del glosario.",
+      pickerTitle: "Elige el concepto que anclará la respuesta.",
+      pickerBody: "El Copilot funciona mejor cuando empieza desde un nodo del glosario. Cambia de término aquí antes de hacer preguntas más amplias o pegar código.",
+      activeTermTitle: "Ancla activa del glosario",
+      activeTermBody: "El término seleccionado define la primera capa de contexto recuperado para la respuesta.",
+      switchTerm: "Cambiar término",
+      openTermPage: "Abrir página del término",
+      questionLabel: "Pregunta",
+      questionPlaceholder: "Pregunta cómo funciona este concepto, cuándo usarlo o cómo se conecta con el resto de Solana.",
+      codeLabel: "Explica este código",
+      codeHint: "Opcional. Pega código de Anchor o Solana y el Copilot mapeará los conceptos detectados al glosario antes de responder.",
+      codePlaceholder: "Pega aquí código de Anchor o Solana para obtener una explicación grounded en el glosario.",
+      submit: "Preguntar a la IA",
+      submitting: "Pensando...",
+      copyAnswer: "Copiar respuesta",
+      answerCopied: "Respuesta copiada",
+      copyFailed: "Falló el portapapeles",
+      errorTitle: "Error del Copilot",
+      genericError: "El Copilot no pudo responder ahora mismo.",
+      loadingTitle: "Aterrizando la respuesta",
+      loadingBody: "Glossary Copilot está construyendo el contexto y componiendo la respuesta.",
+      emptyTitle: "Pregunta sobre este término",
+      emptyBody: "Empieza con una pregunta concreta sobre Solana. También puedes adjuntar un snippet de código si quieres una explicación más orientada a implementación.",
+      explanationTitle: "Explicación",
+      keyConceptsTitle: "Conceptos clave",
+      nextTermsTitle: "Siguientes términos sugeridos",
+      caveatTitle: "Nota de alcance",
     },
     about: {
       eyebrow: "Sobre este frontend",
