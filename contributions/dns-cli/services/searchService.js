@@ -1,7 +1,7 @@
 // services/searchService.js
-// Handles category searches and random term queries.
+// Handles category searches, keyword search, term-of-the-day, and random term queries.
 
-import { getTermsByCategory, getCategories, getRandomTerm, getTotalCount } from "../loader.js";
+import { getTermsByCategory, getCategories, getRandomTerm, getTotalCount, allTermsList } from "../loader.js";
 import { formatTerm, formatTermCompact } from "./termService.js";
 
 const DIVIDER_THICK = "============================================================";
@@ -24,7 +24,7 @@ export function getCategoryTerms(category) {
 
   const lines = [];
   lines.push(DIVIDER_THICK);
-  lines.push(`  CATEGORY: ${category.toUpperCase()} — ${terms.length} terms`);
+  lines.push(`  CATEGORY: ${category.toUpperCase()} -- ${terms.length} terms`);
   lines.push(DIVIDER_THICK);
 
   // Group into chunks of 5 per line for readability
@@ -46,7 +46,7 @@ export function getAllCategories() {
   const lines = [];
 
   lines.push(DIVIDER_THICK);
-  lines.push(`  SOLANA GLOSSARY — ALL CATEGORIES (${getTotalCount()} total terms)`);
+  lines.push(`  SOLANA GLOSSARY -- ALL CATEGORIES (${getTotalCount()} total terms)`);
   lines.push(DIVIDER_THICK);
 
   for (const cat of cats) {
@@ -67,4 +67,90 @@ export function getRandomTermFormatted() {
   const term = getRandomTerm();
   const lines = ["  ** RANDOM TERM **", ...formatTerm(term)];
   return lines;
+}
+
+// Keyword search: search.<word> → terms matching in name, definition, or aliases
+export function keywordSearch(keyword) {
+  const q = keyword.toLowerCase().trim();
+
+  if (q.length < 2) {
+    return [
+      DIVIDER_THICK,
+      "  Keyword too short — please use 2+ characters",
+      DIVIDER_THICK,
+    ];
+  }
+
+  // Import lazily to avoid circular dep — use the exported array from loader
+  const all = allTermsList();
+
+  const matches = all.filter((t) => {
+    const inId   = t.id.includes(q);
+    const inTerm = t.term.toLowerCase().includes(q);
+    const inDef  = t.definition.toLowerCase().includes(q);
+    const inAlias = (t.aliases || []).some((a) => a.toLowerCase().includes(q));
+    return inId || inTerm || inDef || inAlias;
+  });
+
+  if (matches.length === 0) {
+    return [
+      DIVIDER_THICK,
+      `  No terms found for: "${keyword}"`,
+      DIVIDER_THIN,
+      "  Try a shorter keyword or browse a category:",
+      "  dig @<ip> -p 5300 find.defi +short",
+      DIVIDER_THICK,
+    ];
+  }
+
+  const lines = [];
+  lines.push(DIVIDER_THICK);
+  lines.push(`  SEARCH: "${keyword}" -- ${matches.length} result${matches.length > 1 ? "s" : ""} found`);
+  lines.push(DIVIDER_THICK);
+
+  // Show up to 15 results to keep output manageable
+  const shown = matches.slice(0, 15);
+  for (const t of shown) {
+    const short = t.definition.length > 70 ? t.definition.slice(0, 67) + "..." : t.definition;
+    lines.push(`  [${t.category}] ${t.term}`);
+    lines.push(`    ID: ${t.id}`);
+    lines.push(`    ${short}`);
+    lines.push("");
+  }
+
+  if (matches.length > 15) {
+    lines.push(`  ... and ${matches.length - 15} more. Try a more specific keyword.`);
+  }
+
+  lines.push(DIVIDER_THIN);
+  lines.push("  Look up any result:  dig @<ip> -p 5300 <term-id> +short");
+  lines.push(DIVIDER_THICK);
+
+  return lines;
+}
+
+// Term of the day: deterministic based on current date (changes daily)
+export function getTermOfTheDay() {
+  const all = allTermsList();
+
+  // Create a date seed: YYYYMMDD as a number → index into allTerms
+  const now = new Date();
+  const dateSeed =
+    now.getFullYear() * 10000 +
+    (now.getMonth() + 1) * 100 +
+    now.getDate();
+  const index = dateSeed % all.length;
+  const term = all[index];
+
+  const dateStr = now.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+
+  return [
+    `  ** TERM OF THE DAY -- ${dateStr} **`,
+    ...formatTerm(term),
+  ];
 }

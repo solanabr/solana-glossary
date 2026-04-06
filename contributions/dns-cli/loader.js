@@ -85,3 +85,8 @@ export function getRandomTerm() {
 export function getTotalCount() {
   return allTerms.length;
 }
+
+// Get all terms as array (for keyword search, term-of-the-day, etc.)
+export function allTermsList() {
+  return allTerms;
+}
