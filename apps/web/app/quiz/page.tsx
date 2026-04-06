@@ -73,7 +73,7 @@ export default function QuizPage() {
             Test your <span style={{ color: "var(--green)" }}>Solana</span> knowledge
           </h1>
           <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 32, lineHeight: 1.6 }}>
-            Multiple choice quiz from 1001 terms. Pick a category or go random.
+            Multiple choice quiz from the full glossary. Pick a category or go random.
           </p>
 
           <div style={{ marginBottom: 24 }}>
