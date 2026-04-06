@@ -21,8 +21,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests with coverage
+      - name: Run src tests with vitest coverage
         run: npx vitest run tests/api.test.ts tests/data-integrity.test.ts tests/i18n.test.ts --coverage --coverage.reporter=lcov
+
+      - name: Run all tests with c8 coverage (captures child processes)
+        run: npx c8 --include="scripts/**" --include="apps/**/scripts/**" --exclude="node_modules" --reporter=lcov --report-dir=coverage-c8 npx vitest run --testTimeout 60000
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5
@@ -32,7 +35,7 @@ jobs:
           args: >
             -Dsonar.organization=zupy
             -Dsonar.projectKey=zupy-fmartinelli_solana-glossary
-            -Dsonar.sources=src
+            -Dsonar.sources=src,scripts,apps
             -Dsonar.tests=tests
-            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.json
-            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+            -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/*.json,**/kuka-mcp/**
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info,coverage-c8/lcov.info

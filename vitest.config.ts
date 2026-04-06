@@ -5,7 +5,7 @@ export default defineConfig({
     globals: true,
     coverage: {
       provider: "v8",
-      include: ["src/**/*.ts"],
+      include: ["src/**/*.ts", "scripts/**/*.js", "apps/**/scripts/**/*.ts"],
       exclude: ["src/types.ts"],
     },
   },

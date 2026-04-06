@@ -32,7 +32,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { allTerms, type GlossaryTerm } from "../../../../../src/index";
+import { allTerms, getCategories, type GlossaryTerm } from "../../../../../src/index";
 
 // ── Types ───────────────────────────────────────────────────────────────
 
