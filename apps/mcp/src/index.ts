@@ -12,6 +12,15 @@ import {
 import { getLocalizedTerms } from "@stbr/solana-glossary/i18n";
 import type { GlossaryTerm } from "@stbr/solana-glossary";
 
+const TERM_COUNT = allTerms.length;
+const CATEGORY_COUNT = getCategories().length;
+const MAX_PREVIEW_LEN = 120;
+const MAX_DETAIL_LEN = 150;
+const MAX_EXPLAIN_LEN = 200;
+const MAX_RELATED_PREVIEW = 3;
+const MAX_RELATED_TRAVERSE = 4;
+const MAX_FUZZY_RESULTS = 5;
+
 const server = new McpServer({
   name: "solana-glossary",
   version: "1.0.0",
@@ -68,7 +77,7 @@ server.tool(
 // ── tool: search_glossary ────────────────────────────────────────────────────
 server.tool(
   "search_glossary",
-  "Full-text search across all 1001 Solana glossary terms. Searches term names, definitions, IDs, and aliases.",
+  `Full-text search across all ${TERM_COUNT} Solana glossary terms. Searches term names, definitions, IDs, and aliases.`,
   {
     query: z.string().describe("Search query, e.g. 'account', 'proof of history', 'AMM'"),
     limit: z.number().int().min(1).max(50).optional().default(10).describe("Max results to return (default 10)"),
@@ -155,7 +164,7 @@ server.tool(
 // ── tool: list_categories ────────────────────────────────────────────────────
 server.tool(
   "list_categories",
-  "List all 14 available categories in the Solana glossary with term counts.",
+  `List all ${CATEGORY_COUNT} available categories in the Solana glossary with term counts.`,
   {},
   async () => {
     const cats = getCategories();
@@ -202,7 +211,7 @@ server.tool(
       const wrong = [...pool]
         .filter((t) => t.id !== term.id)
         .sort(() => Math.random() - 0.5)
-        .slice(0, 3)
+        .slice(0, MAX_RELATED_PREVIEW)
         .map((t) => {
           if (lang === "pt") {
             const loc = localized.find((l) => l.id === t.id);
@@ -244,10 +253,10 @@ server.tool(
 
     let block: string;
     if (format === "compact") {
-      block = selected.map((t) => `${t.term}: ${t.definition.slice(0, 120)}${t.definition.length > 120 ? "..." : ""}`).join("\n");
+      block = selected.map((t) => `${t.term}: ${t.definition.slice(0, MAX_PREVIEW_LEN)}${t.definition.length > MAX_PREVIEW_LEN ? "..." : ""}`).join("\n");
     } else {
       block = selected.map((t) => {
-        const related = t.related?.length ? "\n  related: " + t.related.slice(0, 3).join(", ") : "";
+        const related = t.related?.length ? "\n  related: " + t.related.slice(0, MAX_RELATED_PREVIEW).join(", ") : "";
         return "## " + t.term + "\n" + t.definition + related;
       }).join("\n\n");
     }
@@ -281,7 +290,7 @@ server.tool(
     const mostReferenced = [...allTerms]
       .filter((t) => t.related && t.related.length > 0)
       .sort((a, b) => (b.related?.length ?? 0) - (a.related?.length ?? 0))
-      .slice(0, 5);
+      .slice(0, MAX_FUZZY_RESULTS);
 
     const lines = [
       `# Solana Glossary Stats`,
@@ -351,7 +360,7 @@ server.tool(
       `# Fuzzy Search: "${query}" (${results.length} matches)`,
       ``,
       ...results.map(({ term: t, score }) =>
-        `## ${t.term} — ${(score * 100).toFixed(0)}% match\n**ID:** ${t.id} | **Category:** ${t.category}\n${t.definition.slice(0, 150)}${t.definition.length > 150 ? "..." : ""}`
+        `## ${t.term} — ${(score * 100).toFixed(0)}% match\n**ID:** ${t.id} | **Category:** ${t.category}\n${t.definition.slice(0, MAX_DETAIL_LEN)}${t.definition.length > MAX_DETAIL_LEN ? "..." : ""}`
       ),
     ].join("\n\n");
 
@@ -403,7 +412,7 @@ server.tool(
             ...termPath.map((t, i) => [
               `### Step ${i + 1}: ${t.term}`,
               `**Category:** ${t.category}`,
-              t.definition.slice(0, 200) + (t.definition.length > 200 ? "..." : ""),
+              t.definition.slice(0, MAX_EXPLAIN_LEN) + (t.definition.length > MAX_EXPLAIN_LEN ? "..." : ""),
             ].join("\n")),
           ].join("\n\n");
 
@@ -506,7 +515,7 @@ server.tool(
       sections.push("");
 
       if (currentDepth < depth && t.related?.length) {
-        for (const childId of t.related.slice(0, 4)) {
+        for (const childId of t.related.slice(0, MAX_RELATED_TRAVERSE)) {
           dfs(childId, currentDepth + 1, headingLevel + 1);
         }
       }
