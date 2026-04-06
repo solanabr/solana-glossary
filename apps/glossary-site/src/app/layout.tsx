@@ -38,6 +38,12 @@ export default function RootLayout({
           </Link>
           <div className="flex items-center gap-4">
             <Link
+              href="/quiz"
+              className="text-sm text-[#A0A0B0] hover:text-white transition-colors hidden sm:block"
+            >
+              Quiz
+            </Link>
+            <Link
               href="/grafo"
               className="text-sm text-[#A0A0B0] hover:text-white transition-colors hidden sm:block"
             >

@@ -68,7 +68,18 @@ export default function HomePage() {
           <p className="text-[#A0A0B0] text-base sm:text-lg">
             1001 termos · 14 categorias · PT · ES
           </p>
-          <div className="mt-5">
+          <div className="mt-5 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/quiz"
+              className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-80"
+              style={{
+                background: "linear-gradient(135deg, #9945FF22, #14F19522)",
+                border: "1px solid rgba(153,69,255,0.3)",
+                color: "#9945FF",
+              }}
+            >
+              🎯 Quiz
+            </Link>
             <Link
               href="/grafo"
               className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium transition-opacity hover:opacity-80"
