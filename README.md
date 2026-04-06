@@ -4,6 +4,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Terms](https://img.shields.io/badge/terms-1001-brightgreen)
 ![Categories](https://img.shields.io/badge/categories-14-blue)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=zupy-fmartinelli_solana-glossary&metric=alert_status)](https://sonarcloud.io/summary/overall?id=zupy-fmartinelli_solana-glossary)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=zupy-fmartinelli_solana-glossary&metric=coverage)](https://sonarcloud.io/summary/overall?id=zupy-fmartinelli_solana-glossary)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=zupy-fmartinelli_solana-glossary&metric=bugs)](https://sonarcloud.io/summary/overall?id=zupy-fmartinelli_solana-glossary)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=zupy-fmartinelli_solana-glossary&metric=vulnerabilities)](https://sonarcloud.io/summary/overall?id=zupy-fmartinelli_solana-glossary)
 
 **The most comprehensive Solana glossary ever built — 1001 terms, 14 categories, full cross-references, and i18n support. Packaged as an SDK.**
 

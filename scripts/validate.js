@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
-const termsDir = path.join(__dirname, "..", "data", "terms");
+const termsDir = process.argv[2] ?? path.join(__dirname, "..", "data", "terms");
 const files = fs.readdirSync(termsDir).filter((f) => f.endsWith(".json"));
 
 const allTerms = [];
@@ -37,14 +37,14 @@ for (const term of allTerms) {
 // Check required fields
 for (const term of allTerms) {
   if (!term.id || !term.term || !term.definition || !term.category) {
-    console.error(`Missing required field in: "${term.id || "(no id)"}"`);
+    console.error(`Missing required field in: "${term.id ?? "(no id)"}"`);
     errors++;
   }
 }
 
 // Check for empty aliases arrays
 for (const term of allTerms) {
-  if (term.aliases && term.aliases.length === 0) {
+  if (term.aliases?.length === 0) {
     console.error(`Empty aliases array in: "${term.id}"`);
     errors++;
   }

@@ -1,0 +1,31 @@
+{
+  "name": "kuka-glossary",
+  "owner": {
+    "name": "Superteam Brasil"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/solanabr/solana-glossary",
+  "repository": "https://github.com/solanabr/solana-glossary",
+  "keywords": [
+    "solana",
+    "glossary",
+    "education",
+    "blockchain",
+    "teaching",
+    "mcp",
+    "ai-tools"
+  ],
+  "plugins": [
+    {
+      "name": "kuka-glossary",
+      "source": "./",
+      "description": "Kuka — a Solana glossary-powered teaching companion with persistent memory. 1,001 terms, 14 categories, knowledge graph traversal, learning paths, quizzes, and token-optimized context injection. Speaks English, Portuguese, and Spanish.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Fabio Martinelli",
+        "url": "https://github.com/zupy-fmartinelli"
+      },
+      "skills": ["./apps/kuka-agent/skills/kuka"]
+    }
+  ]
+}
