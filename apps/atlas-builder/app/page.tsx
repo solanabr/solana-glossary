@@ -104,7 +104,7 @@ export default function BuilderPage() {
                 role="switch"
                 aria-checked={showDefs}
                 onClick={() => setShowDefs((p) => !p)}
-                className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border transition-colors ${
+                className={`relative inline-flex h-5 w-9 shrink-0 rounded-full border transition-colors ${
                   showDefs ? "bg-[#14F195] border-[#14F195]" : "bg-white/10 border-white/10"
                 }`}
               >

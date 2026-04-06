@@ -40,7 +40,7 @@ export default function ArchitecturePanel({ architecture, onCopy }: Props) {
               <ul className="flex flex-col gap-1">
                 {architecture.components.map((c) => (
                   <li key={c} className="flex items-start gap-2 text-sm text-white/70">
-                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#9945FF]" />
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#9945FF]" />
                     {c}
                   </li>
                 ))}
@@ -53,7 +53,7 @@ export default function ArchitecturePanel({ architecture, onCopy }: Props) {
               <ul className="flex flex-col gap-1.5">
                 {architecture.flows.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-sm text-white/60 leading-relaxed">
-                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#14F195]" />
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#14F195]" />
                     {f}
                   </li>
                 ))}
@@ -66,7 +66,7 @@ export default function ArchitecturePanel({ architecture, onCopy }: Props) {
               <ul className="flex flex-col gap-1.5">
                 {architecture.notes.map((n) => (
                   <li key={n} className="flex items-start gap-2 text-sm text-white/50 leading-relaxed">
-                    <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#F5A623]" />
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#F5A623]" />
                     {n}
                   </li>
                 ))}
