@@ -91,10 +91,11 @@ export function termNotFound(query) {
     `  Term not found: "${query}"`,
     DIVIDER_THIN,
     "  Tips:",
-    `  - Use kebab-case IDs  e.g. proof-of-history`,
-    `  - Or try an alias    e.g. poh, AMM, PDA`,
-    `  - Browse a category  e.g. find.defi`,
-    `  - See all options    dig @<ip> -p 5300 glossary.help +short`,
+    `  - Use kebab-case IDs  e.g. sol proof-of-history`,
+    `  - Or try an alias    e.g. sol poh  |  sol amm  |  sol pda`,
+    `  - Browse a category  e.g. sol find.defi`,
+    `  - Keyword search     e.g. sol search.wallet`,
+    `  - See all options    sol glossary.help`,
     DIVIDER_THICK,
   ];
 }

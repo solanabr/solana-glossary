@@ -34,7 +34,7 @@ export function getCategoryTerms(category) {
   }
 
   lines.push(DIVIDER_THIN);
-  lines.push(`  Tip: dig @<ip> -p 5353 <term-id> +short  to look up any term above`);
+  lines.push(`  Tip: sol <term-id>  or  dig <term-id> @sdns.fun +short`);
   lines.push(DIVIDER_THICK);
 
   return lines;
@@ -56,7 +56,7 @@ export function getAllCategories() {
   }
 
   lines.push(DIVIDER_THIN);
-  lines.push("  Usage: dig @<ip> -p 5353 find.<category> +short");
+  lines.push("  Usage: sol find.<category>  or  dig find.<category> @sdns.fun +short");
   lines.push(DIVIDER_THICK);
 
   return lines;
@@ -98,7 +98,7 @@ export function keywordSearch(keyword) {
       `  No terms found for: "${keyword}"`,
       DIVIDER_THIN,
       "  Try a shorter keyword or browse a category:",
-      "  dig @<ip> -p 5300 find.defi +short",
+      "  sol find.defi  or  dig find.defi @sdns.fun +short",
       DIVIDER_THICK,
     ];
   }
@@ -123,7 +123,7 @@ export function keywordSearch(keyword) {
   }
 
   lines.push(DIVIDER_THIN);
-  lines.push("  Look up any result:  dig @<ip> -p 5300 <term-id> +short");
+  lines.push("  Look up any result:  sol <term-id>  or  dig <term-id> @sdns.fun +short");
   lines.push(DIVIDER_THICK);
 
   return lines;

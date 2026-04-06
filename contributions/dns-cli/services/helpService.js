@@ -5,9 +5,10 @@ const DIVIDER_THICK = "=========================================================
 const DIVIDER_THIN  = "------------------------------------------------------------";
 
 export function getHelpLines(serverHost = "sdns.fun", port = 5300) {
-  // If using default port 53 (public server), no -p flag needed
+  // If on public server (not localhost), no -p flag needed (iptables handles 53→5300)
+  const isPublic = serverHost !== "127.0.0.1" && serverHost !== "localhost";
   const d = (cmd) =>
-    port === 53 || port === 5300 && serverHost !== "127.0.0.1"
+    isPublic
       ? `  dig ${cmd} @${serverHost} +short`
       : `  dig @${serverHost} -p ${port} ${cmd} +short`;
 

@@ -1,12 +1,16 @@
 // server.js — Solana Glossary DNS CLI Server
 //
-// Usage after starting:
-//   dig @127.0.0.1 -p 5353 proof-of-history +short
-//   dig @127.0.0.1 -p 5353 poh              +short
-//   dig @127.0.0.1 -p 5353 find.defi        +short
-//   dig @127.0.0.1 -p 5353 categories       +short
-//   dig @127.0.0.1 -p 5353 random           +short
-//   dig @127.0.0.1 -p 5353 glossary.help    +short
+// Local usage (self-hosted):
+//   dig @127.0.0.1 -p 5300 proof-of-history +short
+//   dig @127.0.0.1 -p 5300 poh              +short
+//   dig @127.0.0.1 -p 5300 find.defi        +short
+//   dig @127.0.0.1 -p 5300 categories       +short
+//   dig @127.0.0.1 -p 5300 random           +short
+//   dig @127.0.0.1 -p 5300 glossary.help    +short
+//
+// Public server (sdns.fun):
+//   dig poh @sdns.fun +short
+//   sol poh    (after: sol() { dig +short "${1}" @sdns.fun; })
 
 import dgram from "node:dgram";
 import dnsPacket from "dns-packet";
@@ -145,20 +149,21 @@ server.on("message", async (msg, rinfo) => {
 
 // ─── Start listening ─────────────────────────────────────────────────────────
 server.bind(PORT, HOST, () => {
-  console.log(`
-╔══════════════════════════════════════════════════════════╗
-║        Solana Glossary DNS CLI Server — Running          ║
-╠══════════════════════════════════════════════════════════╣
-║  Port       : ${PORT}                                     ║
-║  Public host: ${PUBLIC_HOST.padEnd(35)}║
-║  Protocol   : UDP / DNS TXT records                      ║
-╟──────────────────────────────────────────────────────────╢
-║  Try it:                                                 ║
-║  dig proof-of-history @${PUBLIC_HOST} +short
-║  dig poh @${PUBLIC_HOST} +short
-║  dig find.defi @${PUBLIC_HOST} +short
-║  dig random @${PUBLIC_HOST} +short
-║  dig glossary.help @${PUBLIC_HOST} +short
-╚══════════════════════════════════════════════════════════╝
-  `);
+  const sep  = "═".repeat(58);
+  const thin = "─".repeat(58);
+  const pad  = (s, n) => s + " ".repeat(Math.max(0, n - s.length));
+
+  console.log([
+    `╔${sep}╗`,
+    `║   Solana Glossary DNS CLI Server — Running              ║`,
+    `╠${sep}╣`,
+    `║  Port       : ${pad(String(PORT), 42)}║`,
+    `║  Public     : ${pad(PUBLIC_HOST, 42)}║`,
+    `║  Protocol   : ${pad("UDP / DNS TXT records", 42)}║`,
+    `╟${thin}╢`,
+    `║  Quick start (add to ~/.bashrc):                        ║`,
+    `║  ${pad(`sol() { dig +short "\${1}" @${PUBLIC_HOST}; }`, 56)}║`,
+    `║  Then: sol poh  |  sol find.defi  |  sol random         ║`,
+    `╚${sep}╝`,
+  ].join("\n"));
 });
