@@ -36,7 +36,7 @@ export function getCategoryTerms(rawQuery) {
     ];
   }
 
-  const PAGE_SIZE = 20;
+  const PAGE_SIZE = 15;
   const totalPages = Math.ceil(terms.length / PAGE_SIZE);
   const start = (page - 1) * PAGE_SIZE;
   const end = Math.min(start + PAGE_SIZE, terms.length);
@@ -52,13 +52,14 @@ export function getCategoryTerms(rawQuery) {
 
   const lines = [];
   lines.push(DIVIDER_THICK);
-  lines.push(`  ${category.toUpperCase()} — ${terms.length} terms (page ${page}/${totalPages})`);
+  lines.push(`  ${category.toUpperCase()} - ${terms.length} terms (page ${page}/${totalPages})`);
   lines.push(DIVIDER_THICK);
 
-  // 4 terms per line to keep lines short
+  // 3 terms per line keeps each line short enough for DNS UDP
+  const PAGE_SIZE_DISPLAY = 15;
   const ids = pageTerms.map((t) => t.id);
-  for (let i = 0; i < ids.length; i += 4) {
-    lines.push("  " + ids.slice(i, i + 4).join(" | "));
+  for (let i = 0; i < ids.length; i += 3) {
+    lines.push("  " + ids.slice(i, i + 3).join(" | "));
   }
 
   lines.push(DIVIDER_THIN);
@@ -77,7 +78,7 @@ export function getAllCategories() {
   const lines = [];
 
   lines.push(DIVIDER_THICK);
-  lines.push(`  SOLANA GLOSSARY — ${getTotalCount()} terms across ${cats.length} categories`);
+  lines.push(`  SOLANA GLOSSARY - ${getTotalCount()} terms across ${cats.length} categories`);
   lines.push(DIVIDER_THIN);
 
   for (const cat of cats) {
@@ -135,22 +136,22 @@ export function keywordSearch(keyword) {
 
   const lines = [];
   lines.push(DIVIDER_THICK);
-  lines.push(`  SEARCH: "${keyword}" — ${matches.length} result${matches.length > 1 ? "s" : ""} found`);
+  lines.push(`  SEARCH: "${keyword}" - ${matches.length} result${matches.length > 1 ? "s" : ""} found`);
   lines.push(DIVIDER_THIN);
 
-  // Show max 8 results to stay within DNS UDP packet limits
-  const shown = matches.slice(0, 8);
+  // Show max 5 results to stay within standard DNS UDP 512-byte limit
+  const shown = matches.slice(0, 5);
   for (const t of shown) {
-    const short = t.definition.length > 60
-      ? t.definition.slice(0, 57).replace(/\s+\S*$/, "") + "..."
+    const short = t.definition.length > 55
+      ? t.definition.slice(0, 52).replace(/\s+\S*$/, "") + "..."
       : t.definition;
-    lines.push(`  ${t.term} [${t.category}]`);
-    lines.push(`    ${short}`);
+    lines.push(`  ${t.id} [${t.category}]`);
+    lines.push(`  ${short}`);
   }
 
-  if (matches.length > 8) {
+  if (matches.length > 5) {
     lines.push(DIVIDER_THIN);
-    lines.push(`  +${matches.length - 8} more. Try a specific term: sol ${shown[0].id}`);
+    lines.push(`  +${matches.length - 5} more. Try: sol ${shown[0].id}`);
   }
 
   lines.push(DIVIDER_THIN);

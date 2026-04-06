@@ -112,15 +112,6 @@ server.on("message", async (msg, rinfo) => {
       flags: dnsPacket.AUTHORITATIVE_ANSWER,
       questions: [question],
       answers,
-      additionals: [{
-        // Advertise 4096-byte UDP payload size via EDNS0 OPT record
-        // This tells the client our server can handle larger responses
-        type: "OPT",
-        name: ".",
-        udpPayloadSize: 4096,
-        flags: 0,
-        options: [],
-      }],
     });
 
     server.send(response, rinfo.port, rinfo.address, (err) => {
