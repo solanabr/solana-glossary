@@ -1,0 +1,32 @@
+{
+  "name": "@stbr/solana-glossary-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch --env-file=.env src/server.ts",
+    "build": "tsc && node -e \"const fs=require('fs'); fs.cpSync('src/i18n/locales','dist/i18n/locales',{recursive:true}); fs.cpSync('src/glossary/data','dist/glossary/data',{recursive:true});\"",
+    "start": "node dist/server.js",
+    "check:i18n": "node scripts/check-locales.cjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.8",
+    "grammy": "^1.34.0",
+    "@grammyjs/i18n": "^1.0.2",
+    "@grammyjs/auto-retry": "^2.0.1",
+    "@grammyjs/ratelimiter": "^1.2.1",
+    "express": "^4.21.0",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.0.0",
+    "@types/node-cron": "^3.0.11",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

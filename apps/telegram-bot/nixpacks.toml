@@ -1,0 +1,2 @@
+buildCommand = 'npm ci && npm run build'
+startCommand = 'node dist/server.js'

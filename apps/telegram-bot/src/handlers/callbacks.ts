@@ -1,0 +1,1117 @@
+// src/handlers/callbacks.ts
+import {
+  getTerm,
+  getTermsByCategory,
+  getCategories,
+} from "../glossary/index.js";
+import type { Category } from "../glossary/index.js";
+import { InlineKeyboard } from "grammy";
+import { formatTermList, formatCategoryName } from "../utils/format.js";
+import {
+  buildLibraryMenuKeyboard,
+  buildProgressMenuKeyboard,
+  buildTermKeyboard,
+  buildTipsKeyboard,
+} from "../utils/keyboard.js";
+import { sendMainMenu, sendWelcome } from "../commands/start.js";
+import {
+  sendCategoriesMenu,
+  sendCategoryTerms,
+} from "../commands/categories.js";
+import { glossaryCommand } from "../commands/glossary.js";
+import { randomTermCommand } from "../commands/random.js";
+import {
+  buildQuizQuestionText,
+  buildQuizRetryKeyboard,
+  buildQuizRoundQuestionText,
+  buildQuizRoundSummaryKeyboard,
+  buildNextRoundSession,
+  sendQuizMenu,
+  sendQuiz,
+  startQuizFromDraft,
+  updateQuizDraft,
+} from "../commands/quiz.js";
+import { helpCommand } from "../commands/help.js";
+import { explainCommand } from "../commands/explain.js";
+import { sendPathMenu, sendPathStep } from "../commands/path.js";
+import { db, GROUP_STREAK_THRESHOLD } from "../db/index.js";
+import type { MyContext, SessionData } from "../context.js";
+import { getLearningPath } from "../data/paths.js";
+import { getEffectiveLocale } from "../utils/locale.js";
+import { buildEnrichedTermCard } from "../utils/term-card.js";
+import { sendGroupWelcome } from "./group.js";
+
+/** Strip HTML tags for use in plain-text callback popups */
+function stripHtml(text: string): string {
+  return text
+    .replace(/<[^>]+>/g, "")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
+}
+
+async function answerInvalidCallback(ctx: MyContext): Promise<void> {
+  await ctx.answerCallbackQuery({ text: ctx.t("internal-error") });
+}
+
+// ── Language onboarding ───────────────────────────────────────────────────────
+
+export async function handleLangCallback(ctx: MyContext): Promise<void> {
+  const data = ctx.callbackQuery?.data ?? "";
+  const lang = data.slice("lang:".length) as SessionData["language"];
+  const isGroup = ctx.chat?.type === "group" || ctx.chat?.type === "supergroup";
+  const chatId = ctx.chat?.id;
+
+  if (isGroup && chatId) {
+    await db.setGroupLanguage(chatId, lang!);
+  } else {
+    ctx.session.language = lang;
+    if (ctx.from?.id) {
+      await db.setLanguage(ctx.from.id, lang!);
+    }
+  }
+  await ctx.i18n.useLocale(lang!);
+  await ctx.answerCallbackQuery();
+
+  await ctx.deleteMessage().catch(() => {});
+  if (isGroup && chatId) {
+    await ctx.reply(ctx.t("group-language-changed"), { parse_mode: "HTML" });
+    await sendGroupWelcome(ctx);
+    return;
+  }
+
+  await sendWelcome(ctx);
+}
+
+// ── Term navigation ───────────────────────────────────────────────────────────
+
+export async function handleRelatedCallback(ctx: MyContext): Promise<void> {
+  const termId = (ctx.callbackQuery?.data ?? "").slice("related:".length);
+  const term = getTerm(termId);
+
+  if (!term || !term.related || term.related.length === 0) {
+    await ctx.answerCallbackQuery({
+      text: stripHtml(ctx.t("term-not-found", { query: termId })),
+      show_alert: true,
+    });
+    return;
+  }
+
+  const relatedTerms = term.related
+    .map((id: string) => getTerm(id))
+    .filter((t): t is NonNullable<typeof t> => t !== undefined)
+    .slice(0, 8);
+
+  const header = `📂 <b>${ctx.t("term-related")}: ${term.term}</b>`;
+  const text = formatTermList(relatedTerms, header);
+
+  await ctx.answerCallbackQuery();
+  await ctx.reply(text, { parse_mode: "HTML" });
+}
+
+export async function handleCategoryCallback(ctx: MyContext): Promise<void> {
+  const termId = (ctx.callbackQuery?.data ?? "").slice("category:".length);
+  const term = getTerm(termId);
+
+  if (!term) {
+    await ctx.answerCallbackQuery({
+      text: stripHtml(ctx.t("term-not-found", { query: termId })),
+      show_alert: true,
+    });
+    return;
+  }
+
+  await ctx.answerCallbackQuery();
+  await sendCategoryTerms(ctx, term.category, 1, false);
+}
+
+export async function handleSelectCallback(ctx: MyContext): Promise<void> {
+  const termId = (ctx.callbackQuery?.data ?? "").slice("select:".length);
+  const term = getTerm(termId);
+
+  if (!term) {
+    await ctx.answerCallbackQuery({
+      text: stripHtml(ctx.t("term-not-found", { query: termId })),
+      show_alert: true,
+    });
+    return;
+  }
+
+  const userId = ctx.from?.id;
+  if (userId) {
+    await db.addHistory(userId, termId);
+  }
+
+  const card = await buildEnrichedTermCard(
+    term,
+    ctx.t.bind(ctx),
+    await getEffectiveLocale(ctx),
+  );
+  await ctx.answerCallbackQuery();
+  await ctx.reply(card, {
+    parse_mode: "HTML",
+    reply_markup: await buildTermKeyboard(termId, ctx.t.bind(ctx), userId),
+  });
+}
+
+// ── Category browser ──────────────────────────────────────────────────────────
+
+export async function handleBrowseCatCallback(ctx: MyContext): Promise<void> {
+  const category = (ctx.callbackQuery?.data ?? "").slice(
+    "browse_cat:".length,
+  ) as Category;
+
+  const categories = getCategories();
+  if (!categories.includes(category)) {
+    await ctx.answerCallbackQuery({
+      text: ctx.t("category-not-found", { name: category }),
+      show_alert: true,
+    });
+    return;
+  }
+
+  await ctx.answerCallbackQuery();
+  await sendCategoryTerms(ctx, category, 1, true);
+}
+
+// ── Category pagination ─────────────────────────────────────────────────────
+
+export async function handleCatPageCallback(ctx: MyContext): Promise<void> {
+  const data = ctx.callbackQuery?.data ?? "";
+  const match = data.match(/^cat_page:(.+):(\d+)$/);
+  if (!match) {
+    await answerInvalidCallback(ctx);
+    return;
+  }
+
+  const category = match[1] as Category;
+  const page = parseInt(match[2], 10);
+
+  // Validate category
+  const categories = getCategories();
+  if (!categories.includes(category)) {
+    await ctx.answerCallbackQuery({
+      text: ctx.t("category-not-found", { name: category }),
+      show_alert: true,
+    });
+    return;
+  }
+
+  await sendCategoryTerms(ctx, category, page, true);
+  await ctx.answerCallbackQuery();
+}
+
+export async function handleNoopCallback(ctx: MyContext): Promise<void> {
+  await ctx.answerCallbackQuery();
+}
+
+export async function handleMenuCallback(ctx: MyContext): Promise<void> {
+  const action = (ctx.callbackQuery?.data ?? "").slice("menu:".length);
+
+  await ctx.answerCallbackQuery();
+
+  switch (action) {
+    case "main":
+      ctx.session.awaitingGlossaryQuery = false;
+      await sendMainMenu(ctx, true);
+      return;
+    case "categories":
+      ctx.session.awaitingGlossaryQuery = false;
+      await sendCategoriesMenu(ctx, true);
+      return;
+    case "glossary":
+      ctx.session.awaitingGlossaryQuery = false;
+      ctx.match = "";
+      await glossaryCommand(ctx);
+      return;
+    case "explain":
+      ctx.session.awaitingGlossaryQuery = false;
+      ctx.match = "";
+      await explainCommand(ctx);
+      return;
+    case "random":
+      ctx.session.awaitingGlossaryQuery = false;
+      await randomTermCommand(ctx);
+      return;
+    case "daily":
+      ctx.session.awaitingGlossaryQuery = false;
+      await import("../commands/daily.js").then(({ dailyTermCommand }) =>
+        dailyTermCommand(ctx),
+      );
+      return;
+    case "favorites":
+      ctx.session.awaitingGlossaryQuery = false;
+      await import("../commands/favorites.js").then(({ favoritesCommand }) =>
+        favoritesCommand(ctx),
+      );
+      return;
+    case "history":
+      ctx.session.awaitingGlossaryQuery = false;
+      await import("../commands/history.js").then(({ historyCommand }) =>
+        historyCommand(ctx),
+      );
+      return;
+    case "quiz":
+      ctx.session.awaitingGlossaryQuery = false;
+      await sendQuizMenu(ctx, true);
+      return;
+    case "streak":
+      ctx.session.awaitingGlossaryQuery = false;
+      await import("../commands/streak.js").then(({ streakCommand }) =>
+        streakCommand(ctx),
+      );
+      return;
+    case "leaderboard":
+      ctx.session.awaitingGlossaryQuery = false;
+      await import("../commands/leaderboard.js").then(
+        ({ leaderboardCommand }) => leaderboardCommand(ctx),
+      );
+      return;
+    case "progress":
+      await ctx.editMessageText(ctx.t("progress-menu-title"), {
+        parse_mode: "HTML",
+        reply_markup: buildProgressMenuKeyboard(ctx.t.bind(ctx)),
+      });
+      return;
+    case "library":
+      await ctx.editMessageText(ctx.t("library-menu-title"), {
+        parse_mode: "HTML",
+        reply_markup: buildLibraryMenuKeyboard(ctx.t.bind(ctx)),
+      });
+      return;
+    case "help":
+      ctx.session.awaitingGlossaryQuery = false;
+      await helpCommand(ctx);
+      return;
+    case "path":
+      ctx.session.awaitingGlossaryQuery = false;
+      await sendPathMenu(ctx, true);
+      return;
+    default:
+      await ctx.reply(ctx.t("internal-error"));
+  }
+}
+
+export async function handleTipsCallback(ctx: MyContext): Promise<void> {
+  const action = (ctx.callbackQuery?.data ?? "").slice("tips:".length);
+  const topicKey = getTipsTopicKey(action);
+
+  await ctx.answerCallbackQuery();
+
+  if (!topicKey) {
+    await ctx.editMessageText(
+      ctx.t("help-message", { bot_username: ctx.me.username }),
+      {
+        parse_mode: "HTML",
+        reply_markup: buildTipsKeyboard(ctx.t.bind(ctx)),
+      },
+    );
+    return;
+  }
+
+  await ctx.editMessageText(
+    ctx.t(topicKey, { bot_username: ctx.me.username }),
+    {
+      parse_mode: "HTML",
+      reply_markup: buildTipsKeyboard(ctx.t.bind(ctx)),
+    },
+  );
+}
+
+export async function handlePathSelectCallback(ctx: MyContext): Promise<void> {
+  const pathId = (ctx.callbackQuery?.data ?? "").slice("path_select:".length);
+  const path = getLearningPath(pathId);
+  const userId = ctx.from?.id;
+
+  if (!path) {
+    await ctx.answerCallbackQuery({
+      text: ctx.t("internal-error"),
+      show_alert: true,
+    });
+    return;
+  }
+
+  const progress = userId ? await db.getPathProgress(userId, pathId) : undefined;
+  const step = progress?.completed
+    ? path.termIds.length - 1
+    : (progress?.step ?? 0);
+
+  await ctx.answerCallbackQuery();
+  await sendPathStep(ctx, pathId, step, true);
+}
+
+export async function handlePathStepCallback(ctx: MyContext): Promise<void> {
+  const data = ctx.callbackQuery?.data ?? "";
+  const match = data.match(/^path_step:(.+):(\d+)$/);
+
+  if (!match) {
+    await answerInvalidCallback(ctx);
+    return;
+  }
+
+  const pathId = match[1];
+  const step = parseInt(match[2], 10);
+  const path = getLearningPath(pathId);
+
+  if (!path) {
+    await ctx.answerCallbackQuery({
+      text: ctx.t("internal-error"),
+      show_alert: true,
+    });
+    return;
+  }
+
+  await ctx.answerCallbackQuery();
+  await sendPathStep(ctx, pathId, step, true);
+}
+
+export async function handlePathQuizCallback(ctx: MyContext): Promise<void> {
+  const pathId = (ctx.callbackQuery?.data ?? "").slice("path_quiz:".length);
+  const path = getLearningPath(pathId);
+
+  if (!path) {
+    await ctx.answerCallbackQuery({
+      text: ctx.t("internal-error"),
+      show_alert: true,
+    });
+    return;
+  }
+
+  const pool = path.termIds
+    .map((termId) => getTerm(termId))
+    .filter((term): term is NonNullable<typeof term> => term !== undefined);
+
+  await ctx.answerCallbackQuery();
+  await sendQuiz(ctx, pool);
+}
+
+export async function handleQuizMenuCallback(ctx: MyContext): Promise<void> {
+  await ctx.answerCallbackQuery();
+  await sendQuizMenu(ctx, true);
+}
+
+export async function handleQuizModeCallback(ctx: MyContext): Promise<void> {
+  const mode = (ctx.callbackQuery?.data ?? "").slice("quiz_mode:".length);
+  if (mode !== "single" && mode !== "round") {
+    await answerInvalidCallback(ctx);
+    return;
+  }
+
+  const currentDraft = ctx.session.quizDraft;
+  await ctx.answerCallbackQuery();
+  if (currentDraft?.mode === mode) {
+    return;
+  }
+  updateQuizDraft(ctx, { mode });
+  await sendQuizMenu(ctx, true);
+}
+
+export async function handleQuizDifficultyCallback(
+  ctx: MyContext,
+): Promise<void> {
+  const difficultyKey = (ctx.callbackQuery?.data ?? "").slice(
+    "quiz_diff:".length,
+  );
+  const allowed = new Set(["all", "easy", "medium", "hard", "1", "2", "3", "4", "5"]);
+  if (!allowed.has(difficultyKey)) {
+    await answerInvalidCallback(ctx);
+    return;
+  }
+
+  const currentDraft = ctx.session.quizDraft;
+  await ctx.answerCallbackQuery();
+  if (currentDraft?.difficultyKey === difficultyKey) {
+    return;
+  }
+  updateQuizDraft(ctx, {
+    difficultyKey: difficultyKey as NonNullable<SessionData["quizDraft"]>["difficultyKey"],
+  });
+  await sendQuizMenu(ctx, true);
+}
+
+export async function handleQuizCountCallback(ctx: MyContext): Promise<void> {
+  const questionCount = Number(
+    (ctx.callbackQuery?.data ?? "").slice("quiz_count:".length),
+  );
+  if (questionCount !== 3 && questionCount !== 5 && questionCount !== 10) {
+    await answerInvalidCallback(ctx);
+    return;
+  }
+
+  const currentDraft = ctx.session.quizDraft;
+  await ctx.answerCallbackQuery();
+  if (currentDraft?.questionCount === questionCount) {
+    return;
+  }
+  updateQuizDraft(ctx, {
+    questionCount: questionCount as 3 | 5 | 10,
+  });
+  await sendQuizMenu(ctx, true);
+}
+
+export async function handleQuizFailureModeCallback(
+  ctx: MyContext,
+): Promise<void> {
+  const failureMode = (ctx.callbackQuery?.data ?? "").slice(
+    "quiz_fail:".length,
+  );
+  if (failureMode !== "continue" && failureMode !== "sudden_death") {
+    await answerInvalidCallback(ctx);
+    return;
+  }
+
+  const currentDraft = ctx.session.quizDraft;
+  await ctx.answerCallbackQuery();
+  if (currentDraft?.failureMode === failureMode) {
+    return;
+  }
+  updateQuizDraft(ctx, {
+    failureMode: failureMode as "continue" | "sudden_death",
+  });
+  await sendQuizMenu(ctx, true);
+}
+
+export async function handleQuizStartCallback(ctx: MyContext): Promise<void> {
+  await ctx.answerCallbackQuery();
+  await startQuizFromDraft(ctx);
+}
+
+export async function handlePathResetCallback(ctx: MyContext): Promise<void> {
+  const pathId = (ctx.callbackQuery?.data ?? "").slice("path_reset:".length);
+  const path = getLearningPath(pathId);
+  const userId = ctx.from?.id;
+
+  if (!path || !userId) {
+    await ctx.answerCallbackQuery({
+      text: ctx.t("internal-error"),
+      show_alert: true,
+    });
+    return;
+  }
+
+  await db.resetPath(userId, pathId);
+  await ctx.answerCallbackQuery();
+  await sendPathStep(ctx, pathId, 0, true);
+}
+
+export async function handlePathFavAddCallback(ctx: MyContext): Promise<void> {
+  const data = ctx.callbackQuery?.data ?? "";
+  const match = data.match(/^path_fav_add:(.+):(\d+):(.+)$/);
+  const userId = ctx.from?.id;
+
+  if (!match || !userId) {
+    await ctx.answerCallbackQuery({ text: ctx.t("internal-error") });
+    return;
+  }
+
+  const [, pathId, stepText, termId] = match;
+
+  try {
+    await db.addFavorite(userId, termId);
+    await ctx.answerCallbackQuery({ text: ctx.t("favorite-added") });
+    await sendPathStep(ctx, pathId, parseInt(stepText, 10), true);
+  } catch (err) {
+    await ctx.answerCallbackQuery({
+      text: ctx.t("favorites-limit"),
+      show_alert: true,
+    });
+  }
+}
+
+export async function handlePathFavRemoveCallback(
+  ctx: MyContext,
+): Promise<void> {
+  const data = ctx.callbackQuery?.data ?? "";
+  const match = data.match(/^path_fav_remove:(.+):(\d+):(.+)$/);
+  const userId = ctx.from?.id;
+
+  if (!match || !userId) {
+    await ctx.answerCallbackQuery({ text: ctx.t("internal-error") });
+    return;
+  }
+
+  const [, pathId, stepText, termId] = match;
+
+  await db.removeFavorite(userId, termId);
+  await ctx.answerCallbackQuery({ text: ctx.t("favorite-removed") });
+  await sendPathStep(ctx, pathId, parseInt(stepText, 10), true);
+}
+
+// ── Favorites ────────────────────────────────────────────────────────────────
+
+export async function handleFavAddCallback(ctx: MyContext): Promise<void> {
+  const userId = ctx.from?.id;
+  if (!userId) {
+    await ctx.answerCallbackQuery({ text: ctx.t("internal-error") });
+    return;
+  }
+
+  const termId = (ctx.callbackQuery?.data ?? "").slice("fav_add:".length);
+
+  try {
+    await db.addFavorite(userId, termId);
+    await ctx.answerCallbackQuery({ text: ctx.t("favorite-added") });
+
+    // Update keyboard to show remove button
+    await ctx.editMessageReplyMarkup({
+      reply_markup: await buildTermKeyboard(termId, ctx.t.bind(ctx), userId),
+    });
+  } catch (err) {
+    await ctx.answerCallbackQuery({
+      text: ctx.t("favorites-limit"),
+      show_alert: true,
+    });
+  }
+}
+
+export async function handleFavRemoveCallback(ctx: MyContext): Promise<void> {
+  const userId = ctx.from?.id;
+  if (!userId) {
+    await ctx.answerCallbackQuery({ text: ctx.t("internal-error") });
+    return;
+  }
+
+  const termId = (ctx.callbackQuery?.data ?? "").slice("fav_remove:".length);
+
+  await db.removeFavorite(userId, termId);
+  await ctx.answerCallbackQuery({ text: ctx.t("favorite-removed") });
+
+  // Update keyboard to show add button
+  await ctx.editMessageReplyMarkup({
+    reply_markup: await buildTermKeyboard(termId, ctx.t.bind(ctx), userId),
+  });
+}
+
+// ── Quiz ────────────────────────────────────────────────────────────────────
+
+export async function handleQuizAnswerCallback(ctx: MyContext): Promise<void> {
+  const userId = ctx.from?.id;
+  if (!userId) {
+    await ctx.answerCallbackQuery({ text: ctx.t("quiz-no-session") });
+    return;
+  }
+
+  const session = await db.getQuizSession(userId);
+  if (!session) {
+    await ctx.answerCallbackQuery({ text: ctx.t("quiz-no-session") });
+    return;
+  }
+
+  if (session.mode !== "single") {
+    await ctx.answerCallbackQuery({ text: ctx.t("quiz-no-session") });
+    return;
+  }
+
+  const data = ctx.callbackQuery?.data ?? "";
+  const answerMatch = data.match(/^quiz_answer:(\d+):(\d+)$/);
+  const answerIdx = answerMatch
+    ? parseInt(answerMatch[2] ?? "0", 10)
+    : parseInt(data.slice("quiz_answer:".length), 10);
+  const isCorrect = answerIdx === session.correctIdx;
+
+  // Acknowledge the callback immediately — Telegram requires this within ~3s.
+  await ctx.answerCallbackQuery();
+
+  const correctTerm = getTerm(session.options[session.correctIdx]);
+  const isGroup = ctx.chat?.type === "group" || ctx.chat?.type === "supergroup";
+  const chatId = ctx.chat?.id;
+
+  if (isGroup && chatId) {
+    await db.recordGroupMember(chatId, userId);
+  }
+
+  if (isCorrect) {
+    const streak = await db.incrementStreak(userId);
+    const displayName = ctx.from?.username
+      ? `@${ctx.from.username}`
+      : (ctx.from?.first_name ?? "Someone");
+    let groupStreakValue = 0;
+    let groupStreakJustAdvanced = false;
+
+    if (isGroup && chatId) {
+      const brokenState = await db.maybeResetGroupStreak(chatId);
+      if (brokenState.wasBroken) {
+        await ctx.reply(ctx.t("group-streak-broken"), {
+          parse_mode: "HTML",
+        });
+      }
+
+      const participation = await db.recordGroupParticipant(chatId, userId);
+      const groupStreak = await db.getOrCreateGroupStreak(chatId);
+
+      if (
+        participation.participantsToday >= GROUP_STREAK_THRESHOLD &&
+        groupStreak.last_active_date !== participation.date
+      ) {
+        const incremented = await db.incrementGroupStreak(chatId);
+        groupStreakValue = incremented.newStreak;
+        groupStreakJustAdvanced = incremented.justCrossedThreshold;
+
+        const GROUP_STREAK_MILESTONES = new Set([1, 3, 7, 14, 30]);
+        if (GROUP_STREAK_MILESTONES.has(incremented.newStreak)) {
+          if (incremented.newStreak === 1) {
+            await ctx.reply(ctx.t("group-streak-started"), {
+              parse_mode: "HTML",
+            });
+          } else {
+            await ctx.reply(
+              buildGroupMilestoneMessage(
+                ctx,
+                incremented.newStreak,
+                participation.participantsToday,
+              ),
+              {
+                parse_mode: "HTML",
+              },
+            );
+          }
+        }
+      } else {
+        groupStreakValue = groupStreak.current_streak;
+      }
+    }
+
+    if (isGroup && chatId && streak.isNewRecord) {
+      await ctx.reply(
+        ctx.t("quiz-correct-group-new-record-with-streak", {
+          name: displayName,
+          term: correctTerm?.term ?? "",
+          personal: streak.current,
+          group: groupStreakValue,
+          status: groupStreakJustAdvanced ? " ✅" : "",
+          max: streak.max,
+        }),
+        {
+          parse_mode: "HTML",
+        },
+      );
+    } else if (isGroup && chatId) {
+      await ctx.reply(
+        ctx.t("quiz-correct-group-with-streak", {
+          name: displayName,
+          term: correctTerm?.term ?? "",
+          personal: streak.current,
+          group: groupStreakValue,
+          status: groupStreakJustAdvanced ? " ✅" : "",
+        }),
+        {
+          parse_mode: "HTML",
+        },
+      );
+    } else if (streak.isNewRecord) {
+      await ctx.reply(
+        ctx.t("quiz-correct-new-record", {
+          term: correctTerm?.term ?? "",
+          max: streak.max,
+        }),
+        {
+          parse_mode: "HTML",
+        },
+      );
+    } else if (streak.current > 1) {
+      await ctx.reply(
+        ctx.t("quiz-correct-with-streak", {
+          term: correctTerm?.term ?? "",
+          current: streak.current,
+        }),
+        {
+          parse_mode: "HTML",
+        },
+      );
+    } else {
+      await ctx.reply(
+        ctx.t("quiz-correct", { term: correctTerm?.term ?? "" }),
+        {
+          parse_mode: "HTML",
+        },
+      );
+    }
+
+    // Schedule streak warning for tomorrow (2h before midnight)
+    const { scheduleStreakWarning } =
+      await import("../scheduler/notifications.js");
+    await scheduleStreakWarning(userId);
+
+    // Show the term card
+    if (correctTerm) {
+      const card = await buildEnrichedTermCard(
+        correctTerm,
+        ctx.t.bind(ctx),
+        await getEffectiveLocale(ctx),
+      );
+      await ctx.reply(card, {
+        parse_mode: "HTML",
+        reply_markup: await buildTermKeyboard(
+          correctTerm.id,
+          ctx.t.bind(ctx),
+          userId,
+        ),
+      });
+    }
+    // Clear session
+    await db.clearQuizSession(userId);
+  } else {
+    if (isGroup) {
+      await db.clearQuizSession(userId);
+      await ctx.editMessageReplyMarkup({ reply_markup: undefined }).catch(
+        () => {},
+      );
+      await ctx.reply(ctx.t("quiz-result", { term: correctTerm?.term ?? "" }), {
+        parse_mode: "HTML",
+      });
+      return;
+    }
+
+    await ctx.reply(ctx.t("quiz-wrong-retry"), {
+      parse_mode: "HTML",
+      reply_markup: buildQuizRetryKeyboard(ctx),
+    });
+    // Don't clear session yet - user might want to retry
+    return;
+  }
+}
+
+export async function handleQuizRetryCallback(ctx: MyContext): Promise<void> {
+  const userId = ctx.from?.id;
+  if (!userId) {
+    await ctx.answerCallbackQuery({ text: ctx.t("quiz-no-session") });
+    return;
+  }
+
+  const session = await db.getQuizSession(userId);
+  if (!session) {
+    await ctx.answerCallbackQuery({ text: ctx.t("quiz-no-session") });
+    return;
+  }
+
+  // Get term and rebuild question
+  const targetTerm = getTerm(session.termId);
+  if (!targetTerm) {
+    await ctx.answerCallbackQuery({
+      text: ctx.t("internal-error"),
+      show_alert: true,
+    });
+    return;
+  }
+
+  // Rebuild options from session
+  const options = session.options
+    .map((id) => getTerm(id))
+    .filter((t): t is NonNullable<typeof t> => t !== undefined);
+
+  // Show question again
+  const keyboard = new InlineKeyboard()
+    .text(
+      ctx.t("quiz-option-a", { term: options[0]?.term ?? "" }),
+      `quiz_answer:${session.currentQuestion}:0`,
+    )
+    .row()
+    .text(
+      ctx.t("quiz-option-b", { term: options[1]?.term ?? "" }),
+      `quiz_answer:${session.currentQuestion}:1`,
+    )
+    .row()
+    .text(
+      ctx.t("quiz-option-c", { term: options[2]?.term ?? "" }),
+      `quiz_answer:${session.currentQuestion}:2`,
+    )
+    .row()
+    .text(
+      ctx.t("quiz-option-d", { term: options[3]?.term ?? "" }),
+      `quiz_answer:${session.currentQuestion}:3`,
+    );
+
+  await ctx.reply(ctx.t("quiz-try-again"), { parse_mode: "HTML" });
+  await ctx.reply(buildQuizQuestionText(ctx, targetTerm), {
+    parse_mode: "HTML",
+    reply_markup: keyboard,
+  });
+
+  await ctx.answerCallbackQuery();
+}
+
+export async function handleQuizResultCallback(ctx: MyContext): Promise<void> {
+  const userId = ctx.from?.id;
+  if (!userId) {
+    await ctx.answerCallbackQuery({ text: ctx.t("quiz-no-session") });
+    return;
+  }
+
+  const session = await db.getQuizSession(userId);
+  if (!session) {
+    await ctx.answerCallbackQuery({ text: ctx.t("quiz-no-session") });
+    return;
+  }
+
+  if (session.mode !== "single") {
+    await ctx.answerCallbackQuery({ text: ctx.t("quiz-no-session") });
+    return;
+  }
+
+  const correctTerm = getTerm(session.options[session.correctIdx]);
+
+  // Show the correct answer
+  await ctx.reply(ctx.t("quiz-result", { term: correctTerm?.term ?? "" }), {
+    parse_mode: "HTML",
+  });
+
+  // Show the term card
+  if (correctTerm) {
+    const card = await buildEnrichedTermCard(
+      correctTerm,
+      ctx.t.bind(ctx),
+      await getEffectiveLocale(ctx),
+    );
+    await ctx.reply(card, {
+      parse_mode: "HTML",
+      reply_markup: await buildTermKeyboard(
+        correctTerm.id,
+        ctx.t.bind(ctx),
+        userId,
+      ),
+    });
+  }
+
+  // Clear session
+  await db.clearQuizSession(userId);
+  await ctx.answerCallbackQuery();
+}
+
+// ── Feedback ──────────────────────────────────────────────────────────────────
+
+export async function handleQuizRoundAnswerCallback(
+  ctx: MyContext,
+): Promise<void> {
+  const userId = ctx.from?.id;
+  if (!userId) {
+    await ctx.answerCallbackQuery({ text: ctx.t("quiz-no-session") });
+    return;
+  }
+
+  const session = await db.getQuizSession(userId);
+  if (!session || session.mode !== "round") {
+    await ctx.answerCallbackQuery({ text: ctx.t("quiz-no-session") });
+    return;
+  }
+
+  const match = (ctx.callbackQuery?.data ?? "").match(
+    /^quiz_round_answer:(\d+):(\d+)$/,
+  );
+  if (!match) {
+    await answerInvalidCallback(ctx);
+    return;
+  }
+
+  const questionNumber = parseInt(match[1] ?? "0", 10);
+  const answerIdx = parseInt(match[2] ?? "0", 10);
+  if (questionNumber !== session.currentQuestion) {
+    await ctx.answerCallbackQuery({ text: ctx.t("quiz-no-session") });
+    return;
+  }
+
+  await ctx.answerCallbackQuery();
+  await ctx.editMessageReplyMarkup({ reply_markup: undefined }).catch(() => {});
+
+  const correctTerm = getTerm(session.options[session.correctIdx]);
+  const isCorrect = answerIdx === session.correctIdx;
+
+  if (isCorrect) {
+    const streak = await db.incrementStreak(userId);
+    await ctx.reply(
+      ctx.t(
+        streak.isNewRecord || streak.current > 1
+          ? "quiz-round-feedback-correct-streak"
+          : "quiz-round-feedback-correct",
+        {
+          term: correctTerm?.term ?? "",
+          current: streak.current,
+        },
+      ),
+      { parse_mode: "HTML" },
+    );
+
+    const { scheduleStreakWarning } =
+      await import("../scheduler/notifications.js");
+    await scheduleStreakWarning(userId);
+    session.correctAnswers += 1;
+  } else {
+    session.wrongAnswers += 1;
+    await ctx.reply(
+      ctx.t("quiz-round-feedback-wrong", {
+        term: correctTerm?.term ?? "",
+      }),
+      { parse_mode: "HTML" },
+    );
+  }
+
+  updateQuizDraft(ctx, {
+    mode: "round",
+    difficultyKey: session.difficultyKey,
+    questionCount:
+      session.totalQuestions === 10
+        ? 10
+        : session.totalQuestions === 3
+          ? 3
+          : 5,
+    failureMode: session.failureMode,
+  });
+
+  const roundEnded =
+    session.currentQuestion >= session.totalQuestions ||
+    (!isCorrect && session.failureMode === "sudden_death");
+
+  if (roundEnded) {
+    await db.clearQuizSession(userId);
+    const answered = session.correctAnswers + session.wrongAnswers;
+    const accuracy =
+      answered === 0
+        ? 0
+        : Math.round((session.correctAnswers / answered) * 100);
+    await ctx.reply(
+      ctx.t("quiz-round-summary", {
+        answered,
+        total: session.totalQuestions,
+        correct: session.correctAnswers,
+        wrong: session.wrongAnswers,
+        accuracy,
+        difficulty:
+          session.difficultyKey === "all"
+            ? ctx.t("quiz-menu-difficulty-all")
+            : session.difficultyKey === "easy"
+              ? ctx.t("quiz-menu-difficulty-easy")
+              : session.difficultyKey === "medium"
+                ? ctx.t("quiz-menu-difficulty-medium")
+                : session.difficultyKey === "hard"
+                  ? ctx.t("quiz-menu-difficulty-hard")
+                  : ctx.t("quiz-menu-difficulty-level", {
+                      level: session.difficultyKey,
+                    }),
+      }),
+      {
+        parse_mode: "HTML",
+        reply_markup: buildQuizRoundSummaryKeyboard(ctx),
+      },
+    );
+    return;
+  }
+
+  const nextSession = buildNextRoundSession(session);
+  if (!nextSession) {
+    await db.clearQuizSession(userId);
+    await ctx.reply(ctx.t("internal-error"));
+    return;
+  }
+
+  await db.saveQuizSession(userId, nextSession);
+  const nextTerm = getTerm(nextSession.termId);
+  if (!nextTerm) {
+    await db.clearQuizSession(userId);
+    await ctx.reply(ctx.t("internal-error"));
+    return;
+  }
+
+  await ctx.reply(buildQuizRoundQuestionText(ctx, nextSession, nextTerm), {
+    parse_mode: "HTML",
+    reply_markup: new InlineKeyboard()
+      .text(
+        ctx.t("quiz-option-a", {
+          term: getTerm(nextSession.options[0])?.term ?? "",
+        }),
+        `quiz_round_answer:${nextSession.currentQuestion}:0`,
+      )
+      .row()
+      .text(
+        ctx.t("quiz-option-b", {
+          term: getTerm(nextSession.options[1])?.term ?? "",
+        }),
+        `quiz_round_answer:${nextSession.currentQuestion}:1`,
+      )
+      .row()
+      .text(
+        ctx.t("quiz-option-c", {
+          term: getTerm(nextSession.options[2])?.term ?? "",
+        }),
+        `quiz_round_answer:${nextSession.currentQuestion}:2`,
+      )
+      .row()
+      .text(
+        ctx.t("quiz-option-d", {
+          term: getTerm(nextSession.options[3])?.term ?? "",
+        }),
+        `quiz_round_answer:${nextSession.currentQuestion}:3`,
+      ),
+  });
+}
+
+export async function handleFeedbackCallback(ctx: MyContext): Promise<void> {
+  await ctx.answerCallbackQuery({ text: ctx.t("feedback-thanks") });
+}
+
+function getTipsTopicKey(action: string): string | null {
+  switch (action) {
+    case "menu":
+      return null;
+    case "explain":
+      return "tips-explain";
+    case "compare":
+      return "tips-compare";
+    case "path":
+      return "tips-path";
+    case "quiz":
+      return "tips-quiz";
+    case "glossary":
+      return "tips-glossary";
+    case "categories":
+      return "tips-categories";
+    case "streak":
+      return "tips-streak";
+    case "leaderboard":
+      return "tips-leaderboard";
+    case "help":
+      return "tips-help";
+    default:
+      return null;
+  }
+}
+
+function buildGroupMilestoneMessage(
+  ctx: MyContext,
+  days: number,
+  participantsToday: number,
+): string {
+  if (days === 3) {
+    return ctx.t("group-streak-milestone", {
+      emoji: "🔥",
+      days,
+      celebration: ctx.t("group-streak-milestone-3"),
+    });
+  }
+
+  if (days === 7) {
+    return ctx.t("group-streak-milestone", {
+      emoji: "🎉",
+      days,
+      celebration: ctx.t("group-streak-milestone-7"),
+    });
+  }
+
+  if (days === 14) {
+    return ctx.t("group-streak-milestone", {
+      emoji: "🔥",
+      days,
+      celebration: ctx.t("group-streak-milestone-14"),
+    });
+  }
+
+  if (days === 30) {
+    return ctx.t("group-streak-milestone", {
+      emoji: "🏆",
+      days,
+      celebration: ctx.t("group-streak-milestone-30"),
+    });
+  }
+
+  return ctx.t("group-streak-maintained", {
+    count: participantsToday,
+  });
+}

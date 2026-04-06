@@ -1,0 +1,13 @@
+[phases.setup]
+nixPkgs = ["nodejs", "npm"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = ["npm run build"]
+dependsOn = ["install"]
+
+[start]
+cmd = "node dist/server.js"
+dependsOn = ["build"]

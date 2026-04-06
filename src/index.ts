@@ -15,6 +15,10 @@ import programmingFundamentals from "../data/terms/programming-fundamentals.json
 import aiMl from "../data/terms/ai-ml.json";
 import solanaEcosystem from "../data/terms/solana-ecosystem.json";
 
+// i18n data
+import ptI18n from "../data/i18n/pt.json";
+import esI18n from "../data/i18n/es.json";
+
 export type { GlossaryTerm, Category } from "./types";
 
 export const allTerms: GlossaryTerm[] = [
@@ -44,10 +48,52 @@ for (const t of allTerms) {
   }
 }
 
+// i18n lookup maps
+interface I18nEntry {
+  term: string;
+  definition: string;
+}
+
+const ptMap = new Map<string, I18nEntry>();
+const esMap = new Map<string, I18nEntry>();
+
+for (const [id, entry] of Object.entries(ptI18n)) {
+  ptMap.set(id, entry as I18nEntry);
+}
+for (const [id, entry] of Object.entries(esI18n)) {
+  esMap.set(id, entry as I18nEntry);
+}
+
 /** Get a term by its id or any of its aliases */
 export function getTerm(idOrAlias: string): GlossaryTerm | undefined {
   const lower = idOrAlias.toLowerCase();
   return termMap.get(idOrAlias) ?? termMap.get(aliasMap.get(lower) ?? "");
+}
+
+/** Get localized term and definition. Falls back to original fields for English or missing translations */
+export function getTermLocalized(
+  id: string,
+  locale: "pt" | "en" | "es",
+): { term: string; definition: string } | undefined {
+  const term = getTerm(id);
+  if (!term) return undefined;
+
+  if (locale === "en") {
+    return { term: term.term, definition: term.definition };
+  }
+
+  const map = locale === "pt" ? ptMap : esMap;
+  const localized = map.get(id);
+
+  if (localized) {
+    return {
+      term: localized.term || term.term,
+      definition: localized.definition || term.definition,
+    };
+  }
+
+  // Fallback to English
+  return { term: term.term, definition: term.definition };
 }
 
 /** Get all terms in a given category */

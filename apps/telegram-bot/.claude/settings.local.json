@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(code-review:code-review)",
+      "Bash(gh --version)",
+      "Bash(find:*)",
+      "Bash(npm list:*)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "WebSearch",
+      "WebFetch(domain:solana.com)",
+      "Bash(npm run:*)",
+      "Bash(rm -rf node_modules package-lock.json)",
+      "Bash(npm install:*)",
+      "Bash(node:*)",
+      "Bash(npx tsc:*)",
+      "Bash(python3:*)"
+    ]
+  }
+}
