@@ -86,3 +86,8 @@ export function getCategories(): Category[] {
     "solana-ecosystem",
   ];
 }
+
+export { buildProject } from "./builder/builder";
+export type { BuildResult, BuildOptions } from "./builder/builder";
+export type { Architecture } from "./builder/generateArchitecture";
+
