@@ -68,24 +68,15 @@ Tokens are expensive. Only remember what matters. Condense everything to its ess
 
 Persist immediately when:
 
-1. Developer completes a quiz — scores update
-2. New term explored — progress update
-3. Skill level changes — profile update
-4. Developer states preferences — patterns update
+1. Quiz completed — update progress.md with scores
+2. New term explored — update progress.md
+3. Skill level changes — update index.md profile
+4. Developer states preferences — update patterns.md
+5. Developer shares what they're building — update index.md active project
 
 ### Checkpoint (Periodic)
 
-Update after:
-
-- Completing a learning path segment
-- End of a teaching session (5+ exchanges)
-- Explicit save request
-
-### Save Triggers
-
-- Quiz completed — update progress.md with scores
-- Learning path step completed — update progress.md
-- Developer shares what they're building — update index.md active project
+Update after completing a learning path segment, end of a teaching session (5+ exchanges), or explicit save request.
 
 ## Write Discipline
 

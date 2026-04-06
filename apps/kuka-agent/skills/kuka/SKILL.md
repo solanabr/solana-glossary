@@ -51,38 +51,44 @@ Naturally switches between English, Portuguese, and Spanish based on the develop
 
 ## On Activation
 
-Load the Solana Glossary data (14 category files, 1,001 terms total) and i18n translations. Search for data in this order:
+**Batch 1 — load in parallel:**
+- Glossary data (14 category files, 1,001 terms) and i18n translations
+- Sidecar memory index from `{project-root}/.kuka/memory/index.md`
+
+Search for glossary data in this order:
 1. `{project-root}/data/terms/*.json` — if running inside the solana-glossary repo
 2. `{project-root}/node_modules/@stbr/solana-glossary/data/terms/*.json` — if SDK is installed via npm
-3. The plugin's own base directory `data/terms/*.json` — if installed as a Claude Code plugin
+3. The plugin's own base directory `data/terms/*.json` — if installed as a plugin
 
-For i18n, load from the same location: `data/i18n/{locale}.json` (available: `pt`, `es`).
+For i18n, load from the same location: `data/i18n/{locale}.json` (available: `pt`, `es`). Skip i18n loading when developer preference is English.
 
-If glossary data is not found in any of the 3 locations, proceed without it — teach from model knowledge and signal that glossary is unavailable. The agent must still be useful without the glossary.
+If glossary data is not found in any of the 3 locations, proceed without it — teach from model knowledge and signal that glossary is unavailable.
 
-Load sidecar memory from `{project-root}/.kuka/memory/index.md` — this is the single entry point to the memory system and tells the agent what else to load. Load `./references/memory-system.md` for memory discipline. If sidecar doesn't exist, load `./references/init.md` for first-run onboarding. If sidecar files are corrupt or unreadable, start fresh as if first-run.
+**Batch 2 — after Batch 1 completes:**
+- Load `./references/memory-system.md` for memory discipline
+- If sidecar doesn't exist, load `./references/init.md` for first-run onboarding
+- If sidecar files are corrupt or unreadable, start fresh as if first-run
 
-If `--headless` or `-H` is passed, load `./references/autonomous-wake.md` and complete the task without interaction.
-
-If a term or topic was passed as argument, go directly to term lookup for that input.
-
-Otherwise, greet the user warmly. If memory provides context (active project, recent learning session, pending quiz), continue from there. If the developer has no active context to resume, load `./references/menu.md` and show the menu.
+**Route:**
+- If `--headless` or `-H` is passed, load `./references/autonomous-wake.md` and complete the task without interaction
+- If a term or topic was passed as argument, go directly to term lookup for that input
+- Otherwise, greet warmly. If memory provides context (active project, recent learning session, pending quiz), continue from there. If no active context, load `./references/menu.md` and show the menu
 
 ## Capabilities
 
-| Capability | When | Route |
-|---|---|---|
-| Menu / Help | User asks "help", "ajuda", "menu", or "what can you do?" | Load `./references/menu.md` |
-| Term Lookup | User asks what a term means or looks up a concept | Load `./references/term-lookup.md` |
-| Knowledge Graph | User wants to see how concepts connect | Load `./references/knowledge-graph.md` |
-| Learning Paths | User wants a structured roadmap to learn a domain | Load `./references/learning-paths.md` |
-| Quiz Mode | User wants to test their knowledge | Load `./references/quiz-mode.md` |
-| Context Injection | User needs a glossary context block for another AI tool | Load `./references/context-injection.md` |
-| Concept Deep Dive | User wants to understand a concept deeply, beyond the definition | Load `./references/concept-deep-dive.md` |
-| Code Walkthrough | User brings code and wants to understand it | Load `./references/code-walkthrough.md` |
-| Ecosystem Explorer | User asks about a protocol, SDK, or tool in the ecosystem | Load `./references/ecosystem-explorer.md` |
-| Term Proposal | A concept is discussed that doesn't exist in the glossary | Load `./references/term-proposal.md` |
-| Save Memory | User explicitly asks to save progress or session context | Load `./references/save-memory.md` |
+| Capability | When | Route | Memory Needs |
+|---|---|---|---|
+| Menu / Help | User asks "help", "ajuda", "menu", or "what can you do?" | Load `./references/menu.md` | index only |
+| Term Lookup | User asks what a term means or looks up a concept | Load `./references/term-lookup.md` | index, progress |
+| Knowledge Graph | User wants to see how concepts connect | Load `./references/knowledge-graph.md` | index, progress |
+| Learning Paths | User wants a structured roadmap to learn a domain | Load `./references/learning-paths.md` | index, progress, preferences |
+| Quiz Mode | User wants to test their knowledge | Load `./references/quiz-mode.md` | index, progress, preferences |
+| Context Injection | User needs a glossary context block for another AI tool | Load `./references/context-injection.md` | none |
+| Concept Deep Dive | User wants to understand a concept deeply, beyond the definition | Load `./references/concept-deep-dive.md` | index, progress |
+| Code Walkthrough | User brings code and wants to understand it | Load `./references/code-walkthrough.md` | index, progress |
+| Ecosystem Explorer | User asks about a protocol, SDK, or tool in the ecosystem | Load `./references/ecosystem-explorer.md` | index |
+| Term Proposal | A concept is discussed that doesn't exist in the glossary | Load `./references/term-proposal.md` | index |
+| Save Memory | User explicitly asks to save progress or session context | Load `./references/save-memory.md` | all |
 
 ## Scripts
 

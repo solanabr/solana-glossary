@@ -5,7 +5,7 @@
  * and identify knowledge gaps based on developer progress.
  *
  * Usage:
- *   npx tsx apps/kuka-agent/skills/kuka/scripts/glossary-coverage.ts \
+ *   npx tsx@4 apps/kuka-agent/skills/kuka/scripts/glossary-coverage.ts \
  *     --topic "compressed tokens with light protocol"
  *     [--progress .kuka/memory/progress.md]
  *     [--code-file program.rs]
@@ -16,13 +16,9 @@
  * Output: JSON to stdout with matched terms, explored/gap breakdown, and suggested path.
  */
 
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import {
-  allTerms,
-  getCategories,
-  type GlossaryTerm,
-} from "../../../../../src/index";
+import { allTerms, type GlossaryTerm } from "../../../../../src/index";
 
 // ── CLI args ────────────────────────────────────────────────────────────
 
@@ -40,7 +36,8 @@ function parseArgs(): Args {
   const args: Args = { maxResults: 30, verbose: false };
 
   if (argv.includes("--help") || argv.includes("-h")) {
-    console.log(`
+    console.log(
+      `
 Glossary Coverage Checker — match topics/code against the Solana Glossary.
 
 Options:
@@ -53,7 +50,8 @@ Options:
   --help, -h            Show this help
 
 Output: JSON to stdout with matched terms, explored/gap breakdown, and suggested path.
-    `.trim());
+    `.trim(),
+    );
     process.exit(0);
   }
 
@@ -81,7 +79,9 @@ Output: JSON to stdout with matched terms, explored/gap breakdown, and suggested
   }
 
   if (!args.topic && !args.codeFile && !args.terms) {
-    console.error("Error: at least one of --topic, --code-file, or --terms is required");
+    console.error(
+      "Error: at least one of --topic, --code-file, or --terms is required",
+    );
     process.exit(2);
   }
 
@@ -97,7 +97,7 @@ function buildSearchIndex(terms: GlossaryTerm[]): Map<string, Set<string>> {
     const lower = keyword.toLowerCase();
     if (lower.length < 3) return;
     if (!index.has(lower)) index.set(lower, new Set());
-    index.get(lower)!.add(termId);
+    index.get(lower)?.add(termId);
   };
 
   for (const term of terms) {
@@ -189,7 +189,10 @@ function matchTerms(
 
     // Partial match for compound terms
     for (const [indexKey, termIds] of searchIndex) {
-      if (keyword.length >= 4 && (keyword.includes(indexKey) || indexKey.includes(keyword))) {
+      if (
+        keyword.length >= 4 &&
+        (keyword.includes(indexKey) || indexKey.includes(keyword))
+      ) {
         for (const termId of termIds) {
           addScore(termId, 0.5);
         }
@@ -219,12 +222,14 @@ function suggestPath(
     const related = termLookup.get(g)?.related ?? [];
     for (const r of related) {
       if (refCount.has(r)) {
-        refCount.set(r, refCount.get(r)! + 1);
+        refCount.set(r, (refCount.get(r) ?? 0) + 1);
       }
     }
   }
 
-  return [...gapSet].sort((a, b) => (refCount.get(b) ?? 0) - (refCount.get(a) ?? 0));
+  return [...gapSet].sort(
+    (a, b) => (refCount.get(b) ?? 0) - (refCount.get(a) ?? 0),
+  );
 }
 
 // ── Main ────────────────────────────────────────────────────────────────
@@ -238,28 +243,33 @@ function main() {
 
   if (args.verbose) {
     console.error(`Loaded ${allTerms.length} glossary terms`);
-    console.error(`Developer has explored ${explored.size} terms`);
+    console.error(`Developer explored ${explored.size} terms`);
   }
 
   // Build input text
   let inputText = "";
-  if (args.topic) inputText += args.topic + " ";
+  if (args.topic) inputText += `${args.topic} `;
   if (args.codeFile) {
     const codePath = resolve(args.codeFile);
     if (existsSync(codePath)) {
-      inputText += readFileSync(codePath, "utf-8") + " ";
+      inputText += `${readFileSync(codePath, "utf-8")} `;
     } else {
       console.error(`Warning: code file not found: ${args.codeFile}`);
     }
   }
-  if (args.terms) inputText += args.terms.split(",").join(" ") + " ";
+  if (args.terms) inputText += `${args.terms.split(",").join(" ")} `;
 
   const keywords = extractKeywords(inputText);
   if (args.verbose) {
     console.error(`Extracted ${keywords.length} keywords`);
   }
 
-  const matchedIds = matchTerms(keywords, searchIndex, termLookup, args.maxResults);
+  const matchedIds = matchTerms(
+    keywords,
+    searchIndex,
+    termLookup,
+    args.maxResults,
+  );
   const exploredMatches = matchedIds.filter((t) => explored.has(t));
   const gapMatches = matchedIds.filter((t) => !explored.has(t));
   const suggested = suggestPath(gapMatches, termLookup);

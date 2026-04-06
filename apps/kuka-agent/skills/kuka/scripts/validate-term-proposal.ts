@@ -5,23 +5,22 @@
  * and existing data. Ensures proposals are ready for review and submission.
  *
  * Usage:
- *   npx tsx apps/kuka-agent/skills/kuka/scripts/validate-term-proposal.ts \
+ *   npx tsx@4 apps/kuka-agent/skills/kuka/scripts/validate-term-proposal.ts \
  *     --proposal .kuka/proposals/jito-bundles.json
  *     [--proposals-dir .kuka/proposals/]
  *     [--verbose]
  *
- *   echo '{"id":"jito-bundles",...}' | npx tsx validate-term-proposal.ts --proposal -
+ *   echo '{"id":"jito-bundles",...}' | npx tsx@4 validate-term-proposal.ts --proposal -
  *
  * Output: JSON to stdout with pass/fail status and detailed findings.
  */
 
-import { readFileSync, existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   allTerms,
-  getCategories,
-  type GlossaryTerm,
   type Category,
+  getCategories,
 } from "../../../../../src/index";
 
 // ── Constants ───────────────────────────────────────────────────────────
@@ -68,7 +67,8 @@ function parseArgs(): Args {
   const args: Args = { proposal: "", verbose: false };
 
   if (argv.includes("--help") || argv.includes("-h")) {
-    console.log(`
+    console.log(
+      `
 Term Proposal Validator — validate proposed glossary terms against schema and existing data.
 
 Options:
@@ -78,7 +78,8 @@ Options:
   --help, -h              Show this help
 
 Output: JSON to stdout with pass/fail status and detailed findings.
-    `.trim());
+    `.trim(),
+    );
     process.exit(0);
   }
 
@@ -174,7 +175,12 @@ function validateProposal(
   const requiredFields = ["id", "term", "definition", "category"];
   for (const field of requiredFields) {
     if (!(field in proposal)) {
-      finding("critical", "structure", `Missing required field: ${field}`, `Add '${field}' to the proposal`);
+      finding(
+        "critical",
+        "structure",
+        `Missing required field: ${field}`,
+        `Add '${field}' to the proposal`,
+      );
     }
   }
 
@@ -188,25 +194,50 @@ function validateProposal(
 
   // ID format
   if (!/^[a-z][a-z0-9-]*$/.test(termId)) {
-    finding("critical", "structure", `ID '${termId}' is not valid kebab-case`, "Use lowercase letters, numbers, and hyphens only");
+    finding(
+      "critical",
+      "structure",
+      `ID '${termId}' is not valid kebab-case`,
+      "Use lowercase letters, numbers, and hyphens only",
+    );
   }
 
   // ID uniqueness
   if (existingIds.has(termId)) {
-    finding("critical", "consistency", `ID '${termId}' already exists in the glossary`, "Choose a different ID or update the existing term");
+    finding(
+      "critical",
+      "consistency",
+      `ID '${termId}' already exists in the glossary`,
+      "Choose a different ID or update the existing term",
+    );
   }
 
   // Category validity
   if (!VALID_CATEGORIES.includes(category as Category)) {
-    finding("critical", "structure", `Invalid category: '${category}'`, `Use one of: ${VALID_CATEGORIES.join(", ")}`);
+    finding(
+      "critical",
+      "structure",
+      `Invalid category: '${category}'`,
+      `Use one of: ${VALID_CATEGORIES.join(", ")}`,
+    );
   }
 
   // Definition length
   if (definition.length < MIN_DEFINITION_LENGTH) {
-    finding("high", "structure", `Definition too short (${definition.length} chars, min ${MIN_DEFINITION_LENGTH})`, "Expand the definition with more context");
+    finding(
+      "high",
+      "structure",
+      `Definition too short (${definition.length} chars, min ${MIN_DEFINITION_LENGTH})`,
+      "Expand the definition with more context",
+    );
   }
   if (definition.length > MAX_DEFINITION_LENGTH) {
-    finding("medium", "structure", `Definition too long (${definition.length} chars, max ${MAX_DEFINITION_LENGTH})`, "Condense the definition to be more concise");
+    finding(
+      "medium",
+      "structure",
+      `Definition too long (${definition.length} chars, max ${MAX_DEFINITION_LENGTH})`,
+      "Condense the definition to be more concise",
+    );
   }
 
   // Related terms existence
@@ -214,7 +245,12 @@ function validateProposal(
   const knownIds = new Set([...existingIds, ...pendingIds]);
   for (const rel of related) {
     if (!knownIds.has(rel)) {
-      finding("medium", "consistency", `Related term '${rel}' not found in glossary or pending proposals`, `Remove '${rel}' or ensure it exists/is being proposed`);
+      finding(
+        "medium",
+        "consistency",
+        `Related term '${rel}' not found in glossary or pending proposals`,
+        `Remove '${rel}' or ensure it exists/is being proposed`,
+      );
     }
   }
 
@@ -223,7 +259,12 @@ function validateProposal(
   for (const alias of aliases) {
     const collidesWith = existingAliases.get(alias.toLowerCase());
     if (collidesWith) {
-      finding("high", "consistency", `Alias '${alias}' collides with existing term '${collidesWith}'`, "Remove this alias or rename it");
+      finding(
+        "high",
+        "consistency",
+        `Alias '${alias}' collides with existing term '${collidesWith}'`,
+        "Remove this alias or rename it",
+      );
     }
   }
 
@@ -231,7 +272,12 @@ function validateProposal(
   const termName = proposal.term as string;
   const nameCollision = existingAliases.get(termName.toLowerCase());
   if (nameCollision) {
-    finding("medium", "consistency", `Term name '${termName}' matches an alias of '${nameCollision}'`, "Consider if this should be an update to the existing term instead");
+    finding(
+      "medium",
+      "consistency",
+      `Term name '${termName}' matches an alias of '${nameCollision}'`,
+      "Consider if this should be an update to the existing term instead",
+    );
   }
 
   return findings;
@@ -247,11 +293,18 @@ function main() {
   const pendingIds = loadPendingProposals(args.proposalsDir);
 
   if (args.verbose) {
-    console.error(`Glossary: ${existingIds.size} terms, ${existingAliases.size} aliases`);
+    console.error(
+      `Glossary: ${existingIds.size} terms, ${existingAliases.size} aliases`,
+    );
     console.error(`Pending proposals: ${pendingIds.size}`);
   }
 
-  const findings = validateProposal(proposal, existingIds, existingAliases, pendingIds);
+  const findings = validateProposal(
+    proposal,
+    existingIds,
+    existingAliases,
+    pendingIds,
+  );
 
   const severity = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
   for (const f of findings) {

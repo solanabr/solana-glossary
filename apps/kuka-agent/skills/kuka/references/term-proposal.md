@@ -57,32 +57,11 @@ Save validated proposals to `{project-root}/.kuka/proposals/{id}.json`. Create t
 
 ### Local Injection
 
-Proposals can be immediately injected into the developer's local glossary copy so they benefit from the new term right away, without waiting for upstream approval:
-
-```bash
-npx tsx ./scripts/submit-proposals.ts --proposals-dir .kuka/proposals --apply
-```
-
-This appends each valid proposal to the end of its category JSON file (preserving existing term order and formatting for minimal diffs) and moves processed proposals to `.kuka/proposals/.done/`.
+Run `./scripts/submit-proposals.ts --apply` to inject proposals into the local glossary copy immediately. Run with `--help` for full options.
 
 ### Batch Submission (PR to upstream)
 
-When the developer wants to contribute proposals back to the community glossary:
-
-```bash
-# Dry run first — show plan without modifying files
-npx tsx ./scripts/submit-proposals.ts --proposals-dir .kuka/proposals --dry-run
-
-# Apply and open a PR to solanabr/solana-glossary
-npx tsx ./scripts/submit-proposals.ts --proposals-dir .kuka/proposals --pr --pr-repo solanabr/solana-glossary
-```
-
-The script:
-1. Validates all proposals (rejects duplicates, invalid categories, schema violations)
-2. Appends valid proposals at the end of the correct category JSON files (preserving existing order + compact array formatting — append-only diff)
-3. Appends i18n translations at the end of `data/i18n/pt.json` and `data/i18n/es.json` (if `i18n` field present)
-4. Moves processed proposals to `.kuka/proposals/.done/`
-5. Fetches the target repo's default branch, creates the PR branch from that clean base (isolates from any unrelated commits on the current working branch), commits, and opens a PR via `gh` CLI
+Run `./scripts/submit-proposals.ts --pr --pr-repo solanabr/solana-glossary` to validate, inject, and open a PR to the community glossary. Always `--dry-run` first to review the plan.
 
 ### Quality Standard
 

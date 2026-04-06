@@ -5,7 +5,7 @@
  * new community terms, reconciles local proposals, and reports changes.
  *
  * Usage:
- *   npx tsx apps/kuka-agent/skills/kuka/scripts/sync-glossary.ts \
+ *   npx tsx@4 apps/kuka-agent/skills/kuka/scripts/sync-glossary.ts \
  *     --glossary-dir data/terms
  *     [--proposals-dir .kuka/proposals]
  *     [--upstream solanabr/solana-glossary]
@@ -21,18 +21,18 @@
  * Output: JSON to stdout with sync plan, new terms, reconciled proposals.
  */
 
+import { execSync } from "node:child_process";
 import {
-  readFileSync,
-  writeFileSync,
   existsSync,
-  readdirSync,
   mkdirSync,
+  readdirSync,
+  readFileSync,
   renameSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { execSync } from "node:child_process";
-import { allTerms, getCategories, type GlossaryTerm } from "../../../../../src/index";
+import type { GlossaryTerm } from "../../../../../src/index";
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -136,9 +136,20 @@ function fetchUpstreamTerms(
   mkdirSync(upstreamDataDir, { recursive: true });
 
   const categories = [
-    "ai-ml", "blockchain-general", "core-protocol", "defi", "dev-tools",
-    "infrastructure", "network", "programming-fundamentals", "programming-model",
-    "security", "solana-ecosystem", "token-ecosystem", "web3", "zk-compression",
+    "ai-ml",
+    "blockchain-general",
+    "core-protocol",
+    "defi",
+    "dev-tools",
+    "infrastructure",
+    "network",
+    "programming-fundamentals",
+    "programming-model",
+    "security",
+    "solana-ecosystem",
+    "token-ecosystem",
+    "web3",
+    "zk-compression",
   ];
 
   for (const cat of categories) {
@@ -163,9 +174,10 @@ function fetchUpstreamTerms(
       for (const term of data) {
         terms.set(term.id, term);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (verbose) {
-        console.error(`Warning: failed to fetch ${filename}: ${err.message}`);
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`Warning: failed to fetch ${filename}: ${message}`);
       }
     }
   }
@@ -204,9 +216,7 @@ function loadPendingProposals(
   for (const file of readdirSync(proposalsDir)) {
     if (!file.endsWith(".json")) continue;
     try {
-      const data = JSON.parse(
-        readFileSync(join(proposalsDir, file), "utf-8"),
-      );
+      const data = JSON.parse(readFileSync(join(proposalsDir, file), "utf-8"));
       if (data.id) proposals.set(data.id, data);
     } catch {
       // skip
@@ -215,9 +225,7 @@ function loadPendingProposals(
   return proposals;
 }
 
-function loadDoneProposals(
-  proposalsDir: string,
-): Set<string> {
+function loadDoneProposals(proposalsDir: string): Set<string> {
   const done = new Set<string>();
   const doneDir = join(proposalsDir, ".done");
   if (!existsSync(doneDir)) return done;
@@ -225,9 +233,7 @@ function loadDoneProposals(
   for (const file of readdirSync(doneDir)) {
     if (!file.endsWith(".json")) continue;
     try {
-      const data = JSON.parse(
-        readFileSync(join(doneDir, file), "utf-8"),
-      );
+      const data = JSON.parse(readFileSync(join(doneDir, file), "utf-8"));
       if (data.id) done.add(data.id);
     } catch {
       // skip
@@ -250,7 +256,7 @@ function updateLocalGlossary(
     if (!byCategory.has(term.category)) {
       byCategory.set(term.category, []);
     }
-    byCategory.get(term.category)!.push(term);
+    byCategory.get(term.category)?.push(term);
   }
 
   // Write each category file
@@ -261,7 +267,7 @@ function updateLocalGlossary(
     // Sort alphabetically by ID
     terms.sort((a, b) => a.id.localeCompare(b.id));
 
-    const newContent = JSON.stringify(terms, null, 2) + "\n";
+    const newContent = `${JSON.stringify(terms, null, 2)}\n`;
 
     if (existsSync(filepath)) {
       const oldContent = readFileSync(filepath, "utf-8");
@@ -293,7 +299,7 @@ function reconcileProposals(
 
   // Check pending proposals
   const pending = loadPendingProposals(proposalsDir);
-  for (const [id, proposal] of pending) {
+  for (const [id] of pending) {
     if (upstreamIds.has(id)) {
       // This proposal's ID now exists upstream — it was merged (or someone else added it)
       alreadyMerged.push(id);
@@ -303,7 +309,6 @@ function reconcileProposals(
   }
 
   // Check done proposals — clean up those that are now in upstream
-  const doneDir = join(proposalsDir, ".done");
   const done = loadDoneProposals(proposalsDir);
   for (const id of done) {
     if (upstreamIds.has(id) && verbose) {
@@ -341,7 +346,9 @@ function main() {
   mkdirSync(tmpDir, { recursive: true });
 
   if (args.verbose) {
-    console.error(`Fetching upstream glossary from ${args.upstream}/${args.branch}...`);
+    console.error(
+      `Fetching upstream glossary from ${args.upstream}/${args.branch}...`,
+    );
   }
 
   // Fetch upstream

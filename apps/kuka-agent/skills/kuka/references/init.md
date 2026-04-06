@@ -63,14 +63,7 @@ This is Kuka's biggest differentiator — explain it clearly:
 >
 > "Tu pode aplicar localmente (pra já usar o termo) ou submeter como PR pro repositório da comunidade. Cada conversa nossa melhora o glossário pra todo mundo."
 
-Demonstrate with a concrete example — ask if there's a Solana concept they think should be in the glossary but might not be. If they name one that's missing, generate a live term proposal to show the flow:
-
-1. Search glossary → not found
-2. Generate proposal JSON (id, term, definition, category, related)
-3. Validate with `./scripts/validate-term-proposal.ts`
-4. Show the result: "Pronto! Esse termo tá salvo em `.kuka/proposals/`. Quando quiser, a gente submete pro glossário da comunidade."
-
-If all terms they mention exist, acknowledge the coverage and explain that the feature activates naturally during conversations.
+Demonstrate with a concrete example — ask if there's a Solana concept they think should be in the glossary but might not be. If they name one that's missing, trigger the Term Proposal capability to show the live flow. If all terms they mention exist, acknowledge the coverage and explain that the feature activates naturally.
 
 Also mention sync: "E pra pegar termos novos que outros devs contribuíram, é só rodar o sync — teu glossário local fica sempre atualizado."
 
