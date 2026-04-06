@@ -996,5 +996,40 @@
     "definition": "A mobile carrier service built on the Helium network on Solana, offering cellular coverage through a combination of decentralized 5G hotspots and traditional carrier partnerships (T-Mobile). Subscribers earn MOBILE tokens for contributing to network coverage. Helium Mobile demonstrates a real consumer product powered by DePIN infrastructure on Solana.",
     "category": "solana-ecosystem",
     "related": ["helium", "depin", "sol"]
+  },
+  {
+    "id": "vibe-station",
+    "term": "Vibe Station",
+    "definition": "A community-driven physical and digital space for the Solana ecosystem, serving as a hub for developers, creators, and enthusiasts to collaborate on on-chain primitives and culture. It represents the 'vibe-first' approach of the Solana community, merging high-performance engineering with decentralized culture.",
+    "category": "solana-ecosystem",
+    "related": ["superteam", "solana-foundation"]
+  },
+  {
+    "id": "solana-seeker",
+    "term": "Solana Seeker",
+    "definition": "The second-generation Solana-native smartphone (formerly Saga Two), optimized for Web3 user experiences with a built-in Seed Vault for private key security and a decentralized dApp store. Seeker focuses on accessibility and mainstream mobile crypto adoption at a more competitive price point than the original Saga.",
+    "category": "solana-ecosystem",
+    "related": ["saga-phone", "mobile-wallet-adapter"]
+  },
+  {
+    "id": "agave-v2",
+    "term": "Agave 2.0",
+    "definition": "The major evolution of the Anza-maintained validator client, introducing the Central Scheduler, SIMD-0123 (Block Revenue Sharing), and extensive optimizations to the SVM. Agave 2.0 represents the shift toward a more modular and robust client infrastructure, separating core protocol logic from the validator runtime.",
+    "category": "solana-ecosystem",
+    "related": ["agave", "anza", "scheduler"]
+  },
+  {
+    "id": "kyiv-scheduler",
+    "term": "Kyiv Scheduler",
+    "definition": "The next-generation dynamic transaction scheduler in the Agave validator client, designed to significantly reduce lock contention and improve compute unit utilization during high-concurrency events. The Kyiv scheduler organizes transactions into execution threads with improved conflict detection, leading to smoother block production and lower latencies on hot accounts.",
+    "category": "solana-ecosystem",
+    "related": ["scheduler", "agave", "tpu"]
+  },
+  {
+    "id": "hypergrid",
+    "term": "HyperGrid",
+    "definition": "Solana's native scaling framework that enables the creation of high-performance AppChains (Network Extensions) that settle directly to Solana L1 while maintaining full shared liquidity and composability. HyperGrid allows applications like Sonic to run their own execution environments specialized for high-throughput use cases like gaming.",
+    "category": "solana-ecosystem",
+    "related": ["sonic-svm", "svm", "network-extension"]
   }
 ]

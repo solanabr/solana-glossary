@@ -4002,5 +4002,25 @@
   "proof-aggregation": {
     "term": "Proof Aggregation",
     "definition": "Technique of combining multiple zero-knowledge proofs into a single, compact proof that can be verified more efficiently than verifying each proof individually. Reduces on-chain verification costs by batching proofs. Used in ZK compression systems to batch-verify multiple state transitions in a single verification step on Solana."
+  },
+  "vibe-station": {
+    "term": "Vibe Station",
+    "definition": "Um espaço físico e digital impulsionado pela comunidade para o ecossistema Solana, servindo como um hub para desenvolvedores, criadores e entusiastas colaborarem em primitivas on-chain e cultura. Representa a abordagem 'vibe-first' da comunidade Solana, unindo engenharia de alta performance com cultura descentralizada."
+  },
+  "solana-seeker": {
+    "term": "Solana Seeker",
+    "definition": "O smartphone nativo da Solana de segunda geração (anteriormente Saga Two), otimizado para experiências de usuário Web3 com um Seed Vault integrado para segurança de chaves privadas e uma loja de dApps descentralizada. O Seeker foca em acessibilidade e na adoção de cripto em dispositivos móveis com um preço mais competitivo que o Saga original."
+  },
+  "agave-v2": {
+    "term": "Agave 2.0",
+    "definition": "A grande evolução do cliente validador mantido pela Anza, introduzindo o Central Scheduler, SIMD-0123 (Block Revenue Sharing) e extensas otimizações para a SVM. O Agave 2.0 representa a transição para uma infraestrutura de cliente mais modular e robusta, separando a lógica do protocolo principal do runtime do validador."
+  },
+  "kyiv-scheduler": {
+    "term": "Kyiv Scheduler",
+    "definition": "O escalonador dinâmico de transações de próxima geração no cliente validador Agave, projetado para reduzir significativamente a contenção de travas (lock contention) e melhorar a utilização de unidades de computação durante eventos de alta concorrência. O escalonador Kyiv organiza transações em threads de execução con melhor detecção de conflitos, resultando em uma produção de blocos mais fluida e menor latência em contas com alta demanda."
+  },
+  "hypergrid": {
+    "term": "HyperGrid",
+    "definition": "O framework de escalonamento nativo da Solana que permite a criação de AppChains de alta performance (Network Extensions) que liquidam diretamente na Solana L1, mantendo liquidez e composibilidade total compartilhadas. O HyperGrid permite que aplicações como Sonic executem seus próprios ambientes de execução especializados para casos de uso de alto rendimento, como jogos."
   }
 }
