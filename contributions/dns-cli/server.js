@@ -17,8 +17,9 @@ import { getCategoryTerms, getAllCategories, getRandomTermFormatted, keywordSear
 import { getHelpLines } from "./services/helpService.js";
 import { getLocalizedTerm } from "./services/i18nService.js";
 
-const PORT = 5300;
+const PORT = parseInt(process.env.DNS_PORT || "5300");
 const HOST = "0.0.0.0"; // Listen on all interfaces (localhost + LAN)
+const PUBLIC_HOST = process.env.PUBLIC_HOST || "127.0.0.1";
 
 // ─── Bootstrap: Load glossary data ──────────────────────────────────────────
 await loadGlossary();
@@ -43,7 +44,7 @@ server.on("message", async (msg, rinfo) => {
 
     if (name === "glossary.help") {
       // Show help
-      lines = getHelpLines("127.0.0.1", PORT);
+      lines = getHelpLines(PUBLIC_HOST, PORT);
 
     } else if (name === "categories") {
       // List all 14 categories
@@ -148,15 +149,16 @@ server.bind(PORT, HOST, () => {
 ╔══════════════════════════════════════════════════════════╗
 ║        Solana Glossary DNS CLI Server — Running          ║
 ╠══════════════════════════════════════════════════════════╣
-║  Port    : ${PORT}                                        ║
-║  Protocol: UDP / DNS TXT records                         ║
+║  Port       : ${PORT}                                     ║
+║  Public host: ${PUBLIC_HOST.padEnd(35)}║
+║  Protocol   : UDP / DNS TXT records                      ║
 ╟──────────────────────────────────────────────────────────╢
 ║  Try it:                                                 ║
-║  dig @127.0.0.1 -p ${PORT} proof-of-history +short      ║
-║  dig @127.0.0.1 -p ${PORT} poh              +short      ║
-║  dig @127.0.0.1 -p ${PORT} find.defi        +short      ║
-║  dig @127.0.0.1 -p ${PORT} random           +short      ║
-║  dig @127.0.0.1 -p ${PORT} glossary.help    +short      ║
+║  dig proof-of-history @${PUBLIC_HOST} +short
+║  dig poh @${PUBLIC_HOST} +short
+║  dig find.defi @${PUBLIC_HOST} +short
+║  dig random @${PUBLIC_HOST} +short
+║  dig glossary.help @${PUBLIC_HOST} +short
 ╚══════════════════════════════════════════════════════════╝
   `);
 });
