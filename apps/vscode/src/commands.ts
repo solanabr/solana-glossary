@@ -7,6 +7,7 @@ import {
   getLocalizedTerm,
   getTermById,
   GlossaryTerm,
+  getBundle,
 } from "./glossaryLoader";
 
 /**
@@ -18,7 +19,8 @@ export async function searchTermCommand(): Promise<void> {
     .get<string>("language", "en");
 
   const pick = vscode.window.createQuickPick();
-  pick.placeholder = "Search 1001 Solana terms...";
+  const termCount = getBundle()?.totalTerms ?? "1000+";
+  pick.placeholder = `Search ${termCount} Solana terms...`;
   pick.matchOnDescription = true;
   pick.matchOnDetail = true;
 
