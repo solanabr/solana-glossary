@@ -13,8 +13,9 @@ import dnsPacket from "dns-packet";
 
 import { loadGlossary, getTerm } from "./loader.js";
 import { formatTerm, termNotFound } from "./services/termService.js";
-import { getCategoryTerms, getAllCategories, getRandomTermFormatted } from "./services/searchService.js";
+import { getCategoryTerms, getAllCategories, getRandomTermFormatted, keywordSearch, getTermOfTheDay } from "./services/searchService.js";
 import { getHelpLines } from "./services/helpService.js";
+import { getLocalizedTerm } from "./services/i18nService.js";
 
 const PORT = 5300;
 const HOST = "0.0.0.0"; // Listen on all interfaces (localhost + LAN)
@@ -51,6 +52,21 @@ server.on("message", async (msg, rinfo) => {
     } else if (name === "random") {
       // Random term
       lines = getRandomTermFormatted();
+
+    } else if (name === "today") {
+      // Term of the day — changes daily, deterministic
+      lines = getTermOfTheDay();
+
+    } else if (name.startsWith("search.")) {
+      // Keyword search: "search.amm" searches all terms for "amm"
+      const keyword = name.slice("search.".length);
+      lines = keywordSearch(keyword);
+
+    } else if (name.startsWith("pt.") || name.startsWith("es.")) {
+      // Localized lookup: "pt.proof-of-history" → Portuguese
+      const locale = name.slice(0, 2);
+      const termId = name.slice(3);
+      lines = await getLocalizedTerm(locale, termId);
 
     } else if (name.startsWith("find.")) {
       // Category search: "find.defi" → category = "defi"

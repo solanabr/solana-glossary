@@ -5,9 +5,24 @@
 const DIVIDER_THICK = "============================================================";
 const DIVIDER_THIN  = "------------------------------------------------------------";
 
+// Strip accented/non-ASCII characters to plain ASCII so dig renders them cleanly.
+// e.g. "EPOCA" instead of garbled bytes for "ÉPOCA"
+function toAscii(str) {
+  return str
+    .normalize("NFD")                     // decompose accented chars: É → E + combining accent
+    .replace(/[\u0300-\u036f]/g, "")      // strip all combining diacritical marks
+    .replace(/[^\x00-\x7F]/g, "?");       // replace any remaining non-ASCII with '?'
+}
+
+// Replace Unicode dashes with plain ASCII hyphen (prevents \226\128\148 in dig output)
+function cleanDashes(str) {
+  return str.replace(/[\u2013\u2014\u2015]/g, "-");  // en-dash, em-dash → -
+}
+
 // Wrap long text into lines of max `width` characters, with optional indent
 function wrapText(text, width = 60, indent = "  ") {
-  const words = text.split(" ");
+  const safe = cleanDashes(text);
+  const words = safe.split(" ");
   const lines = [];
   let current = indent;
 
@@ -27,11 +42,15 @@ function wrapText(text, width = 60, indent = "  ") {
 export function formatTerm(term) {
   const lines = [];
 
+  // Use ASCII-safe version of the term name for the heading
+  const safeTermName = toAscii(term.term).toUpperCase();
+
   lines.push(DIVIDER_THICK);
-  lines.push(`  ${term.term.toUpperCase()}`);
+  lines.push(`  ${safeTermName}`);
   lines.push(DIVIDER_THICK);
 
-  // Category & Aliases
+  // ID + Category + Aliases
+  lines.push(`  ID       : ${term.id}`);
   lines.push(`  Category : ${term.category}`);
   if (term.aliases && term.aliases.length > 0) {
     lines.push(`  Aliases  : ${term.aliases.join(", ")}`);
@@ -60,9 +79,9 @@ export function formatTerm(term) {
 // Compact one-liner for use in lists
 export function formatTermCompact(term) {
   const short = term.definition.length > 80
-    ? term.definition.slice(0, 77) + "..."
-    : term.definition;
-  return `[${term.category}] ${term.term} — ${short}`;
+    ? cleanDashes(term.definition.slice(0, 77)) + "..."
+    : cleanDashes(term.definition);
+  return `[${term.category}] ${term.term} - ${short}`;
 }
 
 // "Not found" response
@@ -75,7 +94,7 @@ export function termNotFound(query) {
     `  - Use kebab-case IDs  e.g. proof-of-history`,
     `  - Or try an alias    e.g. poh, AMM, PDA`,
     `  - Browse a category  e.g. find.defi`,
-    `  - See all options    dig @<ip> -p 5353 glossary.help +short`,
+    `  - See all options    dig @<ip> -p 5300 glossary.help +short`,
     DIVIDER_THICK,
   ];
 }
