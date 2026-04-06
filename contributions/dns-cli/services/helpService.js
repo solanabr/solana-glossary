@@ -4,8 +4,12 @@
 const DIVIDER_THICK = "============================================================";
 const DIVIDER_THIN  = "------------------------------------------------------------";
 
-export function getHelpLines(serverIp = "<your-server-ip>", port = 5300) {
-  const d = (cmd) => `  dig @${serverIp} -p ${port} ${cmd} +short`;
+export function getHelpLines(serverHost = "sdns.fun", port = 5300) {
+  // If using default port 53 (public server), no -p flag needed
+  const d = (cmd) =>
+    port === 53 || port === 5300 && serverHost !== "127.0.0.1"
+      ? `  dig ${cmd} @${serverHost} +short`
+      : `  dig @${serverHost} -p ${port} ${cmd} +short`;
 
   return [
     DIVIDER_THICK,
@@ -13,25 +17,39 @@ export function getHelpLines(serverIp = "<your-server-ip>", port = 5300) {
     "  Query 1001 Solana terms from your terminal. No install needed.",
     DIVIDER_THICK,
     "",
+    "  QUICKEST SETUP (one-time, then just type: sol <term>):",
+    `  echo 'sol() { dig +short "\${1}" @${serverHost}; }' >> ~/.bashrc && source ~/.bashrc`,
+    "",
+    DIVIDER_THIN,
     "  LOOK UP A TERM (by ID or alias):",
-    d("proof-of-history"),
-    d("poh"),
-    d("pda"),
-    d("amm"),
+    `  sol poh`,
+    `  sol proof-of-history`,
+    `  sol amm`,
+    `  sol pda`,
     "",
     DIVIDER_THIN,
     "  BROWSE A CATEGORY:",
-    d("find.defi"),
-    d("find.core-protocol"),
-    d("find.web3"),
-    d("find.security"),
-    d("find.ai-ml"),
+    `  sol find.defi`,
+    `  sol find.core-protocol`,
+    `  sol find.web3`,
+    `  sol find.security`,
+    `  sol find.ai-ml`,
     "",
     DIVIDER_THIN,
     "  OTHER COMMANDS:",
-    d("categories          ") + "  — list all 14 categories",
-    d("random              ") + "  — show a random term",
-    d("glossary.help       ") + "  — this help page",
+    `  sol categories      — list all 14 categories`,
+    `  sol random          — show a random term`,
+    `  sol today           — term of the day`,
+    `  sol search.<word>   — search by keyword e.g. sol search.amm`,
+    `  sol pt.<term-id>    — look up in Portuguese`,
+    `  sol es.<term-id>    — look up in Spanish`,
+    `  sol glossary.help   — this help page`,
+    "",
+    DIVIDER_THIN,
+    "  OR USE dig DIRECTLY (without alias):",
+    d("poh"),
+    d("find.defi"),
+    d("random"),
     "",
     DIVIDER_THIN,
     "  ALL 14 CATEGORIES:",
@@ -40,10 +58,6 @@ export function getHelpLines(serverIp = "<your-server-ip>", port = 5300) {
     "  network | blockchain-general | web3 | programming-fundamentals",
     "  ai-ml | solana-ecosystem",
     "",
-    DIVIDER_THIN,
-    "  SHORTCUT (add to ~/.bashrc):",
-    `  alias sol='dig @${serverIp} -p ${port} +short'`,
-    "  Then just run:  sol pda   or   sol find.defi",
     DIVIDER_THICK,
     "  Built for Superteam Brazil Bounty — Solana Glossary",
     "  Repo: github.com/solanabr/solana-glossary",
