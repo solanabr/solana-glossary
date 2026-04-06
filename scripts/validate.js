@@ -44,7 +44,7 @@ for (const term of allTerms) {
 
 // Check for empty aliases arrays
 for (const term of allTerms) {
-  if (term.aliases && term.aliases.length === 0) {
+  if (term.aliases?.length === 0) {
     console.error(`Empty aliases array in: "${term.id}"`);
     errors++;
   }

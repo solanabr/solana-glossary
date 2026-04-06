@@ -160,35 +160,47 @@ function extractKeywords(text: string): string[] {
 
 // ── Term matching ───────────────────────────────────────────────────────
 
+function addScore(
+  scores: Map<string, number>,
+  id: string,
+  score: number,
+): void {
+  scores.set(id, (scores.get(id) ?? 0) + score);
+}
+
+function fuzzyMatchKeyword(
+  keyword: string,
+  searchIndex: Map<string, Set<string>>,
+  scores: Map<string, number>,
+): void {
+  for (const [indexKey, termIds] of searchIndex) {
+    if (keyword.includes(indexKey) || indexKey.includes(keyword)) {
+      for (const termId of termIds) {
+        addScore(scores, termId, 0.5);
+      }
+    }
+  }
+}
+
 function scoreKeyword(
   keyword: string,
   searchIndex: Map<string, Set<string>>,
   termLookup: Map<string, GlossaryTerm>,
   scores: Map<string, number>,
 ): void {
-  const addScore = (id: string, score: number) => {
-    scores.set(id, (scores.get(id) ?? 0) + score);
-  };
-
   if (termLookup.has(keyword)) {
-    addScore(keyword, 10);
+    addScore(scores, keyword, 10);
   }
 
   const directMatch = searchIndex.get(keyword);
   if (directMatch) {
     for (const termId of directMatch) {
-      addScore(termId, 1);
+      addScore(scores, termId, 1);
     }
   }
 
   if (keyword.length >= 4) {
-    for (const [indexKey, termIds] of searchIndex) {
-      if (keyword.includes(indexKey) || indexKey.includes(keyword)) {
-        for (const termId of termIds) {
-          addScore(termId, 0.5);
-        }
-      }
-    }
+    fuzzyMatchKeyword(keyword, searchIndex, scores);
   }
 }
 
