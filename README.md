@@ -4,6 +4,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Terms](https://img.shields.io/badge/terms-1001-brightgreen)
 ![Categories](https://img.shields.io/badge/categories-14-blue)
+[![Quality Gate](https://sonar.zupers.com.br/api/project_badges/measure?project=zupy-fmartinelli_solana-glossary_7762a36d-a0df-4506-98d4-e2473531a7b5&metric=alert_status)](https://sonar.zupers.com.br/dashboard?id=zupy-fmartinelli_solana-glossary_7762a36d-a0df-4506-98d4-e2473531a7b5)
+[![Coverage](https://sonar.zupers.com.br/api/project_badges/measure?project=zupy-fmartinelli_solana-glossary_7762a36d-a0df-4506-98d4-e2473531a7b5&metric=coverage)](https://sonar.zupers.com.br/dashboard?id=zupy-fmartinelli_solana-glossary_7762a36d-a0df-4506-98d4-e2473531a7b5)
+[![Bugs](https://sonar.zupers.com.br/api/project_badges/measure?project=zupy-fmartinelli_solana-glossary_7762a36d-a0df-4506-98d4-e2473531a7b5&metric=bugs)](https://sonar.zupers.com.br/dashboard?id=zupy-fmartinelli_solana-glossary_7762a36d-a0df-4506-98d4-e2473531a7b5)
+[![Vulnerabilities](https://sonar.zupers.com.br/api/project_badges/measure?project=zupy-fmartinelli_solana-glossary_7762a36d-a0df-4506-98d4-e2473531a7b5&metric=vulnerabilities)](https://sonar.zupers.com.br/dashboard?id=zupy-fmartinelli_solana-glossary_7762a36d-a0df-4506-98d4-e2473531a7b5)
 
 **The most comprehensive Solana glossary ever built — 1001 terms, 14 categories, full cross-references, and i18n support. Packaged as an SDK.**
 
