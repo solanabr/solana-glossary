@@ -3,7 +3,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-const termsDir = process.argv[2] || path.join(__dirname, "..", "data", "terms");
+const termsDir = process.argv[2] ?? path.join(__dirname, "..", "data", "terms");
 const files = fs.readdirSync(termsDir).filter((f) => f.endsWith(".json"));
 
 const allTerms = [];
@@ -37,7 +37,7 @@ for (const term of allTerms) {
 // Check required fields
 for (const term of allTerms) {
   if (!term.id || !term.term || !term.definition || !term.category) {
-    console.error(`Missing required field in: "${term.id || "(no id)"}"`);
+    console.error(`Missing required field in: "${term.id ?? "(no id)"}"`);
     errors++;
   }
 }

@@ -32,9 +32,12 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { allTerms, getCategories, type GlossaryTerm } from "../../../../../src/index";
+import { allTerms, getCategories, type Category, type GlossaryTerm } from "../../../../../src/index";
 
 // ── Types ───────────────────────────────────────────────────────────────
+
+type ValidationStatus = "pass" | "warning" | "fail";
+type SubmitMode = "dry-run" | "apply" | "pr";
 
 interface I18nEntry {
   term: string;
@@ -55,14 +58,14 @@ interface InjectionPlan {
   file: string;
   category: string;
   insert_after: string | null;
-  validation: "pass" | "warning" | "fail";
+  validation: ValidationStatus;
   issues: string[];
 }
 
 interface SubmitResult {
   script: string;
   version: string;
-  mode: "dry-run" | "apply" | "pr";
+  mode: SubmitMode;
   proposals_found: number;
   valid: number;
   invalid: number;
@@ -151,7 +154,7 @@ function loadProposals(proposalsDir: string): Proposal[] {
   if (!existsSync(proposalsDir)) return [];
 
   const proposals: Proposal[] = [];
-  for (const file of readdirSync(proposalsDir).sort()) {
+  for (const file of readdirSync(proposalsDir).sort((a, b) => a.localeCompare(b))) {
     if (!file.endsWith(".json")) continue;
     try {
       const data = JSON.parse(readFileSync(join(proposalsDir, file), "utf-8"));
@@ -171,7 +174,7 @@ function validateProposal(
   proposal: Proposal,
   existingIds: Set<string>,
   existingAliases: Map<string, string>,
-): { status: "pass" | "warning" | "fail"; issues: string[] } {
+): { status: ValidationStatus; issues: string[] } {
   const issues: string[] = [];
   const validCategories = getCategories();
 
@@ -222,10 +225,12 @@ function validateProposal(
       i.includes("Invalid category"),
   );
 
-  return {
-    status: hasCritical ? "fail" : issues.length > 0 ? "warning" : "pass",
-    issues,
-  };
+  let status: ValidationStatus;
+  if (hasCritical) status = "fail";
+  else if (issues.length > 0) status = "warning";
+  else status = "pass";
+
+  return { status, issues };
 }
 
 // ── Category file mapping ───────────────────────────────────────────────
@@ -333,7 +338,7 @@ function injectTerm(
   // Read existing terms to compute the insertAfter reference (last term id)
   // and to verify the file is well-formed.
   const terms: GlossaryTerm[] = JSON.parse(readFileSync(filepath, "utf-8"));
-  const afterId = terms.length > 0 ? terms[terms.length - 1].id : null;
+  const afterId = terms.length > 0 ? terms.at(-1)!.id : null;
 
   // Build clean term object (only include optional fields if present)
   const newTerm: Record<string, unknown> = {
@@ -371,66 +376,67 @@ function injectTerm(
 
 // ── PR creation ─────────────────────────────────────────────────────────
 
-function createPR(
-  repo: string,
-  proposals: Proposal[],
-  filesModified: string[],
-): string | null {
-  const branchName = `proposal/kuka-batch-${new Date().toISOString().slice(0, 10)}`;
-  const termList = proposals
-    .map((p) => `- \`${p.id}\` (${p.category}): ${p.term}`)
-    .join("\n");
-
+function isGhCliAvailable(): boolean {
   try {
-    // Check if gh is available
     execSync("gh --version", { stdio: "pipe" });
+    return true;
   } catch {
-    console.error("Warning: gh CLI not available, skipping PR creation");
-    return null;
+    return false;
+  }
+}
+
+function cacheModifiedFiles(filesModified: string[]): Record<string, string> {
+  const cached: Record<string, string> = {};
+  for (const f of filesModified) {
+    cached[f] = readFileSync(f, "utf-8");
+  }
+  return cached;
+}
+
+function prepareBranch(
+  repo: string,
+  branchName: string,
+  cached: Record<string, string>,
+  filesModified: string[],
+): void {
+  const defaultBranch = execSync(
+    `gh repo view ${repo} --json defaultBranchRef --jq .defaultBranchRef.name`,
+    { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] },
+  ).trim();
+  execSync(
+    `git fetch https://github.com/${repo}.git ${defaultBranch}:refs/remotes/_kuka_pr_base`,
+    { stdio: "pipe" },
+  );
+
+  execSync("git stash push --include-untracked -m kuka-pr-stash", {
+    stdio: "pipe",
+  });
+
+  execSync(`git checkout -b ${branchName} refs/remotes/_kuka_pr_base`, {
+    stdio: "pipe",
+  });
+
+  for (const [f, content] of Object.entries(cached)) {
+    writeFileSync(f, content, "utf-8");
   }
 
-  try {
-    // Cache the modified file contents, then branch from a clean upstream
-    // base so unrelated commits on the current branch don't leak into the PR.
-    const cached: Record<string, string> = {};
-    for (const f of filesModified) {
-      cached[f] = readFileSync(f, "utf-8");
-    }
+  execSync(`git add ${filesModified.join(" ")}`, { stdio: "pipe" });
+}
 
-    // Fetch the target repo's default branch into a detached ref
-    const defaultBranch = execSync(
-      `gh repo view ${repo} --json defaultBranchRef --jq .defaultBranchRef.name`,
-      { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] },
-    ).trim();
-    execSync(
-      `git fetch https://github.com/${repo}.git ${defaultBranch}:refs/remotes/_kuka_pr_base`,
-      { stdio: "pipe" },
-    );
+function commitProposals(
+  proposals: Proposal[],
+  termList: string,
+): void {
+  const pluralSuffix = proposals.length > 1 ? "s" : "";
+  const commitMsg = `feat(glossary): add ${proposals.length} community-proposed term${pluralSuffix}\n\nTerms proposed by Kuka agent during teaching conversations:\n${termList}`;
+  const escapedCommitMsg = commitMsg.replaceAll('"', String.raw`\"`);
+  execSync(`git commit -m "${escapedCommitMsg}"`, {
+    stdio: "pipe",
+  });
+}
 
-    // Stash any unrelated working-tree changes so checkout can proceed cleanly
-    execSync("git stash push --include-untracked -m kuka-pr-stash", {
-      stdio: "pipe",
-    });
-
-    // Create the PR branch from the clean upstream base
-    execSync(`git checkout -b ${branchName} refs/remotes/_kuka_pr_base`, {
-      stdio: "pipe",
-    });
-
-    // Reapply the cached file contents onto the clean base
-    for (const [f, content] of Object.entries(cached)) {
-      writeFileSync(f, content, "utf-8");
-    }
-
-    execSync(`git add ${filesModified.join(" ")}`, { stdio: "pipe" });
-
-    const commitMsg = `feat(glossary): add ${proposals.length} community-proposed term${proposals.length > 1 ? "s" : ""}\n\nTerms proposed by Kuka agent during teaching conversations:\n${termList}`;
-    execSync(`git commit -m "${commitMsg.replace(/"/g, '\\"')}"`, {
-      stdio: "pipe",
-    });
-
-    // Create PR
-    const prBody = `## Glossary Expansion — Kuka Agent Proposals
+function buildPrBody(proposals: Proposal[], termList: string): string {
+  return `## Glossary Expansion — Kuka Agent Proposals
 
 ### New Terms (${proposals.length})
 
@@ -451,13 +457,39 @@ All proposals passed schema validation via \`validate-term-proposal.ts\`:
 
 ---
 Generated by Kuka 🎓 — Solana Glossary Teaching Companion`;
+}
 
-    const result = execSync(
-      `gh pr create --repo ${repo} --title "feat(glossary): add ${proposals.length} community-proposed terms" --body "${prBody.replace(/"/g, '\\"')}"`,
-      { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] },
-    );
+function submitPr(repo: string, proposals: Proposal[], termList: string): string {
+  const prBody = buildPrBody(proposals, termList);
+  const escapedPrBody = prBody.replaceAll('"', String.raw`\"`);
+  const prTitle = `feat(glossary): add ${proposals.length} community-proposed terms`;
+  const result = execSync(
+    `gh pr create --repo ${repo} --title "${prTitle}" --body "${escapedPrBody}"`,
+    { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] },
+  );
+  return result.trim();
+}
 
-    return result.trim();
+function createPR(
+  repo: string,
+  proposals: Proposal[],
+  filesModified: string[],
+): string | null {
+  const branchName = `proposal/kuka-batch-${new Date().toISOString().slice(0, 10)}`;
+  const termList = proposals
+    .map((p) => `- \`${p.id}\` (${p.category}): ${p.term}`)
+    .join("\n");
+
+  if (!isGhCliAvailable()) {
+    console.error("Warning: gh CLI not available, skipping PR creation");
+    return null;
+  }
+
+  try {
+    const cached = cacheModifiedFiles(filesModified);
+    prepareBranch(repo, branchName, cached, filesModified);
+    commitProposals(proposals, termList);
+    return submitPr(repo, proposals, termList);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`Warning: PR creation failed: ${message}`);
@@ -465,12 +497,12 @@ Generated by Kuka 🎓 — Solana Glossary Teaching Companion`;
   }
 }
 
-// ── Main ────────────────────────────────────────────────────────────────
+// ── Helpers for main ───────────────────────────────────────────────────
 
-function main() {
-  const args = parseArgs();
-
-  // Load existing glossary data for validation
+function loadExistingGlossaryData(): {
+  existingIds: Set<string>;
+  existingAliases: Map<string, string>;
+} {
   const existingIds = new Set(allTerms.map((t) => t.id));
   const existingAliases = new Map<string, string>();
   for (const t of allTerms) {
@@ -478,103 +510,141 @@ function main() {
       existingAliases.set(alias.toLowerCase(), t.id);
     }
   }
+  return { existingIds, existingAliases };
+}
 
-  // Load proposals
-  const proposals = loadProposals(args.proposalsDir);
-  if (args.verbose) {
-    console.error(
-      `Found ${proposals.length} proposals in ${args.proposalsDir}`,
-    );
-  }
-
-  // Validate and build plan
+function buildInjectionPlan(
+  proposals: Proposal[],
+  existingIds: Set<string>,
+  existingAliases: Map<string, string>,
+  glossaryDir: string,
+): { plan: InjectionPlan[]; validProposals: Proposal[]; filesModified: Set<string> } {
   const plan: InjectionPlan[] = [];
   const validProposals: Proposal[] = [];
   const filesModified = new Set<string>();
 
   for (const proposal of proposals) {
-    const { status, issues } = validateProposal(
-      proposal,
-      existingIds,
-      existingAliases,
-    );
-
+    const { status, issues } = validateProposal(proposal, existingIds, existingAliases);
     const filename = CATEGORY_FILE_MAP[proposal.category] ?? "unknown";
 
     plan.push({
       proposal_id: proposal.id,
       file: filename,
       category: proposal.category,
-      insert_after: null, // filled during injection
+      insert_after: null,
       validation: status,
       issues,
     });
 
     if (status !== "fail") {
       validProposals.push(proposal);
-      filesModified.add(join(args.glossaryDir, filename));
-      // Track i18n files that will be modified
-      if (proposal.i18n) {
-        const i18nDir = join(args.glossaryDir, "..", "i18n");
-        for (const locale of Object.keys(proposal.i18n)) {
-          const i18nPath = join(i18nDir, `${locale}.json`);
-          if (existsSync(i18nPath)) {
-            filesModified.add(i18nPath);
-          }
-        }
-      }
+      filesModified.add(join(glossaryDir, filename));
+      trackI18nFiles(proposal, glossaryDir, filesModified);
     }
   }
+
+  return { plan, validProposals, filesModified };
+}
+
+function trackI18nFiles(
+  proposal: Proposal,
+  glossaryDir: string,
+  filesModified: Set<string>,
+): void {
+  if (!proposal.i18n) return;
+  const i18nDir = join(glossaryDir, "..", "i18n");
+  for (const locale of Object.keys(proposal.i18n)) {
+    const i18nPath = join(i18nDir, `${locale}.json`);
+    if (existsSync(i18nPath)) {
+      filesModified.add(i18nPath);
+    }
+  }
+}
+
+function applyInjections(
+  args: Args,
+  validProposals: Proposal[],
+  plan: InjectionPlan[],
+  existingIds: Set<string>,
+  existingAliases: Map<string, string>,
+): number {
+  let injectedCount = 0;
+  for (const proposal of validProposals) {
+    const { file, insertAfter } = injectTerm(args.glossaryDir, proposal);
+    injectedCount++;
+
+    const planEntry = plan.find((p) => p.proposal_id === proposal.id);
+    if (planEntry) {
+      planEntry.insert_after = insertAfter;
+    }
+
+    existingIds.add(proposal.id);
+    for (const alias of proposal.aliases ?? []) {
+      existingAliases.set(alias.toLowerCase(), proposal.id);
+    }
+
+    if (args.verbose) {
+      console.error(`Injected ${proposal.id} into ${file}`);
+    }
+  }
+  return injectedCount;
+}
+
+function moveProposalsToDone(
+  proposalsDir: string,
+  validProposals: Proposal[],
+): void {
+  const doneDir = join(proposalsDir, ".done");
+  mkdirSync(doneDir, { recursive: true });
+  for (const proposal of validProposals) {
+    const src = join(proposalsDir, `${proposal.id}.json`);
+    const dst = join(doneDir, `${proposal.id}.json`);
+    if (existsSync(src)) {
+      renameSync(src, dst);
+    }
+  }
+}
+
+function resolveMode(args: Args): SubmitMode {
+  if (args.pr) return "pr";
+  if (args.dryRun) return "dry-run";
+  return "apply";
+}
+
+// ── Main ────────────────────────────────────────────────────────────────
+
+function main() {
+  const args = parseArgs();
+  const { existingIds, existingAliases } = loadExistingGlossaryData();
+
+  const proposals = loadProposals(args.proposalsDir);
+  if (args.verbose) {
+    console.error(`Found ${proposals.length} proposals in ${args.proposalsDir}`);
+  }
+
+  const { plan, validProposals, filesModified } = buildInjectionPlan(
+    proposals,
+    existingIds,
+    existingAliases,
+    args.glossaryDir,
+  );
 
   let injectedCount = 0;
   let prUrl: string | null = null;
 
   if (!args.dryRun && validProposals.length > 0) {
-    // Apply injections
-    for (const proposal of validProposals) {
-      const { file, insertAfter } = injectTerm(args.glossaryDir, proposal);
-      injectedCount++;
+    injectedCount = applyInjections(args, validProposals, plan, existingIds, existingAliases);
+    moveProposalsToDone(args.proposalsDir, validProposals);
 
-      // Update plan with insert position
-      const planEntry = plan.find((p) => p.proposal_id === proposal.id);
-      if (planEntry) {
-        planEntry.insert_after = insertAfter;
-      }
-
-      // Add to existing IDs so subsequent proposals don't collide
-      existingIds.add(proposal.id);
-      for (const alias of proposal.aliases ?? []) {
-        existingAliases.set(alias.toLowerCase(), proposal.id);
-      }
-
-      if (args.verbose) {
-        console.error(`Injected ${proposal.id} into ${file}`);
-      }
-    }
-
-    // Move injected proposals to .done/
-    const doneDir = join(args.proposalsDir, ".done");
-    mkdirSync(doneDir, { recursive: true });
-    for (const proposal of validProposals) {
-      const src = join(args.proposalsDir, `${proposal.id}.json`);
-      const dst = join(doneDir, `${proposal.id}.json`);
-      if (existsSync(src)) {
-        renameSync(src, dst);
-      }
-    }
-
-    // Create PR if requested
     if (args.pr) {
       prUrl = createPR(args.prRepo, validProposals, [...filesModified]);
     }
   }
 
-  const mode = args.pr ? "pr" : args.dryRun ? "dry-run" : "apply";
-
   const result: SubmitResult = {
     script: "submit-proposals",
     version: "1.0.0",
-    mode,
+    mode: resolveMode(args),
     proposals_found: proposals.length,
     valid: validProposals.length,
     invalid: proposals.length - validProposals.length,

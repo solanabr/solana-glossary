@@ -70,7 +70,7 @@ Output: JSON to stdout with matched terms, explored/gap breakdown, and suggested
         args.progress = argv[++i];
         break;
       case "--max-results":
-        args.maxResults = parseInt(argv[++i], 10);
+        args.maxResults = Number.parseInt(argv[++i], 10);
         break;
       case "--verbose":
         args.verbose = true;
@@ -90,33 +90,32 @@ Output: JSON to stdout with matched terms, explored/gap breakdown, and suggested
 
 // ── Search index ────────────────────────────────────────────────────────
 
-function buildSearchIndex(terms: GlossaryTerm[]): Map<string, Set<string>> {
-  const index = new Map<string, Set<string>>();
+function addToIndex(index: Map<string, Set<string>>, keyword: string, termId: string): void {
+  const lower = keyword.toLowerCase();
+  if (lower.length < 3) return;
+  if (!index.has(lower)) index.set(lower, new Set());
+  index.get(lower)?.add(termId);
+}
 
-  const addToIndex = (keyword: string, termId: string) => {
-    const lower = keyword.toLowerCase();
-    if (lower.length < 3) return;
-    if (!index.has(lower)) index.set(lower, new Set());
-    index.get(lower)?.add(termId);
-  };
-
-  for (const term of terms) {
-    // Index ID parts
-    for (const part of term.id.split("-")) {
-      addToIndex(part, term.id);
-    }
-    // Index term name words
-    for (const word of term.term.match(/[a-zA-Z]{3,}/g) ?? []) {
-      addToIndex(word, term.id);
-    }
-    // Index aliases
-    for (const alias of term.aliases ?? []) {
-      for (const word of alias.match(/[a-zA-Z]{3,}/g) ?? []) {
-        addToIndex(word, term.id);
-      }
+function indexSingleTerm(index: Map<string, Set<string>>, term: GlossaryTerm): void {
+  for (const part of term.id.split("-")) {
+    addToIndex(index, part, term.id);
+  }
+  for (const word of term.term.match(/[a-zA-Z]{3,}/g) ?? []) {
+    addToIndex(index, word, term.id);
+  }
+  for (const alias of term.aliases ?? []) {
+    for (const word of alias.match(/[a-zA-Z]{3,}/g) ?? []) {
+      addToIndex(index, word, term.id);
     }
   }
+}
 
+function buildSearchIndex(terms: GlossaryTerm[]): Map<string, Set<string>> {
+  const index = new Map<string, Set<string>>();
+  for (const term of terms) {
+    indexSingleTerm(index, term);
+  }
   return index;
 }
 
@@ -144,9 +143,9 @@ function loadProgress(progressPath?: string): Set<string> {
 
 function extractKeywords(text: string): string[] {
   // Strip code blocks and comments
-  let clean = text.replace(/```[\s\S]*?```/g, " ");
-  clean = clean.replace(/\/\/.*$/gm, " ");
-  clean = clean.replace(/#.*$/gm, " ");
+  let clean = text.replaceAll(/```[\s\S]*?```/g, " ");
+  clean = clean.replaceAll(/\/\/.*$/gm, " ");
+  clean = clean.replaceAll(/#.*$/gm, " ");
 
   const words = clean.match(/[a-zA-Z][a-zA-Z0-9_-]{2,}/g) ?? [];
   const seen = new Set<string>();
@@ -161,6 +160,38 @@ function extractKeywords(text: string): string[] {
 
 // ── Term matching ───────────────────────────────────────────────────────
 
+function scoreKeyword(
+  keyword: string,
+  searchIndex: Map<string, Set<string>>,
+  termLookup: Map<string, GlossaryTerm>,
+  scores: Map<string, number>,
+): void {
+  const addScore = (id: string, score: number) => {
+    scores.set(id, (scores.get(id) ?? 0) + score);
+  };
+
+  if (termLookup.has(keyword)) {
+    addScore(keyword, 10);
+  }
+
+  const directMatch = searchIndex.get(keyword);
+  if (directMatch) {
+    for (const termId of directMatch) {
+      addScore(termId, 1);
+    }
+  }
+
+  if (keyword.length >= 4) {
+    for (const [indexKey, termIds] of searchIndex) {
+      if (keyword.includes(indexKey) || indexKey.includes(keyword)) {
+        for (const termId of termIds) {
+          addScore(termId, 0.5);
+        }
+      }
+    }
+  }
+}
+
 function matchTerms(
   keywords: string[],
   searchIndex: Map<string, Set<string>>,
@@ -169,35 +200,8 @@ function matchTerms(
 ): string[] {
   const scores = new Map<string, number>();
 
-  const addScore = (id: string, score: number) => {
-    scores.set(id, (scores.get(id) ?? 0) + score);
-  };
-
   for (const keyword of keywords) {
-    // Exact ID match
-    if (termLookup.has(keyword)) {
-      addScore(keyword, 10);
-    }
-
-    // Index match
-    const directMatch = searchIndex.get(keyword);
-    if (directMatch) {
-      for (const termId of directMatch) {
-        addScore(termId, 1);
-      }
-    }
-
-    // Partial match for compound terms
-    for (const [indexKey, termIds] of searchIndex) {
-      if (
-        keyword.length >= 4 &&
-        (keyword.includes(indexKey) || indexKey.includes(keyword))
-      ) {
-        for (const termId of termIds) {
-          addScore(termId, 0.5);
-        }
-      }
-    }
+    scoreKeyword(keyword, searchIndex, termLookup, scores);
   }
 
   return [...scores.entries()]
@@ -232,6 +236,23 @@ function suggestPath(
   );
 }
 
+// ── Input building ─────────────────────────────────────────────────────
+
+function buildInputText(args: Args): string {
+  let inputText = "";
+  if (args.topic) inputText += `${args.topic} `;
+  if (args.codeFile) {
+    const codePath = resolve(args.codeFile);
+    if (existsSync(codePath)) {
+      inputText += `${readFileSync(codePath, "utf-8")} `;
+    } else {
+      console.error(`Warning: code file not found: ${args.codeFile}`);
+    }
+  }
+  if (args.terms) inputText += `${args.terms.split(",").join(" ")} `;
+  return inputText;
+}
+
 // ── Main ────────────────────────────────────────────────────────────────
 
 function main() {
@@ -246,19 +267,7 @@ function main() {
     console.error(`Developer explored ${explored.size} terms`);
   }
 
-  // Build input text
-  let inputText = "";
-  if (args.topic) inputText += `${args.topic} `;
-  if (args.codeFile) {
-    const codePath = resolve(args.codeFile);
-    if (existsSync(codePath)) {
-      inputText += `${readFileSync(codePath, "utf-8")} `;
-    } else {
-      console.error(`Warning: code file not found: ${args.codeFile}`);
-    }
-  }
-  if (args.terms) inputText += `${args.terms.split(",").join(" ")} `;
-
+  const inputText = buildInputText(args);
   const keywords = extractKeywords(inputText);
   if (args.verbose) {
     console.error(`Extracted ${keywords.length} keywords`);

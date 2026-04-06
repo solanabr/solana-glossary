@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { execSync } from "node:child_process";
 import {
   writeFileSync,
@@ -135,7 +135,7 @@ describe("validate-term-proposal.ts", () => {
       }),
     );
 
-    const { stdout, exitCode } = runScript(
+    const { stdout } = runScript(
       "validate-term-proposal.ts",
       `--proposal ${proposalPath}`,
     );
@@ -151,7 +151,7 @@ describe("validate-term-proposal.ts", () => {
     const proposalPath = join(TMP_DIR, "incomplete.json");
     writeFileSync(proposalPath, JSON.stringify({ id: "missing-fields" }));
 
-    const { stdout, exitCode } = runScript(
+    const { stdout } = runScript(
       "validate-term-proposal.ts",
       `--proposal ${proposalPath}`,
     );
@@ -486,22 +486,22 @@ describe("validate-term-proposal.ts", () => {
   });
 });
 
+function makeProposal(id: string, overrides: Record<string, unknown> = {}) {
+  return {
+    id,
+    term: `Test ${id}`,
+    definition: `A test term for ${id} used to verify the submit-proposals script injects correctly into glossary files.`,
+    category: "dev-tools",
+    aliases: [],
+    related: ["anchor"],
+    ...overrides,
+  };
+}
+
 describe("submit-proposals.ts", () => {
   const SUBMIT_TMP = join(TMP_DIR, "submit");
   const PROPOSALS_DIR = join(SUBMIT_TMP, "proposals");
   const GLOSSARY_COPY = join(SUBMIT_TMP, "terms");
-
-  function makeProposal(id: string, overrides: Record<string, unknown> = {}) {
-    return {
-      id,
-      term: `Test ${id}`,
-      definition: `A test term for ${id} used to verify the submit-proposals script injects correctly into glossary files.`,
-      category: "dev-tools",
-      aliases: [],
-      related: ["anchor"],
-      ...overrides,
-    };
-  }
 
   function setupFixture(proposals: Record<string, unknown>[]) {
     mkdirSync(PROPOSALS_DIR, { recursive: true });
@@ -884,7 +884,7 @@ describe("submit-proposals.ts", () => {
     });
     setupFixture([proposal]);
 
-    const { stdout, exitCode } = runScript(
+    const { stdout } = runScript(
       "submit-proposals.ts",
       `--proposals-dir ${PROPOSALS_DIR} --glossary-dir ${GLOSSARY_COPY} --dry-run`,
     );
@@ -900,7 +900,7 @@ describe("submit-proposals.ts", () => {
     });
     setupFixture([proposal]);
 
-    const { stdout, exitCode } = runScript(
+    const { stdout } = runScript(
       "submit-proposals.ts",
       `--proposals-dir ${PROPOSALS_DIR} --glossary-dir ${GLOSSARY_COPY} --dry-run`,
     );

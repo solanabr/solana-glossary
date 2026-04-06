@@ -154,6 +154,125 @@ function loadProposal(proposalPath: string): Record<string, unknown> {
 
 // ── Validation ──────────────────────────────────────────────────────────
 
+function checkRequiredFields(
+  proposal: Record<string, unknown>,
+  findings: Finding[],
+): boolean {
+  const requiredFields = ["id", "term", "definition", "category"];
+  for (const field of requiredFields) {
+    if (!(field in proposal)) {
+      findings.push({
+        severity: "critical",
+        category: "structure",
+        issue: `Missing required field: ${field}`,
+        fix: `Add '${field}' to the proposal`,
+      });
+    }
+  }
+  return requiredFields.every((f) => f in proposal);
+}
+
+function checkIdAndCategory(
+  termId: string,
+  category: string,
+  existingIds: Set<string>,
+  findings: Finding[],
+): void {
+  if (!/^[a-z][a-z0-9-]*$/.test(termId)) {
+    findings.push({
+      severity: "critical",
+      category: "structure",
+      issue: `ID '${termId}' is not valid kebab-case`,
+      fix: "Use lowercase letters, numbers, and hyphens only",
+    });
+  }
+  if (existingIds.has(termId)) {
+    findings.push({
+      severity: "critical",
+      category: "consistency",
+      issue: `ID '${termId}' already exists in the glossary`,
+      fix: "Choose a different ID or update the existing term",
+    });
+  }
+  if (!VALID_CATEGORIES.includes(category as Category)) {
+    findings.push({
+      severity: "critical",
+      category: "structure",
+      issue: `Invalid category: '${category}'`,
+      fix: `Use one of: ${VALID_CATEGORIES.join(", ")}`,
+    });
+  }
+}
+
+function checkDefinitionLength(definition: string, findings: Finding[]): void {
+  if (definition.length < MIN_DEFINITION_LENGTH) {
+    findings.push({
+      severity: "high",
+      category: "structure",
+      issue: `Definition too short (${definition.length} chars, min ${MIN_DEFINITION_LENGTH})`,
+      fix: "Expand the definition with more context",
+    });
+  }
+  if (definition.length > MAX_DEFINITION_LENGTH) {
+    findings.push({
+      severity: "medium",
+      category: "structure",
+      issue: `Definition too long (${definition.length} chars, max ${MAX_DEFINITION_LENGTH})`,
+      fix: "Condense the definition to be more concise",
+    });
+  }
+}
+
+function checkRelatedTerms(
+  proposal: Record<string, unknown>,
+  existingIds: Set<string>,
+  pendingIds: Set<string>,
+  findings: Finding[],
+): void {
+  const related = (proposal.related as string[]) ?? [];
+  const knownIds = new Set([...existingIds, ...pendingIds]);
+  for (const rel of related) {
+    if (!knownIds.has(rel)) {
+      findings.push({
+        severity: "medium",
+        category: "consistency",
+        issue: `Related term '${rel}' not found in glossary or pending proposals`,
+        fix: `Remove '${rel}' or ensure it exists/is being proposed`,
+      });
+    }
+  }
+}
+
+function checkAliasCollisions(
+  proposal: Record<string, unknown>,
+  existingAliases: Map<string, string>,
+  findings: Finding[],
+): void {
+  const aliases = (proposal.aliases as string[]) ?? [];
+  for (const alias of aliases) {
+    const collidesWith = existingAliases.get(alias.toLowerCase());
+    if (collidesWith) {
+      findings.push({
+        severity: "high",
+        category: "consistency",
+        issue: `Alias '${alias}' collides with existing term '${collidesWith}'`,
+        fix: "Remove this alias or rename it",
+      });
+    }
+  }
+
+  const termName = proposal.term as string;
+  const nameCollision = existingAliases.get(termName.toLowerCase());
+  if (nameCollision) {
+    findings.push({
+      severity: "medium",
+      category: "consistency",
+      issue: `Term name '${termName}' matches an alias of '${nameCollision}'`,
+      fix: "Consider if this should be an update to the existing term instead",
+    });
+  }
+}
+
 function validateProposal(
   proposal: Record<string, unknown>,
   existingIds: Set<string>,
@@ -162,125 +281,37 @@ function validateProposal(
 ): Finding[] {
   const findings: Finding[] = [];
 
-  const finding = (
-    severity: Finding["severity"],
-    category: Finding["category"],
-    issue: string,
-    fix: string,
-  ) => {
-    findings.push({ severity, category, issue, fix });
-  };
-
-  // Required fields
-  const requiredFields = ["id", "term", "definition", "category"];
-  for (const field of requiredFields) {
-    if (!(field in proposal)) {
-      finding(
-        "critical",
-        "structure",
-        `Missing required field: ${field}`,
-        `Add '${field}' to the proposal`,
-      );
-    }
-  }
-
-  if (!requiredFields.every((f) => f in proposal)) {
-    return findings; // Can't continue without required fields
+  const hasRequired = checkRequiredFields(proposal, findings);
+  if (!hasRequired) {
+    return findings;
   }
 
   const termId = proposal.id as string;
   const category = proposal.category as string;
   const definition = proposal.definition as string;
 
-  // ID format
-  if (!/^[a-z][a-z0-9-]*$/.test(termId)) {
-    finding(
-      "critical",
-      "structure",
-      `ID '${termId}' is not valid kebab-case`,
-      "Use lowercase letters, numbers, and hyphens only",
-    );
-  }
-
-  // ID uniqueness
-  if (existingIds.has(termId)) {
-    finding(
-      "critical",
-      "consistency",
-      `ID '${termId}' already exists in the glossary`,
-      "Choose a different ID or update the existing term",
-    );
-  }
-
-  // Category validity
-  if (!VALID_CATEGORIES.includes(category as Category)) {
-    finding(
-      "critical",
-      "structure",
-      `Invalid category: '${category}'`,
-      `Use one of: ${VALID_CATEGORIES.join(", ")}`,
-    );
-  }
-
-  // Definition length
-  if (definition.length < MIN_DEFINITION_LENGTH) {
-    finding(
-      "high",
-      "structure",
-      `Definition too short (${definition.length} chars, min ${MIN_DEFINITION_LENGTH})`,
-      "Expand the definition with more context",
-    );
-  }
-  if (definition.length > MAX_DEFINITION_LENGTH) {
-    finding(
-      "medium",
-      "structure",
-      `Definition too long (${definition.length} chars, max ${MAX_DEFINITION_LENGTH})`,
-      "Condense the definition to be more concise",
-    );
-  }
-
-  // Related terms existence
-  const related = (proposal.related as string[]) ?? [];
-  const knownIds = new Set([...existingIds, ...pendingIds]);
-  for (const rel of related) {
-    if (!knownIds.has(rel)) {
-      finding(
-        "medium",
-        "consistency",
-        `Related term '${rel}' not found in glossary or pending proposals`,
-        `Remove '${rel}' or ensure it exists/is being proposed`,
-      );
-    }
-  }
-
-  // Alias collisions
-  const aliases = (proposal.aliases as string[]) ?? [];
-  for (const alias of aliases) {
-    const collidesWith = existingAliases.get(alias.toLowerCase());
-    if (collidesWith) {
-      finding(
-        "high",
-        "consistency",
-        `Alias '${alias}' collides with existing term '${collidesWith}'`,
-        "Remove this alias or rename it",
-      );
-    }
-  }
-
-  // Term name collision with existing alias
-  const termName = proposal.term as string;
-  const nameCollision = existingAliases.get(termName.toLowerCase());
-  if (nameCollision) {
-    finding(
-      "medium",
-      "consistency",
-      `Term name '${termName}' matches an alias of '${nameCollision}'`,
-      "Consider if this should be an update to the existing term instead",
-    );
-  }
+  checkIdAndCategory(termId, category, existingIds, findings);
+  checkDefinitionLength(definition, findings);
+  checkRelatedTerms(proposal, existingIds, pendingIds, findings);
+  checkAliasCollisions(proposal, existingAliases, findings);
 
   return findings;
+}
+
+// ── Result building ────────────────────────────────────────────────────
+
+function computeSeverityCounts(findings: Finding[]): Record<Finding["severity"], number> {
+  const severity = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
+  for (const f of findings) {
+    severity[f.severity]++;
+  }
+  return severity;
+}
+
+function determineStatus(severity: Record<Finding["severity"], number>): "pass" | "warning" | "fail" {
+  if (severity.critical > 0) return "fail";
+  if (severity.high > 0) return "warning";
+  return "pass";
 }
 
 // ── Main ────────────────────────────────────────────────────────────────
@@ -299,22 +330,9 @@ function main() {
     console.error(`Pending proposals: ${pendingIds.size}`);
   }
 
-  const findings = validateProposal(
-    proposal,
-    existingIds,
-    existingAliases,
-    pendingIds,
-  );
-
-  const severity = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
-  for (const f of findings) {
-    severity[f.severity]++;
-  }
-
-  let status: "pass" | "warning" | "fail";
-  if (severity.critical > 0) status = "fail";
-  else if (severity.high > 0) status = "warning";
-  else status = "pass";
+  const findings = validateProposal(proposal, existingIds, existingAliases, pendingIds);
+  const severity = computeSeverityCounts(findings);
+  const status = determineStatus(severity);
 
   const result: ValidationResult = {
     script: "validate-term-proposal",
