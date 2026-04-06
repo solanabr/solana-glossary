@@ -185,7 +185,7 @@ apps/glossary-site/
 
 ```bash
 # Clone the monorepo
-git clone https://github.com/Jmkoygg/solana-glossary.git
+git clone https://github.com/solanabr/solana-glossary.git
 cd solana-glossary
 
 # Build the SDK first (the app depends on the local package)
