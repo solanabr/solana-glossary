@@ -7,8 +7,22 @@ import { formatTerm, formatTermCompact } from "./termService.js";
 const DIVIDER_THICK = "============================================================";
 const DIVIDER_THIN  = "------------------------------------------------------------";
 
-// Returns all terms in a category, as a formatted list
-export function getCategoryTerms(category) {
+// Returns terms in a category, paginated to avoid DNS UDP 512-byte limit.
+// find.defi     → page 1 (terms 1-20)
+// find.defi.2   → page 2 (terms 21-40), etc.
+export function getCategoryTerms(rawQuery) {
+  // Parse pagination: "defi.2" → category=defi, page=2
+  const parts = rawQuery.split(".");
+  let page = 1;
+  let category = rawQuery;
+
+  // Check if last segment is a number (page number)
+  const lastPart = parts[parts.length - 1];
+  if (parts.length > 1 && /^\d+$/.test(lastPart)) {
+    page = parseInt(lastPart);
+    category = parts.slice(0, -1).join(".");
+  }
+
   const terms = getTermsByCategory(category);
 
   if (terms.length === 0) {
@@ -17,46 +31,62 @@ export function getCategoryTerms(category) {
       `  Category not found: "${category}"`,
       DIVIDER_THIN,
       "  Valid categories:",
-      ...getCategories().map((c) => `    - ${c}`),
+      ...getCategories().map((c) => `    ${c}`),
+      DIVIDER_THICK,
+    ];
+  }
+
+  const PAGE_SIZE = 20;
+  const totalPages = Math.ceil(terms.length / PAGE_SIZE);
+  const start = (page - 1) * PAGE_SIZE;
+  const end = Math.min(start + PAGE_SIZE, terms.length);
+  const pageTerms = terms.slice(start, end);
+
+  if (start >= terms.length) {
+    return [
+      DIVIDER_THICK,
+      `  Page ${page} out of range — only ${totalPages} page(s) for "${category}"`,
       DIVIDER_THICK,
     ];
   }
 
   const lines = [];
   lines.push(DIVIDER_THICK);
-  lines.push(`  CATEGORY: ${category.toUpperCase()} -- ${terms.length} terms`);
+  lines.push(`  ${category.toUpperCase()} — ${terms.length} terms (page ${page}/${totalPages})`);
   lines.push(DIVIDER_THICK);
 
-  // Group into chunks of 5 per line for readability
-  const ids = terms.map((t) => t.id);
-  for (let i = 0; i < ids.length; i += 5) {
-    lines.push("  " + ids.slice(i, i + 5).join(" | "));
+  // 4 terms per line to keep lines short
+  const ids = pageTerms.map((t) => t.id);
+  for (let i = 0; i < ids.length; i += 4) {
+    lines.push("  " + ids.slice(i, i + 4).join(" | "));
   }
 
   lines.push(DIVIDER_THIN);
-  lines.push(`  Tip: sol <term-id>  or  dig <term-id> @sdns.fun +short`);
+  if (page < totalPages) {
+    lines.push(`  Next page: sol find.${category}.${page + 1}`);
+  }
+  lines.push(`  Look up a term: sol <term-id>`);
   lines.push(DIVIDER_THICK);
 
   return lines;
 }
 
-// Returns all 14 categories with term counts
+// Returns all 14 categories with term counts (compact, single-line each)
 export function getAllCategories() {
   const cats = getCategories();
   const lines = [];
 
   lines.push(DIVIDER_THICK);
-  lines.push(`  SOLANA GLOSSARY -- ALL CATEGORIES (${getTotalCount()} total terms)`);
-  lines.push(DIVIDER_THICK);
+  lines.push(`  SOLANA GLOSSARY — ${getTotalCount()} terms across ${cats.length} categories`);
+  lines.push(DIVIDER_THIN);
 
   for (const cat of cats) {
     const count = getTermsByCategory(cat).length;
-    const bar = "#".repeat(Math.round(count / 5)); // visual bar
-    lines.push(`  ${cat.padEnd(26)} ${String(count).padStart(3)} terms  ${bar}`);
+    lines.push(`  ${cat.padEnd(28)} ${String(count).padStart(3)} terms`);
   }
 
   lines.push(DIVIDER_THIN);
-  lines.push("  Usage: sol find.<category>  or  dig find.<category> @sdns.fun +short");
+  lines.push("  Browse: sol find.<category>");
   lines.push(DIVIDER_THICK);
 
   return lines;
@@ -105,25 +135,26 @@ export function keywordSearch(keyword) {
 
   const lines = [];
   lines.push(DIVIDER_THICK);
-  lines.push(`  SEARCH: "${keyword}" -- ${matches.length} result${matches.length > 1 ? "s" : ""} found`);
-  lines.push(DIVIDER_THICK);
+  lines.push(`  SEARCH: "${keyword}" — ${matches.length} result${matches.length > 1 ? "s" : ""} found`);
+  lines.push(DIVIDER_THIN);
 
-  // Show up to 15 results to keep output manageable
-  const shown = matches.slice(0, 15);
+  // Show max 8 results to stay within DNS UDP packet limits
+  const shown = matches.slice(0, 8);
   for (const t of shown) {
-    const short = t.definition.length > 70 ? t.definition.slice(0, 67) + "..." : t.definition;
-    lines.push(`  [${t.category}] ${t.term}`);
-    lines.push(`    ID: ${t.id}`);
+    const short = t.definition.length > 60
+      ? t.definition.slice(0, 57).replace(/\s+\S*$/, "") + "..."
+      : t.definition;
+    lines.push(`  ${t.term} [${t.category}]`);
     lines.push(`    ${short}`);
-    lines.push("");
   }
 
-  if (matches.length > 15) {
-    lines.push(`  ... and ${matches.length - 15} more. Try a more specific keyword.`);
+  if (matches.length > 8) {
+    lines.push(DIVIDER_THIN);
+    lines.push(`  +${matches.length - 8} more. Try a specific term: sol ${shown[0].id}`);
   }
 
   lines.push(DIVIDER_THIN);
-  lines.push("  Look up any result:  sol <term-id>  or  dig <term-id> @sdns.fun +short");
+  lines.push("  sol <term-id> to look up any result above");
   lines.push(DIVIDER_THICK);
 
   return lines;
