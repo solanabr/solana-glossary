@@ -1,0 +1,20 @@
+{
+  "sources": [
+    {
+      "id": "fixture-docs",
+      "label": "Fixture Docs",
+      "categoryHint": "core-protocol",
+      "inputs": [
+        "./expansion/sample-docs.md"
+      ]
+    },
+    {
+      "id": "fixture-repo",
+      "label": "Fixture Repo",
+      "categoryHint": "dev-tools",
+      "inputs": [
+        "./expansion/sample-repo.md"
+      ]
+    }
+  ]
+}
