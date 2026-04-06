@@ -1,0 +1,22 @@
+diff --git a/apps/cli/src/index.ts b/apps/cli/src/index.ts
+index 0c2784e..cda08c4 100644
+--- a/apps/cli/src/index.ts
++++ b/apps/cli/src/index.ts
+@@ -68,7 +68,7 @@ function renderList(terms: GlossaryTerm[], label: string) {
+ 
+ program
+   .name("solana-glossary")
+-  .description(chalk.bold("Solana Glossary CLI") + " — 1001 terms at your fingertips")
++  .description(chalk.bold("Solana Glossary CLI") + ` — ${allTerms.length} terms at your fingertips`)
+   .version("1.0.0");
+ 
+ // lookup
+@@ -91,7 +91,7 @@ program
+ program
+   .command("search <query>")
+   .alias("s")
+-  .description("Full-text search across all 1001 terms")
++  .description(`Full-text search across all ${allTerms.length} terms`)
+   .option("--lang <lang>", "Language: en (default), pt, or es")
+   .option("--limit <n>", "Max results to show", "10")
+   .action((query: string, options) => {

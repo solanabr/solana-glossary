@@ -1,0 +1,28 @@
+diff --git a/apps/web/app/layout.tsx b/apps/web/app/layout.tsx
+index 969c07b..a2e2023 100644
+--- a/apps/web/app/layout.tsx
++++ b/apps/web/app/layout.tsx
+@@ -2,8 +2,8 @@ import type { Metadata } from "next";
+ import "./globals.css";
+ 
+ export const metadata: Metadata = {
+-  title: "Solana Glossary — 1001 Terms",
+-  description: "The most comprehensive Solana glossary ever built. 1001 terms, 14 categories, full cross-references.",
++  title: "Solana Glossary — Comprehensive Solana Reference",
++  description: "The most comprehensive Solana glossary ever built. 1000+ terms, 14 categories, full cross-references.",
+ };
+ 
+ export default function RootLayout({ children }: { children: React.ReactNode }) {
+diff --git a/apps/web/app/quiz/page.tsx b/apps/web/app/quiz/page.tsx
+index 409d777..fccdd41 100644
+--- a/apps/web/app/quiz/page.tsx
++++ b/apps/web/app/quiz/page.tsx
+@@ -73,7 +73,7 @@ export default function QuizPage() {
+             Test your <span style={{ color: "var(--green)" }}>Solana</span> knowledge
+           </h1>
+           <p style={{ color: "var(--text-muted)", fontSize: 14, marginBottom: 32, lineHeight: 1.6 }}>
+-            Multiple choice quiz from 1001 terms. Pick a category or go random.
++            Multiple choice quiz from the full glossary. Pick a category or go random.
+           </p>
+ 
+           <div style={{ marginBottom: 24 }}>
