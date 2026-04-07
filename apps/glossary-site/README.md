@@ -12,21 +12,43 @@
 
 ## What Is This?
 
-A **full-featured web application** that transforms the `@stbr/solana-glossary` SDK into an interactive learning experience for Solana developers — from complete beginners to protocol engineers.
+A **full-featured web application** that transforms the `@stbr/solana-glossary` SDK into an interactive learning and reference platform for Solana developers — from complete beginners to protocol engineers.
 
-Three tools in one:
+Five tools in one:
 
 | Feature | Description |
 |---|---|
+| **✦ AI Assistant** | Ask questions about any term — answered by Gemini, grounded in the glossary data |
 | **📚 Glossary** | Browse and search 1001 terms with real-time filtering by category |
 | **🕸️ Knowledge Graph** | Interactive force-directed graph showing how all 1001 terms connect |
 | **🎯 Quiz** | Learn by doing — multiple choice and 3D flashcard modes |
+| **🌍 i18n** | Full PT / ES / EN support across every page |
 
-Built with Solana's visual identity (purple → green gradient), full i18n (PT/ES/EN), and deployed on Vercel.
+Built with Solana's visual identity (purple → green gradient) and deployed on Vercel.
 
 ---
 
 ## Features
+
+### ✦ AI Assistant — Glossary-Grounded Answers on Every Term Page
+
+Every term page has an inline AI assistant powered by Gemini 2.5 Flash. It's not a generic chatbot — responses are grounded in:
+
+- The term's full definition and aliases
+- Related terms from the glossary cross-reference graph
+- The top terms from the same category
+
+```
+User opens /termo/pda → clicks "Ask AI"
+User: "Como usar PDAs no Anchor?"
+AI: "No Anchor, derive o PDA com `seeds = [b"user", user.key().as_ref()]`
+     e armazene o bump canonical na conta. Use `init` com `seeds`
+     e `bump` no contexto para criação automática..."
+```
+
+Quick suggestion buttons auto-populate based on locale (PT/ES/EN). Language detection is automatic — ask in Portuguese, get Portuguese back.
+
+**Setup:** Add `GEMINI_API_KEY` to your Vercel environment variables. The component gracefully stays visible without the key (shows configuration message), so no UX breakage in dev.
 
 ### 📚 Glossary — Instant Search Across 1001 Terms
 
@@ -34,44 +56,44 @@ Built with Solana's visual identity (purple → green gradient), full i18n (PT/E
 - Filter by any of the 14 categories with color-coded pills
 - Random term button for discovery
 - Each term page shows full definition, aliases, and related terms
-- Metadata for SEO — every term at `/termo/[id]` has its own `<title>` and `<meta description>`
+- SEO metadata on every term at `/termo/[id]` — title, description, OG image
+
+### 🧠 4-Layer Context on Term Pages
+
+For 76 key terms, the term page goes beyond the definition:
+
+| Layer | What it adds |
+|---|---|
+| 📖 **O que é** | The SDK definition |
+| 💡 **Como pensar sobre isso** | A mental model / analogy |
+| 🛠️ **Por que builders usam** | Practical builder use case |
+| ⚠️ **Erro comum** | The most common mistake to avoid |
+
+### 🖼️ Dynamic OG Images — 1001 Social Cards
+
+Every term has a custom `/opengraph-image` generated at request time with the term name, category badge, definition excerpt, and Solana branding. Share any term on Twitter and it renders a proper preview card.
 
 ### 🕸️ Knowledge Graph — Visualize the Entire Ecosystem
 
-- Force-directed D3 graph of all 1001 terms and their cross-references
-- Filter the graph by category — isolate only DeFi, ZK Compression, or any other area
-- Search for a specific term: it lights up with a glow effect on the graph
+- Force-directed graph of all 1001 terms and their cross-references
+- Filter by category — isolate only DeFi, ZK Compression, Security, etc.
+- Search highlights a specific term with a glow ring
 - Click any node to navigate to that term's detail page
-- Live stats: node count and connection count update as you filter
-- Zoom, pan, and explore the full topology of Solana knowledge
+- Live counter: nodes and connections update as you filter
 
 ### 🎯 Quiz — Two Modes, Fully Gamified
 
-**Multiple Choice**
-- Shows you a definition → you pick the correct term from 4 options
-- Instant color feedback: green for correct, red for wrong
-- Progress bar, live score counter
-- Covers any subset of terms you choose
+**Multiple Choice** — see the definition, pick the right term from 4 options. Instant color feedback, progress bar, live score counter.
 
-**Flashcard**
-- Shows the term name → click to flip (real CSS 3D animation)
-- Definition revealed on the back, with category-specific gradient
-- Mark each card as "Sabia!" ✅ or "Não sabia" 😅
-- Tracks your score across the deck
+**Flashcard** — see the term, tap to flip with a real CSS 3D animation, mark each card as known/unknown. Category-specific gradient on the back.
 
-**Results Screen**
-- SVG ring progress chart with gradient fill
-- Correct/incorrect breakdown
-- Confetti animation for scores ≥ 70%
+**Results Screen** — SVG ring progress chart with gradient fill, correct/incorrect breakdown, confetti animation for scores ≥ 70%.
 
-**Setup**
-- Choose mode (Multiple Choice or Flashcard)
-- Filter to specific categories (DeFi only? Security only? Your choice)
-- Pick question count: 10, 20, 50, or all available terms
+**Setup** — choose mode, filter to specific categories (Security only? DeFi only?), pick question count (10 / 20 / 50 / all).
 
 ### 🌍 Full i18n — PT / ES / EN
 
-Every page works in three languages. The language switcher updates the URL and re-renders Server Components, so pages are correctly indexed by language. Locale persists in `localStorage` between sessions.
+Every page works in three languages. Locale persists in `localStorage`. AI assistant auto-detects language from the question.
 
 ```
 /?lang=pt → Portuguese definitions
@@ -79,9 +101,9 @@ Every page works in three languages. The language switcher updates the URL and r
 /?lang=en → Original English
 ```
 
-### 🤖 AI Context Copy
+### 📋 Copy Context for AI
 
-Each term page has a "Copy for AI" button that copies the entire category's terms as a structured context block — ready to paste into Claude, ChatGPT, or any LLM prompt. Saves tokens by letting the model focus on your actual question instead of re-explaining Solana basics.
+One-click button on every term page copies the full category's terms as a structured context block. Paste into Claude, ChatGPT, or any LLM prompt — correct Solana context with zero hallucination risk.
 
 ---
 
@@ -100,29 +122,34 @@ import {
 
 import { getLocalizedTerms } from "@stbr/solana-glossary/i18n";
 
-// Homepage: all 1001 terms for display
-const terms = allTerms; // GlossaryTerm[]
+// Homepage: all 1001 terms
+const terms = allTerms;
 
-// Real-time search
-const results = searchTerms(query); // matches names, definitions, aliases
+// Real-time search across names, definitions, aliases
+const results = searchTerms(query);
 
 // Term detail page
-const term = getTerm("proof-of-history"); // lookup by ID or alias
-
-// Related terms on each page
+const term = getTerm("proof-of-history");
 const related = term.related?.map((id) => getTerm(id)) ?? [];
 
-// i18n — translated term names and definitions
+// i18n
 const ptTerms = getLocalizedTerms("pt");
 const esTerms = getLocalizedTerms("es");
 
-// Knowledge Graph: build edges from cross-references
+// Knowledge Graph: edges from cross-references
 const links = allTerms.flatMap((t) =>
   (t.related ?? []).map((relId) => ({ source: t.id, target: relId }))
 );
 
-// Quiz: shuffle and sample terms by category
-const defiTerms = getTermsByCategory("defi"); // 135 terms for a DeFi-focused quiz
+// AI Assistant: assembles system prompt from SDK data
+const context = getTermsByCategory(term.category)
+  .slice(0, 8)
+  .map((t) => `${t.term}: ${t.definition}`)
+  .join("\n");
+// → fed to Gemini as grounding context
+
+// Quiz: shuffle and sample by category
+const defiTerms = getTermsByCategory("defi"); // 135 terms
 ```
 
 ---
@@ -133,49 +160,57 @@ const defiTerms = getTermsByCategory("defi"); // 135 terms for a DeFi-focused qu
 apps/glossary-site/
 ├── src/
 │   ├── app/
-│   │   ├── page.tsx              # Homepage (Client Component — real-time search)
-│   │   ├── layout.tsx            # Root layout with navbar + i18n
-│   │   ├── globals.css           # Solana brand tokens, flashcard 3D CSS
+│   │   ├── page.tsx                  # Homepage — real-time search
+│   │   ├── layout.tsx                # Root layout with navbar + i18n
+│   │   ├── globals.css               # Solana brand tokens, flashcard 3D CSS
+│   │   ├── api/ask/
+│   │   │   └── route.ts              # AI endpoint — assembles SDK context → Gemini
 │   │   ├── grafo/
-│   │   │   └── page.tsx          # Knowledge graph page (static)
+│   │   │   └── page.tsx              # Knowledge graph
 │   │   ├── quiz/
-│   │   │   └── page.tsx          # Quiz page (static)
+│   │   │   └── page.tsx              # Quiz
 │   │   └── termo/[id]/
-│   │       ├── page.tsx          # Term detail (Server Component, per-term metadata)
-│   │       └── loading.tsx       # Loading skeleton
+│   │       ├── page.tsx              # Term detail — 4 layers + AI + OG metadata
+│   │       ├── loading.tsx           # Loading skeleton
+│   │       └── opengraph-image.tsx   # Dynamic OG image per term
 │   ├── components/
-│   │   ├── KnowledgeGraph.tsx    # D3 force graph (dynamic import, no SSR)
-│   │   ├── Quiz.tsx              # Quiz orchestrator + 3 sub-views
-│   │   ├── CopyContextButton.tsx # AI context copy button
-│   │   ├── LocaleSwitcher.tsx    # Language switcher (Client Component)
-│   │   └── ui/button.tsx         # Base button primitive
+│   │   ├── GlossaryAI.tsx            # Inline AI chat panel
+│   │   ├── KnowledgeGraph.tsx        # Force graph (dynamic import, no SSR)
+│   │   ├── Quiz.tsx                  # Quiz orchestrator
+│   │   ├── CopyContextButton.tsx     # Copy category context for LLMs
+│   │   ├── TermProgress.tsx          # Exploration progress tracker
+│   │   └── LocaleSwitcher.tsx        # Language switcher
 │   ├── hooks/
-│   │   └── useLocale.ts          # Locale state with localStorage persistence
+│   │   └── useLocale.ts              # Locale state + localStorage
 │   └── lib/
-│       ├── i18n.ts               # Localized term lookup and search
-│       └── categories.ts         # Category labels and brand colors
-├── vercel.json                   # Monorepo build config
+│       ├── i18n.ts                   # Localized term lookup
+│       ├── categories.ts             # Labels and brand colors
+│       └── term-context.ts           # 76 hand-written context entries
+├── vercel.json
 └── next.config.ts
 ```
 
 **Rendering strategy:**
-- `/` — Static at build time (1001 terms available immediately, search runs client-side)
-- `/grafo` — Static (graph data computed client-side from SDK)
-- `/quiz` — Static (quiz state is ephemeral client-side)
-- `/termo/[id]` — Server-rendered on demand (supports `?lang=` param, full metadata per term)
+- `/` — Static (search runs client-side)
+- `/grafo` — Static (graph computed client-side)
+- `/quiz` — Static (ephemeral state)
+- `/termo/[id]` — Dynamic (supports `?lang=`, full per-term metadata + AI)
+- `/api/ask` — Dynamic edge function (Gemini call)
+- `/termo/[id]/opengraph-image` — Dynamic (generated per term)
 
 ---
 
 ## Tech Stack
 
-| Layer | Choice | Why |
-|---|---|---|
-| Framework | Next.js 15 (App Router) | Server Components + static generation |
-| Language | TypeScript 5 | Full type safety with SDK types |
-| Styling | Tailwind CSS 4 | Utility-first, matches SDK token system |
-| Graph | `react-force-graph-2d` | D3 force simulation, canvas rendering |
-| Font | Inter (Google Fonts) | Clean, readable for technical content |
-| Deploy | Vercel | Zero-config, edge network |
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS 4 |
+| AI | Gemini 2.5 Flash via REST API |
+| Graph | `react-force-graph-2d` |
+| Font | Inter (Google Fonts) |
+| Deploy | Vercel |
 
 ---
 
@@ -188,25 +223,26 @@ apps/glossary-site/
 git clone https://github.com/solanabr/solana-glossary.git
 cd solana-glossary
 
-# Build the SDK first (the app depends on the local package)
-npm install
-npm run build
+# Build the SDK first
+npm install && npm run build
 
-# Install and run the web app
+# Set up the web app
 cd apps/glossary-site
 npm install
+
+# Optional: AI assistant (get free key at aistudio.google.com/apikey)
+echo "GEMINI_API_KEY=your_key_here" > .env.local
+
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
-**Or jump straight to the live demo:** [solana-glossary-lek6.vercel.app](https://solana-glossary-lek6.vercel.app)
+**Live demo (no setup needed):** [solana-glossary-lek6.vercel.app](https://solana-glossary-lek6.vercel.app)
 
 ---
 
 ## Deploying to Vercel
-
-The `vercel.json` handles the monorepo setup automatically:
 
 ```json
 {
@@ -217,25 +253,26 @@ The `vercel.json` handles the monorepo setup automatically:
 }
 ```
 
-1. Import `Jmkoygg/solana-glossary` on [vercel.com/new](https://vercel.com/new)
+1. Import `solanabr/solana-glossary` fork on [vercel.com/new](https://vercel.com/new)
 2. Set **Root Directory** → `apps/glossary-site`
-3. Deploy — no environment variables needed
+3. Add environment variable: `GEMINI_API_KEY` (free at [aistudio.google.com](https://aistudio.google.com/apikey))
+4. Deploy
 
 ---
 
 ## Design Decisions
 
-**Why a knowledge graph?**
-The `related` field in each term creates a web of 2,000+ connections. Rendering this visually reveals something that a flat list never could: how tightly coupled core Solana concepts are, and how DeFi/ZK/infrastructure clusters emerge naturally from the data.
+**Why a glossary-grounded AI instead of a generic chatbot?**
+LLMs hallucinate Solana-specific details constantly — wrong account sizes, invented program addresses, outdated API signatures. By assembling the system prompt from `getTerm()` and `getTermsByCategory()` data, every answer is anchored to verified glossary content. The AI can't invent a PDA derivation it didn't read from the SDK.
 
-**Why a quiz?**
-Reading a glossary is passive. Testing yourself is active recall — proven to improve retention 2-4x. The quiz turns the same data into a learning tool, not just a reference.
+**Why a knowledge graph?**
+The `related` field creates 2,000+ cross-references. Rendering this visually reveals how tightly coupled Solana concepts are — DeFi, ZK, and infrastructure clusters emerge naturally from the data structure.
+
+**Why dynamic OG images?**
+1001 terms means 1001 shareable moments. When a developer tweets "just learned about Tower BFT", the link should render a polished preview card — not a generic site thumbnail.
 
 **Why i18n on a glossary?**
-Portuguese and Spanish are the primary languages of the Solana ecosystem in Latin America. Being the first glossary that actually works in PT is a real differentiator for the developer community this bounty aims to serve.
-
-**Why "Copy for AI"?**
-LLMs hallucinate Solana-specific details constantly. A one-click copy of a full category's terms as structured context fixes this at zero cost to the user. It's a bridge between the glossary and the AI-native development workflow.
+Portuguese and Spanish are the primary languages of the Solana ecosystem in Latin America. This bounty is by Superteam Brazil — the first glossary that actually works in PT is a direct value-add for the community it's meant to serve.
 
 ---
 
@@ -243,14 +280,14 @@ LLMs hallucinate Solana-specific details constantly. A one-click copy of a full 
 
 This is a submission for the [Superteam Brazil Solana Glossary Bounty](https://earn.superteam.fun).
 
-**What's covered:**
 - ✅ Frontend web application with full SDK integration
-- ✅ Interactive knowledge graph (unique visualization of SDK cross-references)
-- ✅ Quiz/Flashcard learning tool
-- ✅ i18n support: PT, ES, EN
+- ✅ Glossary-grounded AI assistant (Gemini 2.5 Flash) on every term page
+- ✅ Interactive knowledge graph (1001 nodes, 2000+ edges from `related` field)
+- ✅ Quiz with multiple-choice + 3D flashcard modes
+- ✅ 4-layer context for 76 key terms (analogy, builder use, common mistake)
+- ✅ Dynamic OG images for all 1001 term pages
+- ✅ Full i18n: PT / ES / EN
 - ✅ Live deployed demo on Vercel
-- ✅ AI-assisted context copy feature
-- ✅ Clean, production-quality code — no rough edges
 
 ---
 
