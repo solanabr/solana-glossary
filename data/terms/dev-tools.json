@@ -437,6 +437,13 @@
     "related": ["anchor", "anchor-toml", "monorepo"]
   },
   {
+    "id": "anchor-workspaces",
+    "term": "Anchor Workspaces",
+    "definition": "A broader team-level development pattern built around Anchor workspaces where multiple programs, clients, scripts, and test harnesses live in one coordinated repository. In practice, teams use Anchor workspaces to share provider configuration, keep IDLs and generated clients close to program code, and run end-to-end test flows without splitting the Solana stack across separate repos.",
+    "category": "dev-tools",
+    "related": ["anchor-workspace", "anchor", "idl-generation"]
+  },
+  {
     "id": "program-test-framework",
     "term": "Program Test Framework (solana-program-test)",
     "definition": "Solana's built-in testing framework that spins up a lightweight BanksClient runtime to execute programs in an isolated environment without a full validator. Supports adding programs, setting account state, advancing slots/time, and processing transactions. The foundation for most Solana program integration tests.",

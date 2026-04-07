@@ -55,6 +55,34 @@ npm test        # Run test suite
 npm run build   # Verify build
 npm run lint    # Type check
 npm run validate # Check for duplicates and dangling refs
+npm run expand:data # Generate candidate/freshness report
+```
+
+## Data Expansion Workflow
+
+If you want to automate discovery of new terms or review terms that may need fresher definitions:
+
+1. Edit `data/expansion/sources.json`
+2. Add the Solana docs, repos, or blogs you want to watch
+3. Run:
+
+```bash
+npm run expand:data
+```
+
+4. Review `data/expansion/last-report.json`
+5. Turn good candidates into normal glossary PRs under `data/terms/*.json`
+
+The report contains:
+
+- `candidates`: phrases not already present in the glossary
+- `reviewCandidates`: existing terms that appear repeatedly in watched sources
+- `fetchFailures`: sources that could not be fetched
+
+For a no-network smoke test:
+
+```bash
+npm run expand:data:fixture
 ```
 
 ## PR Requirements

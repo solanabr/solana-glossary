@@ -2,10 +2,47 @@
 
 [![npm version](https://img.shields.io/npm/v/@stbr/solana-glossary)](https://www.npmjs.com/package/@stbr/solana-glossary)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-![Terms](https://img.shields.io/badge/terms-1001-brightgreen)
+![Terms](https://img.shields.io/badge/terms-1004-brightgreen)
 ![Categories](https://img.shields.io/badge/categories-14-blue)
 
-**The most comprehensive Solana glossary ever built — 1001 terms, 14 categories, full cross-references, and i18n support. Packaged as an SDK.**
+**The most comprehensive Solana glossary ever built — 1004 terms, 14 categories, full cross-references, and i18n support. Packaged as an SDK.**
+
+## Apps Built on Top
+
+- [Glossary OS](./apps/glossary-os/README.md): a multilingual premium frontend for exploring the glossary as a hostable product.
+- Glossary OS also includes onboarding quizzes, builder paths, concept graphs, and AI-ready context handoff.
+
+## Data Expansion Tooling
+
+The repository also includes a lightweight expansion pipeline for discovering candidate terms and flagging existing entries for freshness review.
+
+What it does:
+
+- scans a manifest of watched Solana docs, repos, and blogs
+- extracts candidate phrases that are not already in the glossary
+- flags existing terms that appear repeatedly in watched sources
+- writes a JSON report that can be reviewed before opening a data PR
+
+Run the real manifest:
+
+```bash
+npm run expand:data
+```
+
+Run the local fixture:
+
+```bash
+npm run expand:data:fixture
+```
+
+Outputs:
+
+- `data/expansion/last-report.json`
+- `data/expansion/fixture-report.json`
+
+Source manifest:
+
+- `data/expansion/sources.json`
 
 ---
 
@@ -15,12 +52,13 @@ The original Solana Glossary was one of the most loved resources in the ecosyste
 
 Over time, it got absorbed into generic "Terminology" docs and lost its identity.
 
-**Superteam Brazil is bringing it back** — expanded from ~200 terms to 1001, structured as a proper npm package, and designed to actually ship value:
+**Superteam Brazil is bringing it back** — expanded from ~200 terms to 1004, structured as a proper npm package, and designed to actually ship value:
 
-- **Onboarding** — New devs get instant context on 1001 Solana concepts
+- **Onboarding** — New devs get instant context on 1004 Solana concepts
 - **Go deeper** — Seasoned devs explore cross-referenced technical relationships between terms
 - **Vibe coders** — AI-assisted builders can understand what's behind the abstractions
 - **Save tokens** — Feed glossary context to LLMs instead of burning tokens re-explaining Solana concepts every prompt
+- **Keep growing** — Data expansion tooling can surface new candidate terms and freshness reviews before a data PR lands
 
 ---
 
@@ -59,7 +97,7 @@ const results = searchTerms("account");
 const defiTerms = getTermsByCategory("defi");
 
 // Access everything
-console.log(`${allTerms.length} terms loaded`); // 1001
+console.log(`${allTerms.length} terms loaded`); // 1004
 ```
 
 ---
@@ -100,7 +138,7 @@ Returns all 14 category identifiers.
 
 ### `allTerms: GlossaryTerm[]`
 
-The complete array of all 1001 terms. Useful for building custom indexes or feeding to LLMs.
+The complete array of all 1004 terms. Useful for building custom indexes or feeding to LLMs.
 
 ---
 
@@ -109,13 +147,13 @@ The complete array of all 1001 terms. Useful for building custom indexes or feed
 | Category | Terms | Description |
 |----------|-------|-------------|
 | `core-protocol` | 86 | Consensus, PoH, validators, slots, epochs |
-| `programming-model` | 69 | Accounts, instructions, programs, PDAs |
+| `programming-model` | 70 | Accounts, instructions, programs, PDAs |
 | `token-ecosystem` | 59 | SPL tokens, Token-2022, metadata, NFTs |
 | `defi` | 135 | AMMs, liquidity pools, lending protocols |
 | `zk-compression` | 34 | ZK proofs, compressed accounts, Light Protocol |
-| `infrastructure` | 44 | RPC, validators, staking, snapshots |
+| `infrastructure` | 45 | RPC, validators, staking, snapshots |
 | `security` | 48 | Attack vectors, audit practices, reentrancy |
-| `dev-tools` | 64 | Anchor, Solana CLI, explorers, testing |
+| `dev-tools` | 65 | Anchor, Solana CLI, explorers, testing |
 | `network` | 58 | Mainnet, devnet, testnet, cluster config |
 | `blockchain-general` | 84 | Shared blockchain concepts |
 | `web3` | 80 | Wallets, dApps, signing, key management |
@@ -219,6 +257,7 @@ npm test        # Run tests
 npm run build   # Build package
 npm run lint    # Type check
 npm run validate # Check data integrity
+npm run expand:data # Generate candidate/freshness report
 ```
 
 ---
