@@ -1,0 +1,61 @@
+{
+  "sources": [
+    {
+      "id": "solana-docs-core",
+      "label": "Solana Docs - Core",
+      "categoryHint": "core-protocol",
+      "inputs": [
+        "https://solana.com/docs/core",
+        "https://solana.com/docs/references/terminology"
+      ],
+      "tags": ["official", "docs"]
+    },
+    {
+      "id": "solana-docs-programs",
+      "label": "Solana Docs - Programs",
+      "categoryHint": "programming-model",
+      "inputs": [
+        "https://solana.com/docs/core/accounts",
+        "https://solana.com/docs/core/transactions",
+        "https://solana.com/docs/core/programs"
+      ],
+      "tags": ["official", "docs"]
+    },
+    {
+      "id": "anchor-repo",
+      "label": "Anchor Repository",
+      "categoryHint": "dev-tools",
+      "inputs": [
+        "https://raw.githubusercontent.com/coral-xyz/anchor/master/README.md"
+      ],
+      "tags": ["repo", "anchor"]
+    },
+    {
+      "id": "agave-repo",
+      "label": "Agave Repository",
+      "categoryHint": "infrastructure",
+      "inputs": [
+        "https://raw.githubusercontent.com/anza-xyz/agave/master/README.md"
+      ],
+      "tags": ["repo", "validator"]
+    },
+    {
+      "id": "token-extensions",
+      "label": "Token Extensions",
+      "categoryHint": "token-ecosystem",
+      "inputs": [
+        "https://raw.githubusercontent.com/solana-program/token-2022/main/README.md"
+      ],
+      "tags": ["repo", "token"]
+    },
+    {
+      "id": "solana-blog",
+      "label": "Solana Blog",
+      "categoryHint": "solana-ecosystem",
+      "inputs": [
+        "https://solana.com/news"
+      ],
+      "tags": ["official", "blog"]
+    }
+  ]
+}
