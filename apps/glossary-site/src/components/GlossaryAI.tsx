@@ -78,6 +78,17 @@ export default function GlossaryAI({
         return;
       }
 
+      if (!res.ok) {
+        setMessages((m) => [
+          ...m,
+          {
+            role: "ai",
+            text: "Erro na API. Verifique se GEMINI_API_KEY está configurado no Vercel.",
+          },
+        ]);
+        setLoading(false);
+        return;
+      }
       const data = await res.json();
       setMessages((m) => [
         ...m,

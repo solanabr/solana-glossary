@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getTerm, getTermsByCategory } from "@stbr/solana-glossary";
 import { CATEGORY_LABELS } from "@/lib/categories";
 
-export const runtime = "edge";
-
 export async function POST(req: NextRequest) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
@@ -58,7 +56,7 @@ RULES:
 - If you don't know, say so; never hallucinate program addresses or API signatures`;
 
   const body = {
-    system_instruction: { parts: [{ text: systemPrompt }] },
+    systemInstruction: { parts: [{ text: systemPrompt }] },
     contents: [{ role: "user", parts: [{ text: question }] }],
     generationConfig: { maxOutputTokens: 350, temperature: 0.6 },
   };
