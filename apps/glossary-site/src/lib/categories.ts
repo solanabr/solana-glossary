@@ -1,0 +1,33 @@
+export const CATEGORY_LABELS: Record<string, string> = {
+  "core-protocol": "Core Protocol",
+  "programming-model": "Programming Model",
+  "token-ecosystem": "Token Ecosystem",
+  defi: "DeFi",
+  "zk-compression": "ZK Compression",
+  infrastructure: "Infrastructure",
+  security: "Security",
+  "dev-tools": "Dev Tools",
+  network: "Network",
+  "blockchain-general": "Blockchain Geral",
+  web3: "Web3",
+  "programming-fundamentals": "Programação",
+  "ai-ml": "AI/ML",
+  "solana-ecosystem": "Ecossistema Solana",
+};
+
+export const CATEGORY_COLORS: Record<string, string> = {
+  "core-protocol": "#9945FF",
+  "programming-model": "#7B2FFF",
+  "token-ecosystem": "#14F195",
+  defi: "#00C2FF",
+  "zk-compression": "#FF6B9D",
+  infrastructure: "#FFB347",
+  security: "#FF4757",
+  "dev-tools": "#2ED573",
+  network: "#1E90FF",
+  "blockchain-general": "#A0A0B0",
+  web3: "#9945FF",
+  "programming-fundamentals": "#20BF6B",
+  "ai-ml": "#FF6348",
+  "solana-ecosystem": "#14F195",
+};
