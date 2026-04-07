@@ -1,0 +1,19 @@
+{
+  "name": "@stbr/glossary-mcp-server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Minimal MCP server for the Solana Glossary",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "glossary-mcp-server": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "smoke:catalog": "node scripts/smoke-test-catalog.mjs",
+    "smoke:actions": "node scripts/smoke-test-actions.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "node dist/index.js"
+  }
+}
