@@ -7,6 +7,7 @@ import { CATEGORY_LABELS, CATEGORY_COLORS } from "@/lib/categories";
 import { TERM_CONTEXTS } from "@/lib/term-context";
 import CopyContextButton from "@/components/CopyContextButton";
 import TermProgress from "@/components/TermProgress";
+import GlossaryAI from "@/components/GlossaryAI";
 
 const SITE_URL = "https://solana-glossary-lek6.vercel.app";
 
@@ -183,6 +184,9 @@ export default async function TermPage({
             </>
           )}
         </div>
+
+        {/* AI Assistant */}
+        <GlossaryAI termId={term.id} termName={term.term} locale={locale} />
 
         {/* Related Terms */}
         {relatedTerms.length > 0 && (
