@@ -23,11 +23,24 @@
     "data",
     "README.md"
   ],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "build": "tsup src/index.ts src/i18n.ts --format cjs,esm --dts --clean",
+    "build:web": "npm run build --workspace @stbr/glossary-os",
+    "build:mcp": "npm run build --workspace @stbr/glossary-mcp-server",
+    "dev:web": "npm run dev --workspace @stbr/glossary-os",
+    "start:web": "npm run start --workspace @stbr/glossary-os",
+    "start:mcp": "npm run start --workspace @stbr/glossary-mcp-server",
+    "typecheck:web": "npm run typecheck --workspace @stbr/glossary-os",
+    "typecheck:mcp": "npm run typecheck --workspace @stbr/glossary-mcp-server",
     "test": "vitest run",
     "lint": "tsc --noEmit",
     "validate": "node scripts/validate.js",
+    "expand:data": "node scripts/expand-data.js",
+    "expand:data:fixture": "node scripts/expand-data.js --manifest scripts/fixtures/expansion-sources.json --out data/expansion/fixture-report.json --limit 20 --min-score 2",
     "stats": "node -e \"const g = require('./dist/index.js'); console.log('Total terms:', g.allTerms.length); console.log('With definitions:', g.allTerms.filter(t => t.definition).length); console.log('Categories:', [...new Set(g.allTerms.map(t => t.category))].length)\""
   },
   "devDependencies": {
