@@ -1,0 +1,157 @@
+{
+  "name": "@stbr/solana-glossary-vscode-extension",
+  "displayName": "Solana Glossary Copilot",
+  "description": "Explain Solana code, debug errors, generate starter snippets, and search glossary terms directly in VS Code.",
+  "version": "0.1.0",
+  "private": true,
+  "publisher": "solanabr",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Education"
+  ],
+  "keywords": [
+    "solana",
+    "anchor",
+    "rust",
+    "glossary",
+    "copilot",
+    "vscode"
+  ],
+  "icon": "media/icon.png",
+  "activationEvents": [
+    "onLanguage:rust",
+    "onLanguage:typescript",
+    "onLanguage:javascript",
+    "onCommand:solanaGlossary.searchGlossary",
+    "onCommand:solanaGlossary.explainSelection",
+    "onCommand:solanaGlossary.debugError",
+    "onCommand:solanaGlossary.generateFromComment",
+    "onCommand:solanaGlossary.openPlanner"
+  ],
+  "main": "./dist/src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "solanaGlossary.explainSelection",
+        "title": "Explain with Solana Glossary",
+        "category": "Solana Glossary"
+      },
+      {
+        "command": "solanaGlossary.debugError",
+        "title": "Debug with Solana Glossary",
+        "category": "Solana Glossary"
+      },
+      {
+        "command": "solanaGlossary.generateFromComment",
+        "title": "Generate from @generate comment",
+        "category": "Solana Glossary"
+      },
+      {
+        "command": "solanaGlossary.openPlanner",
+        "title": "Open Glossary Planner",
+        "category": "Solana Glossary"
+      },
+      {
+        "command": "solanaGlossary.searchGlossary",
+        "title": "Search Solana Glossary",
+        "category": "Solana Glossary"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "solanaGlossary.explainSelection",
+          "when": "editorHasSelection && resourceLangId =~ /rust|typescript|javascript/",
+          "group": "navigation@1"
+        },
+        {
+          "command": "solanaGlossary.debugError",
+          "when": "resourceLangId =~ /rust|typescript|javascript/",
+          "group": "navigation@2"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "solanaGlossary.explainSelection",
+        "key": "ctrl+shift+e",
+        "mac": "cmd+shift+e",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "solanaGlossary.searchGlossary",
+        "key": "ctrl+shift+g",
+        "mac": "cmd+shift+g"
+      },
+      {
+        "command": "solanaGlossary.generateFromComment",
+        "key": "ctrl+shift+space",
+        "mac": "cmd+shift+space",
+        "when": "resourceLangId =~ /rust|typescript|javascript/"
+      }
+    ],
+    "configuration": {
+      "title": "Solana Glossary Copilot",
+      "properties": {
+        "solanaGlossary.apiBaseUrl": {
+          "type": "string",
+          "default": "https://solana-glossary-two.vercel.app",
+          "description": "Glossary OS base URL."
+        },
+        "solanaGlossary.locale": {
+          "type": "string",
+          "enum": [
+            "en",
+            "pt",
+            "es"
+          ],
+          "default": "en",
+          "description": "Preferred response language for Glossary Copilot."
+        },
+        "solanaGlossary.enableDiagnostics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show lightweight Solana-specific diagnostics."
+        },
+        "solanaGlossary.enableHoverDefinitions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show glossary definitions on hover."
+        },
+        "solanaGlossary.enableCodeActions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show inline Explain and Debug actions."
+        },
+        "solanaGlossary.hoverMaxRelatedTerms": {
+          "type": "number",
+          "default": 3,
+          "minimum": 1,
+          "maximum": 8,
+          "description": "Maximum related terms to show in hover tooltips."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "bundle": "webpack --mode production",
+    "dev": "tsc -p tsconfig.json --watch",
+    "bundle:watch": "webpack --mode development --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --config vitest.config.mts",
+    "vscode:prepublish": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@types/vscode": "^1.85.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.0",
+    "vitest": "^3.2.0",
+    "webpack": "^5.91.0",
+    "webpack-cli": "^6.0.1"
+  }
+}

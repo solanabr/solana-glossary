@@ -1,0 +1,47 @@
+declare module "vscode" {
+  export type Disposable = any;
+  export type ExtensionContext = any;
+  export type TextEditor = any;
+  export type TextDocument = any;
+  export type Position = any;
+  export type Range = any;
+  export type Selection = any;
+  export type Hover = any;
+  export type HoverProvider = any;
+  export type ProviderResult<T> = T | undefined | null | Promise<T | undefined | null>;
+  export type MarkdownString = any;
+  export type CompletionItemProvider = any;
+  export type CompletionItem = any;
+  export type CodeActionProvider = any;
+  export type CodeActionContext = any;
+  export type CodeAction = any;
+  export type DiagnosticCollection = any;
+  export type Diagnostic = any;
+  export type DiagnosticSeverity = any;
+  export type CompletionItemKind = any;
+  export type Webview = any;
+  export type WebviewPanel = any;
+  export type Uri = any;
+  export type WorkspaceEdit = any;
+
+  export const window: any;
+  export const workspace: any;
+  export const languages: any;
+  export const env: any;
+  export const commands: any;
+  export const ProgressLocation: any;
+  export const StatusBarAlignment: any;
+  export const CodeActionKind: any;
+  export const CompletionItemKind: any;
+  export const DiagnosticSeverity: any;
+  export const ViewColumn: any;
+  export const Position: any;
+  export const Range: any;
+  export const Hover: any;
+  export const MarkdownString: any;
+  export const CompletionItem: any;
+  export const CodeAction: any;
+  export const Diagnostic: any;
+  export const WorkspaceEdit: any;
+  export const Uri: any;
+}

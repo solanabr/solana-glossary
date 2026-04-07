@@ -1,0 +1,7 @@
+src/**
+tests/**
+tsconfig.json
+webpack.config.js
+vitest.config.ts
+node_modules/.cache/**
+**/*.map
