@@ -1,3 +1,5 @@
+export type CopilotMode = "ask" | "explain" | "debug" | "generate" | "plan";
+
 export type CopilotLinkedTerm = {
   id: string;
   label: string;

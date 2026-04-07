@@ -1,105 +1,85 @@
-# Glossary OS: Copilot Addition
+## What This Iteration Adds
 
-This PR adds **Glossary Copilot** to the existing Glossary OS frontend.
+**Making Glossary Copilot verifiable**.
 
-Glossary OS already turned the Solana Glossary into a navigable product with search, term relationships, builder paths, quizzes, mental models, and multilingual onboarding. This contribution adds an AI-native layer on top of that foundation: a glossary-grounded copilot for understanding Solana concepts inside the product itself.
+The app now includes a dedicated Vitest suite that covers the Copilot stack across:
 
-## Live Demo
+- **unit tests**
+  - concept detection
+  - domain classification
+  - error pattern matching
+  - response parsing
+  - prompt building
+  - context building
+  - glossary shared utilities
+- **integration tests**
+  - explain flow
+  - debug flow
+  - generate flow
+  - plan flow
+- **contract tests**
+  - `/api/copilot` input validation
+  - structured Copilot output handling
 
-https://solana-glossary-two.vercel.app/en
+Current test result:
 
-## What This PR Adds
+- **13 test files**
+- **65 passing tests**
 
-- `Ask AI` inside each term page
-- a dedicated Copilot workspace at `/[locale]/copilot`
-- glossary-grounded answers using Gemini
-- structured responses with:
-  - explanation
-  - key concepts
-  - suggested next terms
-- optional `Explain this code` flow for Anchor / Solana snippets
-- clickable glossary mentions in Copilot answers
-- localized Copilot UI for `en`, `pt`, and `es`
+## Why The Test Suite Matters
 
-## Why This Matters
+Glossary Copilot is not a static UI layer. It depends on:
 
-This is not a generic chatbot bolted onto the site.
+- glossary context assembly
+- code and text concept detection
+- mode-specific prompt construction
+- structured JSON parsing
+- API input validation
+- Gemini integration boundaries
 
-The Copilot uses the glossary dataset as structured context, so the answer is built from:
+Without dedicated tests, regressions in those layers are easy to miss. This suite makes Copilot quality visible to maintainers, reviewers, and hackathon judges.
 
-- the current term
-- aliases
-- related concepts
-- commonly confused terms
-- next-step terms
-- builder paths
-- mental models
-- concept graph branches
+## What The Suite Verifies
 
-That makes the Copilot useful for real Solana learning and developer workflows:
+The suite validates the current Copilot contract in this branch:
 
-- explain a concept in plain language
-- connect it to adjacent concepts
-- clarify common confusions
-- suggest what to study next
-- explain Anchor or Solana code using glossary vocabulary
+- request validation in `/api/copilot`
+- grounded glossary context assembly for the current term
+- code-aware and question-aware context expansion
+- structured parsing helpers used by the Copilot stack
+- end-to-end Gemini request/response handling at the `fetch` boundary
 
-## How It Works
+This keeps the PR scoped to **verification of the existing Copilot implementation**, instead of turning the test PR into a larger product refactor.
 
-The implementation follows a simple RAG-style pattern, without a vector database:
+## Copilot Flows Covered By The Suite
 
-1. The user asks a question from a term page or the dedicated Copilot page.
-2. The server builds glossary context dynamically for the selected term.
-3. That context is injected into a prompt sent to Gemini.
-4. Gemini returns structured JSON.
-5. The UI renders the answer with linked glossary terms and next-step navigation.
+The current test suite validates the Copilot logic behind these flows.
 
-This keeps the feature grounded in the existing glossary instead of turning it into a free-form chat UI.
+### Tests
 
-## Existing Glossary OS Foundation
+![Local Tests](./screenshots/screenshot_testes.png)
 
-The Copilot was added on top of an existing frontend that already provides:
 
-- instant search across glossary terms
-- term pages with relationships and contextual navigation
-- builder paths for `Runtime`, `Anchor`, `DeFi`, and `Agents`
-- mental models and concept graph exploration
-- quizzes and onboarding flows
-- multilingual support for `en`, `pt`, `es`
-- dark and light mode
-- `Copy context for AI`
+## Test Layout
 
-## Copilot Entry Points
+The suite lives in [`src/__tests__`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__):
 
-- `/en/term/[slug]` -> inline Copilot panel for the current term
-- `/pt/term/[slug]` -> inline Copilot panel in Portuguese UI
-- `/es/term/[slug]` -> inline Copilot panel in Spanish UI
-- `/en/copilot` -> full-page Copilot workspace
-- `/pt/copilot` -> full-page Copilot workspace
-- `/es/copilot` -> full-page Copilot workspace
-
-## Screenshots
-
-### Copilot Workspace
-![Glossary OS Copilot workspace](./screenshots/glossary-os-copilot-workspace.png)
-
-### Copilot Inline on Term Page
-![Glossary OS Copilot inline](./screenshots/glossary-os-copilot-inline.png)
-
-### Landing
-![Glossary OS landing](./screenshots/glossary-os-home.png)
-
-### Explore
-![Glossary OS explore](./screenshots/glossary-os-explore.png)
-
-### Term Page
-![Glossary OS term page](./screenshots/glossary-os-term-pda.png)
-
-### Builder Paths
-![Glossary OS builder paths](./screenshots/glossary-os-paths.png)
-
-### Builder Path Detail
-![Glossary OS builder path detail](./screenshots/glossary-os-path-anchor.png)
+- [`fixtures/code-samples.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/fixtures/code-samples.ts)
+- [`fixtures/error-messages.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/fixtures/error-messages.ts)
+- [`fixtures/mock-gemini.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/fixtures/mock-gemini.ts)
+- [`unit/copilot/concept-detector.test.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/unit/copilot/concept-detector.test.ts)
+- [`unit/copilot/context-builder.test.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/unit/copilot/context-builder.test.ts)
+- [`unit/copilot/domain-classifier.test.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/unit/copilot/domain-classifier.test.ts)
+- [`unit/copilot/error-patterns.test.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/unit/copilot/error-patterns.test.ts)
+- [`unit/copilot/prompt-builder.test.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/unit/copilot/prompt-builder.test.ts)
+- [`unit/copilot/response-parser.test.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/unit/copilot/response-parser.test.ts)
+- [`unit/glossary/loader.test.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/unit/glossary/loader.test.ts)
+- [`integration/explain-action.test.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/integration/explain-action.test.ts)
+- [`integration/debug-action.test.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/integration/debug-action.test.ts)
+- [`integration/generate-action.test.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/integration/generate-action.test.ts)
+- [`integration/plan-action.test.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/integration/plan-action.test.ts)
+- [`contract/input-validation.test.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/contract/input-validation.test.ts)
+- [`contract/output-contracts.test.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__/contract/output-contracts.test.ts)
 
 ## Local Setup
 
@@ -110,12 +90,6 @@ npm install
 npm run dev:web
 ```
 
-Then open:
-
-- `http://localhost:3000/en`
-- `http://localhost:3000/pt`
-- `http://localhost:3000/es`
-
 ## Gemini Setup
 
 Create `apps/glossary-os/.env.local`:
@@ -125,17 +99,30 @@ GEMINI_API_KEY=your_api_key_here
 GEMINI_MODEL=gemini-2.5-flash
 ```
 
-`GEMINI_MODEL` is optional. The Copilot defaults to `gemini-2.5-flash`.
+`GEMINI_MODEL` is optional.
 
-Important:
+The application uses Gemini through the server-side route:
 
-- the key must be in `apps/glossary-os/.env.local`.
+- `/api/copilot`
+
+The test suite does **not** require real Gemini calls. It mocks the `fetch` boundary.
 
 ## Validation
 
 ```bash
-npm run validate
+npm run test --workspace @stbr/glossary-os
 npm run typecheck:web
 npm run build --workspace @stbr/glossary-os
 ```
 
+## Main Files For This Iteration
+
+- [`src/lib/copilot.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/lib/copilot.ts)
+- [`src/lib/copilot/concept-detector.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/lib/copilot/concept-detector.ts)
+- [`src/lib/copilot/domain-classifier.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/lib/copilot/domain-classifier.ts)
+- [`src/lib/copilot/error-patterns.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/lib/copilot/error-patterns.ts)
+- [`src/lib/copilot/prompt-builder.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/lib/copilot/prompt-builder.ts)
+- [`src/lib/copilot/response-parser.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/lib/copilot/response-parser.ts)
+- [`src/app/api/copilot/route.ts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/app/api/copilot/route.ts)
+- [`src/__tests__`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/src/__tests__)
+- [`vitest.config.mts`](/home/paolla/repos/solana/solana-glossary/apps/glossary-os/vitest.config.mts)
