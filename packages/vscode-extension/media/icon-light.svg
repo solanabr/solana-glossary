@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Solana Glossary Copilot">
+  <rect width="128" height="128" rx="28" fill="#f7f4ec"/>
+  <rect x="16" y="16" width="96" height="96" rx="22" fill="#0f1720"/>
+  <path d="M42 34h34c10.5 0 19 8.5 19 19v38c0 1.7-1.3 3-3 3H58c-6.6 0-12 5.4-12 12 0-8.3-6.7-15-15-15h-2c-1.7 0-3-1.3-3-3V50c0-8.8 7.2-16 16-16z" fill="#fff8e7"/>
+  <path d="M51 47h30M51 59h24M51 71h18" stroke="#0f1720" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="88" cy="87" r="12" fill="#14b8a6"/>
+  <path d="m88 80 2.2 4.6 5.1.7-3.7 3.6.9 5-4.5-2.4-4.5 2.4.9-5-3.7-3.6 5.1-.7z" fill="#0f1720"/>
+</svg>

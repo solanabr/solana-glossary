@@ -51,7 +51,7 @@ describe("getCategories", () => {
 });
 
 describe("allTerms", () => {
-  it("contains exactly 1001 terms", () => {
-    expect(allTerms).toHaveLength(1001);
+  it("contains exactly 1004 terms", () => {
+    expect(allTerms).toHaveLength(1004);
   });
 });
