@@ -16,6 +16,7 @@ It captures:
 - term page
 - inline Copilot on a term page
 - dedicated Copilot workspace
+- Agent Mode workspace with a prefilled goal
 - builder paths
 - builder path detail
 

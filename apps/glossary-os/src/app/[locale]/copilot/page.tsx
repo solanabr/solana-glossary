@@ -9,7 +9,7 @@ export default async function CopilotPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ term?: string }>;
+  searchParams: Promise<{ term?: string; view?: string; goal?: string; autorun?: string }>;
 }) {
   const { locale } = await params;
   if (!isSupportedLocale(locale)) {
@@ -30,6 +30,9 @@ export default async function CopilotPage({
 
   return (
     <CopilotHub
+      autorunAgent={resolvedSearchParams.autorun === "1"}
+      initialGoal={resolvedSearchParams.goal}
+      initialView={resolvedSearchParams.view === "agent" ? "agent" : "copilot"}
       locale={currentLocale}
       selectedTerm={selectedTerm}
       terms={localizedTerms}

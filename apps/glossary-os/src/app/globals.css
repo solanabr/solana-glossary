@@ -1881,6 +1881,25 @@ html[data-theme="light"] .copilot-inline-link:hover {
   background: rgba(112, 209, 255, 0.08);
 }
 
+.agent-step {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0.95rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.agent-step-running {
+  border-color: rgba(112, 209, 255, 0.35);
+}
+
+.agent-step-done {
+  border-color: rgba(88, 215, 150, 0.28);
+}
+
+.agent-step-error {
+  border-color: rgba(255, 112, 112, 0.28);
+}
+
 html[data-theme="light"] .copilot-term-item {
   background: rgba(249, 251, 255, 0.98);
 }

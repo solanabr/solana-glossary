@@ -44,6 +44,7 @@ capture() {
   echo "Capturing ${path} -> ${filename}"
   "${BROWSER_BIN}" \
     --headless=new \
+    --no-sandbox \
     --disable-gpu \
     --hide-scrollbars \
     --virtual-time-budget="${VIRTUAL_TIME_BUDGET}" \
@@ -57,6 +58,7 @@ capture "/${LOCALE}/explore" "glossary-os-explore.png" "${WINDOW_STANDARD}"
 capture "/${LOCALE}/term/pda" "glossary-os-term-pda.png" "${WINDOW_STANDARD}"
 capture "/${LOCALE}/term/pda" "glossary-os-copilot-inline.png" "${WINDOW_TALL}"
 capture "/${LOCALE}/copilot?term=pda" "glossary-os-copilot-workspace.png" "${WINDOW_STANDARD}"
+capture "/${LOCALE}/copilot?term=pda&view=agent&goal=Build%20an%20Anchor%20program%20for%20a%20user%20vault%20with%20deposits%20and%20withdrawals" "glossary-os-copilot-agent.png" "${WINDOW_STANDARD}"
 capture "/${LOCALE}/paths" "glossary-os-paths.png" "${WINDOW_STANDARD}"
 capture "/${LOCALE}/paths/anchor" "glossary-os-path-anchor.png" "${WINDOW_STANDARD}"
 

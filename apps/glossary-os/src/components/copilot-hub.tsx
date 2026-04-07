@@ -4,24 +4,39 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { AgentMode } from "@/components/agent-mode";
 import { GlossaryCopilot } from "@/components/glossary-copilot";
 import { getCopy } from "@/lib/copy";
 import type { Locale } from "@/lib/locales";
 import { withLocale } from "@/lib/routes";
 import type { GlossaryTerm } from "../../../../src/types";
 
+const modeLabels = {
+  en: { copilot: "Copilot", agent: "Agent Mode" },
+  pt: { copilot: "Copilot", agent: "Modo Agente" },
+  es: { copilot: "Copilot", agent: "Modo Agente" },
+} as const;
+
 export function CopilotHub({
   locale,
   selectedTerm,
   terms,
+  initialView,
+  initialGoal,
+  autorunAgent,
 }: {
   locale: Locale;
   selectedTerm: GlossaryTerm;
   terms: GlossaryTerm[];
+  initialView?: "copilot" | "agent";
+  initialGoal?: string;
+  autorunAgent?: boolean;
 }) {
   const router = useRouter();
   const copy = getCopy(locale);
+  const labels = modeLabels[locale];
   const [query, setQuery] = useState(selectedTerm.term);
+  const [view, setView] = useState<"copilot" | "agent">(initialView ?? "copilot");
 
   const suggestions = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -49,6 +64,23 @@ export function CopilotHub({
           <span className="eyebrow">{copy.copilot.eyebrow}</span>
           <h1>{copy.copilot.pageTitle}</h1>
           <p>{copy.copilot.pageLead}</p>
+
+          <div className="pill-row">
+            <button
+              className={view === "copilot" ? "pill pill-link" : "pill"}
+              onClick={() => setView("copilot")}
+              type="button"
+            >
+              {labels.copilot}
+            </button>
+            <button
+              className={view === "agent" ? "pill pill-link" : "pill"}
+              onClick={() => setView("agent")}
+              type="button"
+            >
+              {labels.agent}
+            </button>
+          </div>
         </div>
       </section>
 
@@ -114,7 +146,16 @@ export function CopilotHub({
         </div>
       </section>
 
-      <GlossaryCopilot locale={locale} termId={selectedTerm.id} />
+      {view === "copilot" ? (
+        <GlossaryCopilot locale={locale} termId={selectedTerm.id} />
+      ) : (
+        <AgentMode
+          autorun={autorunAgent}
+          initialGoal={initialGoal}
+          locale={locale}
+          termId={selectedTerm.id}
+        />
+      )}
     </div>
   );
 }
