@@ -97,14 +97,22 @@ server.on("message", async (msg, rinfo) => {
 
     // ─── Build DNS TXT response ────────────────────────────────────────────
     // Each line becomes a separate TXT answer record.
-    // `dig +short` prints each record on its own line.
-    const answers = lines.map((line) => ({
-      type: "TXT",
-      name: question.name,
-      class: "IN",
-      ttl: 30,
-      data: line,
-    }));
+    // Convert strings to Buffers to prevent character encoding issues with `dns-packet`.
+    const answers = lines.map((line) => {
+      // Chunk the line into 255-byte buffers if necessary (TXT limit per string is 255)
+      const buf = Buffer.from(line, "utf8");
+      const chunks = [];
+      for (let i = 0; i < buf.length; i += 255) {
+        chunks.push(buf.subarray(i, i + 255));
+      }
+      return {
+        type: "TXT",
+        name: question.name,
+        class: "IN",
+        ttl: 30,
+        data: chunks,
+      };
+    });
 
     const response = dnsPacket.encode({
       type: "response",
@@ -112,6 +120,7 @@ server.on("message", async (msg, rinfo) => {
       flags: dnsPacket.AUTHORITATIVE_ANSWER,
       questions: [question],
       answers,
+      additionals: incoming.additionals,
     });
 
     server.send(response, rinfo.port, rinfo.address, (err) => {
@@ -139,6 +148,7 @@ server.on("message", async (msg, rinfo) => {
           ttl: 30,
           data: "Error processing request. Please try again.",
         }],
+        additionals: errPacket.additionals,
       });
       server.send(errResponse, rinfo.port, rinfo.address);
     } catch (_) {
