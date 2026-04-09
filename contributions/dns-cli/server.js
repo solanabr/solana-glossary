@@ -1,12 +1,13 @@
 // server.js — Solana Glossary DNS CLI Server
 //
 // Local usage (self-hosted):
-//   dig @127.0.0.1 -p 5300 proof-of-history +short
 //   dig @127.0.0.1 -p 5300 poh              +short
+//   dig @127.0.0.1 -p 5300 proof-of-history +short
 //   dig @127.0.0.1 -p 5300 find.defi        +short
 //   dig @127.0.0.1 -p 5300 categories       +short
 //   dig @127.0.0.1 -p 5300 random           +short
 //   dig @127.0.0.1 -p 5300 glossary.help    +short
+//   dig @127.0.0.1 -p 5300 help             +short  (alias)
 //
 // Public server (sdns.fun):
 //   dig poh @sdns.fun +short
@@ -22,13 +23,42 @@ import { getHelpLines } from "./services/helpService.js";
 import { getLocalizedTerm } from "./services/i18nService.js";
 
 const PORT = parseInt(process.env.DNS_PORT || "5300");
-const HOST = "0.0.0.0"; // Listen on all interfaces (localhost + LAN)
+const HOST = "0.0.0.0";
 const PUBLIC_HOST = process.env.PUBLIC_HOST || "127.0.0.1";
 
-// ─── Bootstrap: Load glossary data ──────────────────────────────────────────
+// ─── Bootstrap ───────────────────────────────────────────────────────────────
 await loadGlossary();
 
-// ─── DNS Server ──────────────────────────────────────────────────────────────
+// ─── Route a query name → array of response lines ────────────────────────────
+async function resolveQuery(name) {
+  if (name === "glossary.help" || name === "help") {
+    return getHelpLines(PUBLIC_HOST);
+
+  } else if (name === "categories") {
+    return getAllCategories();
+
+  } else if (name === "random") {
+    return getRandomTermFormatted();
+
+  } else if (name === "today") {
+    return getTermOfTheDay();
+
+  } else if (name.startsWith("search.")) {
+    return keywordSearch(name.slice("search.".length));
+
+  } else if (name.startsWith("pt.") || name.startsWith("es.")) {
+    return getLocalizedTerm(name.slice(0, 2), name.slice(3));
+
+  } else if (name.startsWith("find.")) {
+    return getCategoryTerms(name.slice("find.".length));
+
+  } else {
+    const term = getTerm(name);
+    return term ? formatTerm(term) : termNotFound(name);
+  }
+}
+
+// ─── DNS UDP Server ───────────────────────────────────────────────────────────
 const server = dgram.createSocket("udp4");
 
 server.on("error", (err) => {
@@ -38,131 +68,65 @@ server.on("error", (err) => {
 server.on("message", async (msg, rinfo) => {
   try {
     const incoming = dnsPacket.decode(msg);
+    if (!incoming.questions?.length) return;
+
     const question = incoming.questions[0];
     const name = question.name.toLowerCase().trim();
-
     console.log(`[${new Date().toISOString()}] Query: "${name}" from ${rinfo.address}:${rinfo.port}`);
 
-    // ─── Route the query ───────────────────────────────────────────────────
-    let lines = [];
+    let lines = await resolveQuery(name);
 
-    if (name === "glossary.help") {
-      // Show help
-      lines = getHelpLines(PUBLIC_HOST, PORT);
+    // Safety: always an array of clean strings
+    if (!Array.isArray(lines)) lines = ["Error: unexpected response format."];
+    lines = lines.filter((l) => l != null).map(String);
 
-    } else if (name === "categories") {
-      // List all 14 categories
-      lines = getAllCategories();
-
-    } else if (name === "random") {
-      // Random term
-      lines = getRandomTermFormatted();
-
-    } else if (name === "today") {
-      // Term of the day — changes daily, deterministic
-      lines = getTermOfTheDay();
-
-    } else if (name.startsWith("search.")) {
-      // Keyword search: "search.amm" searches all terms for "amm"
-      const keyword = name.slice("search.".length);
-      lines = keywordSearch(keyword);
-
-    } else if (name.startsWith("pt.") || name.startsWith("es.")) {
-      // Localized lookup: "pt.proof-of-history" → Portuguese
-      const locale = name.slice(0, 2);
-      const termId = name.slice(3);
-      lines = await getLocalizedTerm(locale, termId);
-
-    } else if (name.startsWith("find.")) {
-      // Category search: "find.defi" → category = "defi"
-      const category = name.slice("find.".length);
-      lines = getCategoryTerms(category);
-
-    } else {
-      // Term lookup by ID or alias
-      const term = getTerm(name);
-      if (term) {
-        lines = formatTerm(term);
-      } else {
-        lines = termNotFound(name);
-      }
-    }
-
-    // ─── Safety: ensure lines is always an array of strings ───────────────
-    if (!Array.isArray(lines)) {
-      lines = ["Error: unexpected response format. Please try again."];
-    }
-    // Remove any null/undefined entries
-    lines = lines.filter((l) => l !== null && l !== undefined).map(String);
-
-    // ─── Build DNS TXT response ────────────────────────────────────────────
-    // Each line becomes a separate TXT answer record.
-    // Convert strings to Buffers to prevent character encoding issues with `dns-packet`.
+    // Build TXT answer records — one per line
+    // Each string is chunked at 255 bytes (DNS TXT per-string limit)
     const answers = lines.map((line) => {
-      // Chunk the line into 255-byte buffers if necessary (TXT limit per string is 255)
       const buf = Buffer.from(line, "utf8");
       const chunks = [];
-      for (let i = 0; i < buf.length; i += 255) {
-        chunks.push(buf.subarray(i, i + 255));
-      }
-      return {
-        type: "TXT",
-        name: question.name,
-        class: "IN",
-        ttl: 30,
-        data: chunks,
-      };
+      for (let i = 0; i < buf.length; i += 255) chunks.push(buf.subarray(i, i + 255));
+      return { type: "TXT", name: question.name, class: "IN", ttl: 30, data: chunks };
     });
 
     const response = dnsPacket.encode({
       type: "response",
       id: incoming.id,
       flags: dnsPacket.AUTHORITATIVE_ANSWER,
-      questions: [question],
+      questions: incoming.questions,
       answers,
-      additionals: incoming.additionals,
+      additionals: incoming.additionals, // echo EDNS0 OPT record back
     });
 
     server.send(response, rinfo.port, rinfo.address, (err) => {
-      if (err) {
-        console.error(`Error sending response: ${err.message}`);
-      } else {
-        console.log(`  → Sent ${answers.length} TXT records`);
-      }
+      if (err) console.error(`Send error: ${err.message}`);
+      else console.log(`  → Sent ${answers.length} TXT records (${response.length} bytes)`);
     });
 
   } catch (err) {
-    console.error(`Error processing DNS request: ${err.message}`);
-
-    // Try to send an error response so dig doesn't just hang
+    console.error(`Error processing request: ${err.message}`);
     try {
-      const errPacket = dnsPacket.decode(msg);
-      const errResponse = dnsPacket.encode({
+      const ep = dnsPacket.decode(msg);
+      const errResp = dnsPacket.encode({
         type: "response",
-        id: errPacket.id,
-        questions: errPacket.questions,
+        id: ep.id,
+        questions: ep.questions,
         answers: [{
-          type: "TXT",
-          name: errPacket.questions[0].name,
-          class: "IN",
-          ttl: 30,
-          data: "Error processing request. Please try again.",
+          type: "TXT", name: ep.questions[0].name, class: "IN", ttl: 30,
+          data: [Buffer.from("Error processing request. Please try again.", "utf8")],
         }],
-        additionals: errPacket.additionals,
+        additionals: ep.additionals,
       });
-      server.send(errResponse, rinfo.port, rinfo.address);
-    } catch (_) {
-      // If even the error response fails, just log it
-    }
+      server.send(errResp, rinfo.port, rinfo.address);
+    } catch (_) {}
   }
 });
 
-// ─── Start listening ─────────────────────────────────────────────────────────
+// ─── Start ────────────────────────────────────────────────────────────────────
 server.bind(PORT, HOST, () => {
   const sep  = "═".repeat(58);
   const thin = "─".repeat(58);
   const pad  = (s, n) => s + " ".repeat(Math.max(0, n - s.length));
-
   console.log([
     `╔${sep}╗`,
     `║   Solana Glossary DNS CLI Server — Running              ║`,
