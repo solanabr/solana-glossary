@@ -89,13 +89,23 @@ server.on("message", async (msg, rinfo) => {
       return { type: "TXT", name: question.name, class: "IN", ttl: 30, data: chunks };
     });
 
+    // Always include a clean EDNS0 OPT record (4096-byte buffer).
+    // This prevents the "malformed message packet" warning in dig and allows
+    // large multi-line responses (help, categories, etc.) to be sent fully
+    // without being cut off at the default 512-byte DNS UDP limit.
     const response = dnsPacket.encode({
       type: "response",
       id: incoming.id,
       flags: dnsPacket.AUTHORITATIVE_ANSWER,
       questions: incoming.questions,
       answers,
-      additionals: incoming.additionals, // echo EDNS0 OPT record back
+      additionals: [{
+        type: "OPT",
+        name: ".",
+        udpPayloadSize: 4096,
+        flags: 0,
+        options: [],
+      }],
     });
 
     server.send(response, rinfo.port, rinfo.address, (err) => {
