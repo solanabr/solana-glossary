@@ -95,7 +95,7 @@ export function termNotFound(query) {
     `  - Or try an alias    e.g. sol poh  |  sol amm  |  sol pda`,
     `  - Browse a category  e.g. sol find.defi`,
     `  - Keyword search     e.g. sol search.wallet`,
-    `  - See all options    sol glossary.help`,
+    `  - See all options    sol help`,
     DIVIDER_THICK,
   ];
 }

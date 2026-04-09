@@ -1,22 +1,22 @@
 // services/helpService.js
-// Help response — shows all available DNS commands with proper formatting
+// Help response — ASCII-only (DNS TXT records must not contain multi-byte Unicode)
 
 export function getHelpLines(serverHost = "sdns.fun") {
   const h = serverHost;
   return [
-    `Solana Glossary DNS CLI — access 1000+ Solana terms via DNS queries.`,
+    `Solana Glossary DNS CLI - access 1000+ Solana terms via DNS queries.`,
     `This DNS server takes creative liberties with the DNS protocol to offer`,
-    `handy Solana Glossary utilities easily accessible via CLI.`,
+    `handy Solana utilities easily accessible via CLI without a browser.`,
     ``,
-    `QUICK ALIAS (add to ~/.bashrc or ~/.zshrc, then: source ~/.bashrc):`,
+    `ALIAS SETUP (add to ~/.bashrc or ~/.zshrc, then: source ~/.bashrc):`,
     `  sol() { dig +short "\${1}" @${h}; }`,
-    `  Then just type: sol help  |  sol poh  |  sol find.defi`,
+    `  Then just type: sol help | sol poh | sol find.defi`,
     ``,
     `AVAILABLE DNS COMMANDS:`,
-    `------------------------------`,
-    `sol <term>              - Look up a Solana glossary term (e.g. sol poh)`,
+    `-------------------`,
+    `sol <term>              - Look up a Solana glossary term`,
     `sol find.<category>     - Browse terms by category (e.g. sol find.defi)`,
-    `sol search.<word>       - Search terms by keyword (e.g. sol search.stake)`,
+    `sol search.<word>       - Search terms by keyword`,
     `sol pt.<term>           - Look up term in Portuguese (pt-BR)`,
     `sol es.<term>           - Look up term in Spanish`,
     `sol categories          - List all available categories`,

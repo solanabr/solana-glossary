@@ -45,7 +45,7 @@ export function getCategoryTerms(rawQuery) {
   if (start >= terms.length) {
     return [
       DIVIDER_THICK,
-      `  Page ${page} out of range — only ${totalPages} page(s) for "${category}"`,
+      `  Page ${page} out of range - only ${totalPages} page(s) for "${category}"`,      
       DIVIDER_THICK,
     ];
   }
@@ -107,7 +107,7 @@ export function keywordSearch(keyword) {
   if (q.length < 2) {
     return [
       DIVIDER_THICK,
-      "  Keyword too short — please use 2+ characters",
+      "  Keyword too short - please use 2+ characters",
       DIVIDER_THICK,
     ];
   }
