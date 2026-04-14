@@ -4002,5 +4002,53 @@
   "proof-aggregation": {
     "term": "Proof Aggregation",
     "definition": "Technique of combining multiple zero-knowledge proofs into a single, compact proof that can be verified more efficiently than verifying each proof individually. Reduces on-chain verification costs by batching proofs. Used in ZK compression systems to batch-verify multiple state transitions in a single verification step on Solana."
+  },
+  "quic-protocol": {
+    "term": "QUIC (Ingreso de Transacciones)",
+    "definition": "The transport protocol used by Solana's Transaction Processing Unit (TPU) since validator v1.13, replacing the original UDP-based ingestion. QUIC provides encrypted, authenticated, and flow-controlled connections between clients and leaders. It enables stake-weighted Quality of Service (QoS), where validators allocate connection bandwidth proportional to the sender's stake, mitigating spam and improving transaction landing rates during congestion."
+  },
+  "vote-credits": {
+    "term": "Créditos de Voto",
+    "definition": "The unit of reward earned by validators for successfully voting on blocks. Each correct vote on a slot that reaches consensus awards one vote credit. At epoch boundaries, accumulated vote credits are converted to SOL rewards proportional to the validator's stake. Vote credits directly determine a validator's APY—higher credits mean the validator voted correctly more often and earned more for its delegators."
+  },
+  "block-reward": {
+    "term": "Recompensa de Bloque",
+    "definition": "The SOL inflation reward distributed to validators for producing and voting on blocks. Solana's inflation started at 8% annually and decreases 15% per year toward a long-term rate of 1.5%. Block rewards are split between the leader (who produces the block) and all validators who voted for it. Half of each transaction's base fee and priority fee is burned, and the other half goes to the leader, complementing inflation rewards."
+  },
+  "message-v0": {
+    "term": "Message v0 (Mensaje Versionado)",
+    "definition": "The versioned transaction message format introduced to support Address Lookup Tables (ALTs). Legacy messages inline all account addresses (32 bytes each), limiting transactions to ~35 accounts. Message v0 references ALT accounts by index, compressing the address list and allowing up to 256 accounts per transaction. Clients use VersionedTransaction with MessageV0 to build transactions that reference ALTs."
+  },
+  "perpetual-futures": {
+    "term": "Futuros Perpetuos",
+    "definition": "Derivative contracts that let traders speculate on asset prices with leverage and no expiration date. Unlike traditional futures, perpetuals use a funding rate mechanism—periodic payments between longs and shorts—to keep the contract price anchored to the spot price. On Solana, protocols like Drift, Flash Trade, and Zeta Markets offer perpetual futures with up to 20x leverage, settling in USDC."
+  },
+  "liquidation-engine": {
+    "term": "Motor de Liquidación",
+    "definition": "The mechanism in lending and perpetual futures protocols that closes undercollateralized positions to protect the system from bad debt. When a borrower's collateral ratio falls below the maintenance margin, liquidator bots repay part of the debt and receive a discount on the seized collateral as incentive. On Solana, protocols like Drift, MarginFi, and Kamino use cranked or keeper-based liquidation engines that execute within the same slot for near-instant settlement."
+  },
+  "dynamic-amm": {
+    "term": "AMM Dinámico",
+    "definition": "An automated market maker that adjusts its pricing curve parameters dynamically based on real-time market conditions such as volatility, volume, and asset correlation. Unlike static constant-product AMMs (x*y=k), dynamic AMMs optimize capital efficiency and reduce impermanent loss by adapting fees and liquidity concentration. Meteora's Dynamic AMM on Solana uses a virtual price curve with dynamic fees that increase during volatile periods."
+  },
+  "priority-fee-estimator": {
+    "term": "Estimador de Priority Fee",
+    "definition": "A service or API that calculates optimal priority fees for transactions based on recent network conditions. RPC providers like Helius and Triton offer getRecentPrioritizationFees and getPriorityFeeEstimate endpoints that analyze recent slots to recommend fee levels (min, low, medium, high, max) per compute unit. Using an estimator prevents overpaying during low congestion or underpaying during high demand."
+  },
+  "grpc-geyser": {
+    "term": "Geyser gRPC",
+    "definition": "A high-performance streaming interface that combines Solana's Geyser plugin framework with gRPC protocol for real-time blockchain data. Unlike WebSocket-based RPC subscriptions, Geyser gRPC streams account updates, transactions, slot notifications, and block metadata directly from the validator with lower latency and higher throughput. Yellowstone is the reference implementation. Used by indexers, bots, and analytics platforms that need sub-second data feeds."
+  },
+  "immutable-owner": {
+    "term": "Extensión Immutable Owner",
+    "definition": "A Token-2022 extension that permanently locks the owner of a token account, preventing it from being reassigned via the SetAuthority instruction. All Associated Token Accounts (ATAs) created under Token-2022 have this extension enabled by default. It eliminates a class of phishing attacks where a malicious program could reassign ownership of a user's token account."
+  },
+  "mint-close-authority": {
+    "term": "Extensión Mint Close Authority",
+    "definition": "A Token-2022 extension that allows a designated authority to close a mint account and reclaim its rent-exempt lamports. In the original SPL Token program, mint accounts can never be closed once created. This extension is useful for ephemeral tokens, one-time-use NFTs, or cleaning up mints with zero supply. The close authority must be set at mint initialization."
+  },
+  "core-collection": {
+    "term": "Colección Core (Metaplex)",
+    "definition": "A first-class collection entity in the Metaplex Core standard that acts as a parent for Core Assets. Unlike the legacy Token Metadata approach where collections were regular NFTs with a flag, Core Collections are purpose-built accounts that track size, enforce royalties, and manage plugins (freeze, burn, transfer delegates) at the collection level. Collection-wide operations like updating royalties propagate to all member assets automatically."
   }
 }
