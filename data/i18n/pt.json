@@ -4050,6 +4050,7 @@
   "core-collection": {
     "term": "Coleção Core (Metaplex)",
     "definition": "A first-class collection entity in the Metaplex Core standard that acts as a parent for Core Assets. Unlike the legacy Token Metadata approach where collections were regular NFTs with a flag, Core Collections are purpose-built accounts that track size, enforce royalties, and manage plugins (freeze, burn, transfer delegates) at the collection level. Collection-wide operations like updating royalties propagate to all member assets automatically."
+  },
   "authority-separation": {
     "term": "Separação de Autoridades",
     "definition": "A program-design pattern that splits privileged operations across distinct signer keys, each with minimum power for its role, instead of concentrating authority in a single admin keypair. In a token system this means one key authorized to mint, a separate key to transfer or burn, and a third key custodying the treasury — so that compromise of any single key has bounded blast radius. Enforced on-chain by storing each authority pubkey in state and validating per-instruction."

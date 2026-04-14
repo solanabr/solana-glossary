@@ -478,6 +478,8 @@
     "definition": "A first-class collection entity in the Metaplex Core standard that acts as a parent for Core Assets. Unlike the legacy Token Metadata approach where collections were regular NFTs with a flag, Core Collections are purpose-built accounts that track size, enforce royalties, and manage plugins (freeze, burn, transfer delegates) at the collection level. Collection-wide operations like updating royalties propagate to all member assets automatically.",
     "category": "token-ecosystem",
     "related": ["core-nft", "collection", "metaplex-metadata"]
+  },
+  {
     "id": "fixed-supply",
     "term": "Fixed Supply (Revoked Mint Authority)",
     "definition": "A token state in which the mint authority has been permanently set to None via SetAuthority, mathematically guaranteeing that no additional tokens can ever be minted. Fixed supply is a trust primitive — holders verify on-chain that their holdings cannot be diluted — standard for meme tokens, capped-supply utility tokens, and post-genesis stable distributions. Once revoked, the decision is irreversible, so projects typically revoke only after an initial distribution phase.",
