@@ -4006,6 +4006,7 @@
   "sbpf": {
     "term": "sBPF (Formato de Bytecode Solana)",
     "definition": "Solana's custom bytecode format derived from eBPF, used as the compilation target for all on-chain programs. Rust programs compiled with `cargo build-sbf` are transpiled to sBPF instructions executed by the Solana Virtual Machine (SVM). sBPF extends eBPF with Solana-specific syscalls for cross-program invocations, logging, and cryptographic operations. The format enforces a strict instruction set and memory model to ensure deterministic, metered execution within compute unit budgets."
+  },
   "quic-protocol": {
     "term": "QUIC (Ingresso de Transações)",
     "definition": "The transport protocol used by Solana's Transaction Processing Unit (TPU) since validator v1.13, replacing the original UDP-based ingestion. QUIC provides encrypted, authenticated, and flow-controlled connections between clients and leaders. It enables stake-weighted Quality of Service (QoS), where validators allocate connection bandwidth proportional to the sender's stake, mitigating spam and improving transaction landing rates during congestion."

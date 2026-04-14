@@ -507,6 +507,8 @@
     "category": "programming-model",
     "aliases": ["Solana Bytecode Format", "SBF", "BPF"],
     "related": ["program", "bpf", "svm", "compute-units", "syscall"]
+  },
+  {
     "id": "on-chain-rate-limiting",
     "term": "On-Chain Rate Limiting",
     "definition": "A technique where a Solana program enforces transaction-frequency or cumulative-amount caps directly in instruction logic, storing counters and reset timestamps in a PDA account and validating each call against the Clock sysvar. Unlike off-chain rate limits, on-chain limits remain enforced even if the authorized signer key is compromised — an attacker still cannot exceed the hard-coded per-transaction or per-day ceilings. Daily reset uses clock.unix_timestamp / 86400 day comparison.",
