@@ -31,7 +31,10 @@
       "metadata-pointer",
       "confidential-mint-burn",
       "immutable-owner",
-      "mint-close-authority"
+      "mint-close-authority",
+      "transfer-fee-config",
+      "withdraw-withheld-authority",
+      "token-group"
     ],
     "tags": ["token-2022"]
   },
@@ -213,7 +216,10 @@
       "metaplex-metadata",
       "master-edition",
       "core-nft",
-      "compressed-nft"
+      "compressed-nft",
+      "magic-eden",
+      "tensor",
+      "royalty-enforcement"
     ],
     "tags": ["metaplex", "nft"]
   },

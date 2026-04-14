@@ -6,7 +6,15 @@
     "category": "defi",
     "depth": 2,
     "aliases": ["AMM"],
-    "related": ["liquidity-pool", "swap", "constant-product"]
+    "related": [
+      "liquidity-pool",
+      "swap",
+      "constant-product",
+      "clmm",
+      "lp-token",
+      "slippage",
+      "impermanent-loss"
+    ]
   },
   {
     "id": "clmm",
@@ -24,7 +32,7 @@
     "category": "defi",
     "depth": 2,
     "aliases": ["LP", "Pool"],
-    "related": ["amm", "lp-token", "impermanent-loss"]
+    "related": ["amm", "lp-token", "impermanent-loss", "clmm", "yield-farming"]
   },
   {
     "id": "lp-token",
@@ -172,7 +180,16 @@
     "definition": "A service that provides external data (prices, randomness) to on-chain programs. DeFi protocols rely on oracles for accurate price feeds to calculate collateral ratios, liquidation thresholds, and swap rates. Solana's primary oracles are Pyth (high-frequency price feeds) and Switchboard (general-purpose data feeds and VRF).",
     "category": "defi",
     "depth": 3,
-    "related": ["pyth", "switchboard", "price-feed"],
+    "related": [
+      "pyth",
+      "switchboard",
+      "price-feed",
+      "vrf",
+      "twap",
+      "pull-oracle-model",
+      "pyth-hermes",
+      "confidence-interval"
+    ],
     "tags": ["oracle"]
   },
   {

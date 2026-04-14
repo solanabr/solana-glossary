@@ -6,7 +6,13 @@
     "category": "infrastructure",
     "depth": 2,
     "aliases": ["RPC", "JSON-RPC"],
-    "related": ["rpc-node", "rpc-methods"]
+    "related": [
+      "rpc-node",
+      "rpc-methods",
+      "websocket",
+      "json-rpc",
+      "get-account-info"
+    ]
   },
   {
     "id": "rpc-node",

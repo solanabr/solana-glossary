@@ -5,7 +5,17 @@
     "definition": "The most popular framework for building Solana programs in Rust. Anchor provides macros (#[program], #[account], #[derive(Accounts)]) that auto-generate boilerplate for account validation, serialization, discriminators, and error handling. It includes a CLI (anchor init/build/test/deploy), IDL generation, and TypeScript client generation. Reduces program code by ~80% compared to native development.",
     "category": "dev-tools",
     "depth": 2,
-    "related": ["program", "idl", "discriminator"]
+    "related": [
+      "program",
+      "idl",
+      "discriminator",
+      "anchor-account-macro",
+      "anchor-derive-accounts",
+      "anchor-constraints",
+      "anchor-error",
+      "anchor-context",
+      "anchor-events"
+    ]
   },
   {
     "id": "anchor-account-macro",

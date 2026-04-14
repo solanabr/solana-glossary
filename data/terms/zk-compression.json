@@ -19,7 +19,12 @@
       "state-compression",
       "compressed-account",
       "state-tree",
-      "nullifier-queue"
+      "nullifier-queue",
+      "light-protocol",
+      "photon-indexer",
+      "validity-proof",
+      "compressed-token",
+      "forester"
     ],
     "tags": ["zk"]
   },
@@ -45,7 +50,7 @@
   {
     "id": "merkle-proof",
     "term": "Merkle Proof",
-    "definition": "A Merkle proof is the minimal set of sibling node hashes (the proof path) along the branch from a specific leaf to the tree root, allowing anyone to independently verify that a given leaf is part of a Merkle tree by recomputing the root from the leaf hash and the sibling hashes without needing any other tree data. In Solana's state compression, every compressed account or compressed NFT interaction requires the caller to supply a valid Merkle proof; the on-chain program hashes the proof against the current root stored in the Concurrent Merkle Tree account to confirm inclusion before executing the state change. Proof size scales linearly with tree depth (e.g., a depth-20 tree requires up to 20 sibling hashes, each 32 bytes), so the canopy is used to pre-store upper-level nodes on-chain to reduce the proof data that must be passed in transactions.",
+    "definition": "A sequence of sibling hashes along a path from a leaf to a Merkle tree's root that proves a specific data element is included in the tree without revealing the entire dataset. In Solana's state compression, every compressed account operation requires a Merkle proof verified against the on-chain root to confirm inclusion before execution. Proof size scales linearly with tree depth; canopy optimization stores upper nodes on-chain to reduce proof sizes transmitted per transaction.",
     "category": "zk-compression",
     "depth": 3,
     "related": ["concurrent-merkle-tree", "merkle-tree"],
@@ -84,7 +89,7 @@
   {
     "id": "zk-proofs",
     "term": "Zero-Knowledge Proofs (ZKP)",
-    "definition": "A zero-knowledge proof is a cryptographic protocol by which a prover convinces a verifier that a statement is true — for example, that a state transition is valid — without revealing any information beyond the truth of the statement itself, satisfying the properties of completeness, soundness, and zero-knowledge. In Solana's ecosystem, ZKPs are used by ZK Compression (via Groth16 SNARKs) to prove correct state transitions for compressed accounts without storing full account state on-chain, and by the Token-2022 Confidential Transfers extension (via ElGamal encryption and range proofs) to prove token balances are non-negative without revealing the actual amounts. Solana's BPF VM exposes the alt_bn128 elliptic curve syscall to make on-chain Groth16 proof verification computationally feasible within the 1.4M compute unit budget.",
+    "definition": "Cryptographic protocols allowing a prover to demonstrate knowledge of a value satisfying a relation without revealing the value itself. On Solana, ZK proofs serve two primary roles: ZK Compression (Groth16 proofs verifying compressed account state transitions) and Token-2022 Confidential Transfers (range proofs and equality proofs ensuring encrypted balances remain valid). The SVM's native alt_bn128 and curve25519 syscalls make on-chain proof verification computationally feasible.",
     "category": "zk-compression",
     "depth": 3,
     "aliases": ["ZKP", "ZK Proofs"],
@@ -94,7 +99,7 @@
   {
     "id": "groth16",
     "term": "Groth16",
-    "definition": "Groth16 is a highly efficient zk-SNARK proving system introduced by Jens Groth in 2016 that produces constant-size proofs (128 bytes: two G1 points and one G2 point on a pairing-friendly elliptic curve) with constant-time verification regardless of circuit complexity, making it the preferred proof system for on-chain verification where calldata and compute costs are constrained. Light Protocol uses Groth16 proofs over the BN254 curve (known as alt_bn128 in Ethereum tooling) to verify compressed account state transitions on Solana, leveraging the native alt_bn128 pairing and point-addition syscalls added to the SVM to keep verification within the per-transaction compute unit limit. The trade-off is that Groth16 requires a trusted setup ceremony per circuit, producing a structured reference string (SRS) whose security relies on participants honestly discarding their toxic waste.",
+    "definition": "A zk-SNARK proving system producing constant-size proofs (3 group elements, ~128 bytes) with the fastest known verification time, making it the standard for on-chain proof verification where compute is expensive. Solana exposes native alt_bn128 pairing syscalls specifically to enable efficient Groth16 verification within transaction compute limits. The trade-off is a per-circuit trusted setup ceremony — if the ceremony's toxic waste is not properly destroyed, a party could forge proofs.",
     "category": "zk-compression",
     "depth": 5,
     "related": ["zk-proofs", "snark"],
@@ -103,7 +108,7 @@
   {
     "id": "plonk",
     "term": "PLONK",
-    "definition": "PLONK (Permutations over Lagrange-bases for Oecumenical Noninteractive arguments of Knowledge) is a universal zk-SNARK proving system that requires only a single, circuit-agnostic trusted setup (a universal SRS), eliminating the need for per-circuit ceremonies required by systems like Groth16, while producing proofs that are slightly larger but allow circuits to be updated or added without new ceremonies. PLONK-based systems (including its variants Turbo-PLONK and Ultra-PLONK used by protocols like Aztec) support custom gates and lookup tables, enabling more efficient encoding of operations like range checks and hash functions in arithmetic circuits. On Solana, PLONK is less commonly deployed for on-chain verification than Groth16 because verification is more compute-intensive, but it is used off-chain in toolchains and protocol designs targeting future SVM upgrades with broader syscall support.",
+    "definition": "A universal zk-SNARK proving system requiring only a single circuit-agnostic trusted setup (universal SRS), eliminating per-circuit ceremonies needed by Groth16 while producing slightly larger proofs. PLONK variants support custom gates and lookup tables for efficient encoding of operations like range checks and hash functions in arithmetic circuits. On Solana, PLONK is less commonly deployed for on-chain verification than Groth16 due to higher compute cost, but is used in off-chain toolchains and protocol designs targeting future SVM upgrades.",
     "category": "zk-compression",
     "depth": 5,
     "related": ["zk-proofs"],
@@ -112,7 +117,7 @@
   {
     "id": "snark",
     "term": "SNARK (Succinct Non-interactive Argument of Knowledge)",
-    "definition": "A SNARK is a class of zero-knowledge proof system characterized by succinctness (proofs are short — typically hundreds of bytes — regardless of the computation's complexity), non-interactivity (the prover sends a single message without back-and-forth with the verifier), and the argument-of-knowledge property (a prover who produces a valid proof must know the witness, i.e., the secret inputs to the computation). zk-SNARKs such as Groth16 and PLONK are the cryptographic core of ZK Compression on Solana, enabling off-chain provers to compress complex state transition validity into a proof that a Solana validator can verify on-chain cheaply using the alt_bn128 syscall over the BN254 elliptic curve. Most current Solana zk-SNARK deployments rely on trusted setups, though newer transparent variants like STARKs eliminate this requirement at the cost of larger proof sizes.",
+    "definition": "Succinct Non-interactive ARgument of Knowledge — a class of zero-knowledge proof where a prover convinces a verifier of a statement's truth without revealing the witness, with proofs that are small (succinct) and require no back-and-forth (non-interactive). On Solana, SNARKs are the cryptographic core of ZK Compression and Confidential Transfers, verified on-chain via native elliptic curve syscalls. Most deployed Solana SNARKs use Groth16 due to its minimal verification cost.",
     "category": "zk-compression",
     "depth": 4,
     "aliases": ["SNARK", "zk-SNARK"],
@@ -122,7 +127,7 @@
   {
     "id": "stark",
     "term": "STARK (Scalable Transparent Argument of Knowledge)",
-    "definition": "A STARK is a zero-knowledge proof system that achieves transparency (no trusted setup — all randomness is derived from publicly verifiable hash functions) and scalability (proof generation time scales quasi-linearly with computation size), at the cost of larger proof sizes (tens to hundreds of kilobytes) compared to SNARKs. STARKs rely only on collision-resistant hash functions and are therefore post-quantum secure, unlike elliptic-curve-based SNARKs, making them theoretically more robust for long-term deployments. On Solana, STARKs are not yet commonly used for on-chain verification because their proof sizes exceed practical transaction and account limits, but they are employed in off-chain proving infrastructure and Layer-2 research projects targeting future SVM integrations with recursive or aggregated proof verification.",
+    "definition": "STARKs (Scalable Transparent ARguments of Knowledge) are zero-knowledge proofs that require no trusted setup, relying on hash functions and algebraic techniques rather than elliptic curve pairings, making them quantum-resistant. Trade-off: STARK proofs are significantly larger than SNARKs (tens of KB vs ~128 bytes). Not yet practical for direct on-chain Solana verification due to proof size; used in off-chain infrastructure and L2 research.",
     "category": "zk-compression",
     "depth": 4,
     "aliases": ["STARK", "zk-STARK"],
@@ -132,7 +137,7 @@
   {
     "id": "poseidon-hash",
     "term": "Poseidon Hash",
-    "definition": "Poseidon is a cryptographic hash function designed specifically for efficiency inside zero-knowledge proof arithmetic circuits (ZK-friendly), operating natively over prime fields (specifically the BN254 scalar field used by Groth16) with dramatically fewer constraints per hash than binary-oriented functions like SHA-256, which requires roughly 25,000 R1CS constraints per invocation versus Poseidon's roughly 240. In Solana's ZK Compression and state compression ecosystem, Poseidon is used as the hash function for building Merkle trees whose roots are verified inside ZK circuits, because ZK proofs must encode every hash operation as arithmetic constraints and SHA-256's bitwise operations are prohibitively expensive in this model. Solana's SVM exposes a native Poseidon syscall so on-chain programs can compute Poseidon hashes efficiently without paying the compute cost of a pure BPF implementation.",
+    "definition": "A cryptographic hash function designed for efficiency inside zero-knowledge proof arithmetic circuits, operating natively over prime fields with roughly 240 R1CS constraints per hash versus SHA-256's ~25,000, making it dramatically cheaper for ZK proof generation. In Solana's ZK Compression ecosystem, Poseidon hashes build Merkle trees verified inside ZK circuits, since SHA-256's bitwise operations are prohibitively expensive in arithmetic constraint models. Solana's SVM exposes a native Poseidon syscall for efficient on-chain computation without pure BPF overhead.",
     "category": "zk-compression",
     "depth": 5,
     "related": ["zk-proofs", "merkle-tree"],
@@ -141,7 +146,7 @@
   {
     "id": "light-protocol",
     "term": "Light Protocol",
-    "definition": "Light Protocol is the open-source infrastructure layer that implements ZK Compression on Solana, consisting of a set of on-chain programs (the Light System Program, Compressed Token Program, and Account Compression Program), an off-chain prover network that generates Groth16 proofs for state transitions, the Photon indexer that reconstructs compressed account state from Solana ledger data, and the Forester service that manages Merkle tree maintenance tasks like nullifier queue processing. Light Protocol enables developers to build general-purpose compressed accounts, compressed SPL tokens, and compressed PDAs that are 100–1,000x cheaper than their standard counterparts while inheriting Solana's full security, atomicity, and composability guarantees. The protocol is permissionlessly deployable and integrates with existing Solana tooling via a drop-in SDK that mirrors familiar account and token patterns.",
+    "definition": "The open-source infrastructure layer implementing ZK Compression on Solana, consisting of on-chain programs (Light System Program, Compressed Token Program), an off-chain prover network generating Groth16 proofs, the Photon indexer for state reconstruction, and the Forester service for Merkle tree maintenance. Light Protocol enables compressed accounts, tokens, and PDAs that are 100-1,000x cheaper than standard counterparts while inheriting Solana's security, atomicity, and composability. The protocol integrates with existing tooling via a drop-in SDK mirroring familiar account and token patterns.",
     "category": "zk-compression",
     "depth": 4,
     "related": ["zk-compression", "compressed-account"],
@@ -150,7 +155,7 @@
   {
     "id": "photon-indexer",
     "term": "Photon Indexer",
-    "definition": "Photon is Light Protocol's open-source indexer service that continuously reads Solana's transaction logs and ledger to reconstruct the full state of compressed accounts and Concurrent Merkle Trees, making this off-chain data queryable via a JSON-RPC API that mirrors the standard Solana RPC interface with additional ZK-compression-specific methods. Because compressed account data is not stored in on-chain account space but is instead emitted during transactions as instruction data and logs, a dedicated indexer like Photon is required for clients to fetch account state, generate Merkle proofs, and construct valid transactions that interact with compressed accounts. Photon exposes methods such as getCompressedAccount, getCompressedTokenAccountsByOwner, and getValidityProof, and Light Protocol operates a hosted Photon endpoint while teams can also self-host it against their own RPC node.",
+    "definition": "Light Protocol's off-chain indexer that reconstructs compressed account state by parsing Solana transaction logs, since compressed data is emitted in logs rather than stored in on-chain accounts. Photon provides a gRPC and REST API for querying compressed account balances, ownership, and Merkle proofs needed to build state-transition transactions. Without Photon or an equivalent indexer, clients cannot determine current compressed state, making it essential infrastructure for any ZK Compression application.",
     "category": "zk-compression",
     "depth": 4,
     "related": ["zk-compression", "indexer"],
@@ -159,7 +164,7 @@
   {
     "id": "forester",
     "term": "Forester",
-    "definition": "Forester is the permissionless keeper service in Light Protocol's architecture responsible for performing routine Merkle tree maintenance operations that must be triggered by an external party rather than automatically on-chain, including nullifier queue processing (finalizing spent compressed account hashes to prevent double-spends), address queue processing (registering new compressed account addresses), and rolling epoch-based tree updates. Without an active Forester, nullifier queues can fill up and block new state transitions in a compressed tree, so Light Protocol incentivizes Forester operators through protocol fees collected during these maintenance operations. Forester nodes are run permissionlessly by anyone against a Solana RPC and monitor on-chain queue accounts, submitting crank transactions when queues require processing.",
+    "definition": "An off-chain service in Light Protocol that performs maintenance on compressed state trees: processing nullifier queues, registering new addresses, and managing epoch-based tree rollovers. Forester nodes are permissionless — anyone can run one and earn protocol-distributed fees for completed work. If Forester processing lags behind transaction volume, nullifier queues may temporarily fill, causing compressed transactions to fail until space is freed.",
     "category": "zk-compression",
     "depth": 5,
     "related": ["zk-compression", "concurrent-merkle-tree"],
@@ -168,7 +173,7 @@
   {
     "id": "validity-proof",
     "term": "Validity Proof",
-    "definition": "In the context of ZK Compression on Solana, a validity proof is a Groth16 zk-SNARK proof that cryptographically attests to the correctness of one or more compressed account state transitions — specifically, that the consumed accounts exist as leaves in the current Merkle tree root, that the nullifiers are fresh (not previously spent), and that the new output account hashes correctly represent the post-transition state — all without the verifier needing to inspect the full account data. Validity proofs are generated off-chain by Light Protocol's prover service and submitted alongside compressed account instructions in Solana transactions, where the Light System Program verifies the proof on-chain using the alt_bn128 syscall before applying the state change. This model means Solana validators do not re-execute compressed account logic; they only verify the succinct proof, enabling high-throughput compressed state updates at minimal on-chain cost.",
+    "definition": "In ZK Compression, a validity proof is a Groth16 zk-SNARK that cryptographically attests to the correctness of compressed account state transitions — proving that consumed accounts exist in the current Merkle tree, nullifiers are fresh, and output hashes are valid — without the verifier inspecting full account data. Proofs are generated off-chain and submitted alongside compressed instructions; the on-chain program verifies them via the alt_bn128 syscall before applying state changes. Validators only verify the succinct proof rather than re-executing logic, enabling high-throughput compressed state updates at minimal cost.",
     "category": "zk-compression",
     "depth": 4,
     "related": ["zk-compression", "zk-proofs"],
@@ -177,7 +182,7 @@
   {
     "id": "compressed-token",
     "term": "Compressed Token",
-    "definition": "A compressed token is an SPL-compatible fungible or semi-fungible token whose per-account token balances are stored as leaves in a Concurrent Merkle Tree via Light Protocol's Compressed Token Program rather than as individual Token or Token-2022 accounts, reducing the account creation cost from ~0.002 SOL per token account to a negligible fraction of a lamport per leaf. Compressed tokens implement the same mint, transfer, burn, and delegation semantics as standard SPL tokens, but every operation requires a Merkle proof of the source leaf's existence and a validity proof of the state transition; the Compressed Token Program wraps the Light System Program to handle this ZK machinery transparently. This design is particularly valuable for airdrops, gaming economies, and reward systems where millions of user token accounts would otherwise impose prohibitive rent costs on the issuer or recipient.",
+    "definition": "An SPL-compatible token whose per-account balances are stored as Merkle tree leaves via Light Protocol's Compressed Token Program, reducing account creation cost from ~0.002 SOL to a negligible fraction of a lamport. Compressed tokens maintain standard mint, transfer, burn, and delegation semantics, but operations require Merkle and validity proofs handled transparently by the program. Ideal for airdrops, gaming economies, and reward systems where millions of token accounts would otherwise impose prohibitive rent costs.",
     "category": "zk-compression",
     "depth": 4,
     "related": [
@@ -191,7 +196,7 @@
   {
     "id": "nullifier",
     "term": "Nullifier",
-    "definition": "A nullifier is a cryptographic value derived deterministically from a compressed account's leaf hash (and optionally a secret) that is published and recorded on-chain when that compressed account is consumed (spent) in a state transition, permanently marking the account as used and preventing it from being spent a second time in a double-spend attack. In Light Protocol, nullifiers are inserted into an on-chain nullifier queue account and periodically batch-processed by Forester nodes into a nullifier set stored in a separate Merkle tree, allowing the validity proof to assert both that the input account exists (inclusion proof) and that its nullifier has not yet been recorded (non-membership proof). The nullifier scheme allows compressed accounts to be treated as UTXOs — each account is consumed once and replaced by one or more output accounts — while maintaining the privacy and succinctness properties of the ZK proof system.",
+    "definition": "A cryptographic value derived deterministically from a compressed account's leaf hash, published on-chain when the account is consumed to permanently mark it as spent and prevent double-spending. In Light Protocol, nullifiers are inserted into an on-chain queue and batch-processed by Forester nodes into a Merkle tree, allowing validity proofs to assert both account existence (inclusion proof) and that the nullifier has not been recorded (non-membership proof). This scheme treats compressed accounts as UTXOs — each consumed once and replaced by new output accounts.",
     "category": "zk-compression",
     "depth": 4,
     "related": ["zk-proofs", "compressed-account", "compressed-burn"],
@@ -200,7 +205,7 @@
   {
     "id": "zkp-syscall",
     "term": "ZKP Syscall (alt_bn128)",
-    "definition": "The alt_bn128 syscalls are native BPF VM system calls added to the Solana runtime (via SIMD-0041 and related proposals) that expose elliptic curve operations on the BN254 curve (also known as alt_bn128) — specifically point addition, scalar multiplication, and pairing checks — enabling on-chain programs to verify Groth16 zk-SNARK proofs within practical compute unit budgets. Without these syscalls, implementing the pairing-based verification of a Groth16 proof purely in BPF bytecode would require hundreds of millions of compute units, far exceeding the 1.4M per-transaction limit; with the syscalls, a full Groth16 verification costs on the order of 200,000–400,000 compute units. Light Protocol's on-chain verifier and Solana's Token-2022 Confidential Transfers both depend on the alt_bn128 syscalls, making them a critical piece of Solana's ZK infrastructure.",
+    "definition": "Native Solana runtime syscalls (sol_alt_bn128_group_op, sol_alt_bn128_compression, sol_pairing) that perform elliptic curve operations over the BN254 curve at near-native speed. These syscalls enable efficient on-chain verification of Groth16 proofs within transaction compute limits — without them, pairing-based verification in BPF would exceed compute budgets. Light Protocol, ZK Compression, and the Confidential Transfer extension all depend on these syscalls.",
     "category": "zk-compression",
     "depth": 5,
     "aliases": ["alt_bn128"],
@@ -209,7 +214,7 @@
   {
     "id": "elgamal-encryption",
     "term": "ElGamal Encryption",
-    "definition": "ElGamal encryption is a public-key cryptosystem based on the Diffie-Hellman problem over an elliptic curve group, providing additive homomorphism — meaning the encryption of a sum of values equals the product of their individual ciphertexts — which makes it suitable for confidential token balance accounting where balances can be updated without decrypting them. On Solana, the Token-2022 Confidential Transfers extension uses Twisted ElGamal encryption over the Ristretto255 curve to encrypt token balances in token accounts, so transfers update encrypted balances homomorphically while zero-knowledge range proofs (proving a balance is non-negative and a transfer amount is within bounds) prevent overdrafts without revealing any amounts. Each confidential token account stores a pending encrypted incoming balance and an available encrypted balance, and the account owner uses their ElGamal private key to decrypt and rotate balances via ZK-proof-accompanied instructions.",
+    "definition": "ElGamal encryption is a public-key cryptosystem based on the Diffie-Hellman problem over an elliptic curve group, providing additive homomorphism — the encryption of a sum equals the product of individual ciphertexts — making it suitable for confidential balance accounting without decryption. On Solana, Token-2022's Confidential Transfers extension uses Twisted ElGamal over Ristretto255 to encrypt token balances, allowing homomorphic updates while zero-knowledge range proofs prevent overdrafts without revealing amounts. Each confidential token account stores pending and available encrypted balances, decryptable only by the owner's ElGamal private key.",
     "category": "zk-compression",
     "depth": 5,
     "related": ["confidential-transfers", "zk-proofs"]

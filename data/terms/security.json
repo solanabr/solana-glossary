@@ -100,7 +100,7 @@
   {
     "id": "precision-loss",
     "term": "Precision Loss / Rounding Errors",
-    "definition": "A class of numerical vulnerability where integer division discards fractional remainders, causing systematic under-accounting of fees, interest, or token amounts that an attacker can exploit through repeated small transactions to drain protocol funds or receive more than entitled. Because Solana programs use integer arithmetic exclusively (no native floating point in on-chain code), division operations like amount / price always truncate toward zero, and protocols must decide whether to round in favor of the protocol (ceiling division for fees collected, floor division for tokens distributed) using formulas such as (numerator + denominator - 1) / denominator. Precision errors can also compound across fixed-point representations, so high-precision intermediate scaling (e.g., multiplying by 10^9 before dividing) is a common mitigation.",
+    "definition": "A vulnerability in Solana programs where integer division truncation causes systematic under- or over-accounting of token amounts, compoundable over many transactions into significant value extraction. Since Solana programs use integer arithmetic exclusively (no floating point), every division discards remainders. Defenses include ceiling division for payouts, floor division for deposits, and scaling values by large factors (e.g., 1e9) before dividing to minimize relative truncation error.",
     "category": "security",
     "depth": 3,
     "related": ["integer-overflow"],
@@ -118,7 +118,7 @@
   {
     "id": "bump-seed-canonicalization",
     "term": "Bump Seed Canonicalization",
-    "definition": "The requirement that, when deriving a Program Derived Address (PDA), a program always use the canonical bump — the highest bump value (starting from 255 and decrementing) for which find_program_address returns a valid off-curve point — rather than accepting an arbitrary bump supplied by the caller. If a program stores and re-uses a non-canonical bump, an attacker can create a different PDA (with a different canonical bump) that happens to match a seed set the program trusts, or can derive valid PDAs outside the expected namespace. Anchor's seeds and bump constraints enforce canonicalization by calling find_program_address internally and asserting the provided bump matches; storing the canonical bump in the account at init time (instead of rediscovering it) is the recommended gas-efficient pattern.",
+    "definition": "A vulnerability where a program derives a PDA using a caller-supplied bump seed instead of the canonical (highest valid) bump returned by find_program_address, allowing an attacker to create multiple valid PDAs for the same logical account and bypass uniqueness assumptions. The canonical bump is the first value (counting down from 255) that produces a point off the ed25519 curve. Defense: store the canonical bump at initialization and verify it on subsequent calls; Anchor enforces this via the bump constraint.",
     "category": "security",
     "depth": 4,
     "related": ["bump", "pda"],
@@ -171,7 +171,7 @@
   {
     "id": "oracle-manipulation",
     "term": "Oracle Manipulation",
-    "definition": "An attack in which an adversary artificially distorts the price or data reported by an on-chain oracle — most commonly by executing large trades to move a spot-price oracle (such as one based on a single AMM's instantaneous price) — and then exploits protocols that consume that price for lending, liquidation, or derivatives settlement before the oracle corrects. Flash-loan-amplified oracle manipulation is particularly dangerous: an attacker borrows a large sum atomically, moves the price, exploits the manipulated price, and repays the loan in one transaction. Defenses include using time-weighted average prices (TWAPs), aggregating multiple independent oracle sources (e.g., Pyth's aggregate confidence interval, Switchboard's weighted median), and enforcing staleness and confidence-band checks on every consumed price feed.",
+    "definition": "An attack where an adversary artificially distorts the price reported by an on-chain oracle to exploit a protocol that trusts that price for lending, liquidation, or swap calculations. Common vectors include manipulating thin AMM pools to skew spot prices, amplified by flash loans for zero-capital attacks. Defenses: use time-weighted average prices, aggregate multiple independent sources, enforce staleness checks, and set maximum single-block price deviation thresholds.",
     "category": "security",
     "depth": 3,
     "related": ["oracle", "price-feed", "flash-loan"],
@@ -216,7 +216,7 @@
   {
     "id": "audit",
     "term": "Security Audit",
-    "definition": "A formal, structured review of a Solana program's source code, architecture, and deployment configuration by experienced security researchers, aimed at identifying vulnerabilities — including but not limited to the OWASP-equivalent Solana Top 10 (missing signer checks, owner checks, arithmetic errors, etc.) — before mainnet deployment. Reputable Solana-focused audit firms include OtterSec, Ackee Blockchain, sec3 (formerly Soteria), Neodyme, Trail of Bits, and Halborn; most audits produce a severity-rated finding report (critical, high, medium, low, informational) that programs are expected to remediate and publish. A single audit is considered minimum due diligence for programs holding significant user funds; continuous auditing and bug bounties on platforms like Immunefi are considered best practice.",
+    "definition": "A systematic security review of a Solana program's source code, typically conducted by specialized firms, that identifies vulnerabilities from critical (fund loss) to informational. Auditors examine access control, arithmetic safety, CPI targets, account validation, and economic attack vectors, producing a severity-rated report. Best practice is multiple independent audits before mainnet, combined with a bug bounty program for ongoing coverage.",
     "category": "security",
     "depth": 2,
     "related": ["ottersec", "sec3", "neodyme"]

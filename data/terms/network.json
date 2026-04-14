@@ -106,7 +106,16 @@
     "category": "network",
     "depth": 3,
     "aliases": ["MEV"],
-    "related": ["jito", "front-running", "sandwich-attack"],
+    "related": [
+      "jito",
+      "front-running",
+      "sandwich-attack",
+      "bundle",
+      "tip",
+      "block-engine",
+      "searcher",
+      "backrunning"
+    ],
     "tags": ["jito"]
   },
   {

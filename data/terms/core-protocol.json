@@ -15,7 +15,14 @@
     "category": "core-protocol",
     "depth": 4,
     "aliases": ["Tower"],
-    "related": ["proof-of-history", "vote-account", "fork"]
+    "related": [
+      "proof-of-history",
+      "vote-account",
+      "fork",
+      "fork-choice",
+      "ghost",
+      "supermajority"
+    ]
   },
   {
     "id": "slot",
@@ -60,7 +67,17 @@
     "definition": "A node that participates in the Solana network by validating transactions, voting on blocks, and (when selected as leader) producing new blocks. Validators run the Agave, Firedancer, or Jito client software, require significant hardware (128+ GB RAM, high-core CPU, NVMe SSD), and earn rewards from inflation and transaction fees.",
     "category": "core-protocol",
     "depth": 2,
-    "related": ["vote-account", "stake", "leader-schedule"],
+    "related": [
+      "vote-account",
+      "stake",
+      "leader-schedule",
+      "stake-account",
+      "delegator",
+      "gossip",
+      "agave",
+      "firedancer",
+      "vote-cost"
+    ],
     "tags": ["validator"]
   },
   {
