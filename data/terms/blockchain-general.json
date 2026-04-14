@@ -39,7 +39,7 @@
     "term": "Distributed Ledger",
     "definition": "A database replicated and synchronized across multiple nodes in a network without central administration. All participants maintain identical copies of the ledger. Changes are propagated through consensus. Blockchains are the most common type of distributed ledger, but not all distributed ledgers use a chain-of-blocks structure.",
     "category": "blockchain-general",
-    "depth": 2,
+    "depth": 1,
     "aliases": ["DLT"],
     "related": ["blockchain", "consensus"]
   },
@@ -209,7 +209,7 @@
     "term": "Immutability",
     "definition": "The property that once data is written to a blockchain, it cannot be altered or deleted. Immutability is enforced by cryptographic hash chaining—modifying any historical block changes its hash, breaking the chain. This provides tamper-proof audit trails. Note: smart contract state can be updated by authorized programs; immutability applies to the historical ledger.",
     "category": "blockchain-general",
-    "depth": 2,
+    "depth": 1,
     "related": ["blockchain", "hash-function"]
   },
   {
@@ -439,7 +439,7 @@
     "term": "Lightning Network",
     "definition": "A Layer 2 payment channel network built on Bitcoin that enables near-instant, low-cost transactions by conducting most activity off-chain. Two parties open a channel by locking BTC in a multisig transaction, then exchange signed commitment transactions off-chain; only the opening and closing transactions are broadcast on-chain. Payments can be routed across multiple channels using Hash Time-Locked Contracts (HTLCs), enabling trustless multi-hop transfers.",
     "category": "blockchain-general",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["Lightning", "LN"],
     "related": ["bitcoin", "bitcoin-layer-2", "segwit", "layer-2"]
   },
@@ -448,7 +448,7 @@
     "term": "Bitcoin Ordinals",
     "definition": "A protocol created by Casey Rodarmor in January 2023 that assigns a unique serial number (ordinal) to each individual satoshi based on mining order, enabling satoshis to carry arbitrary data (inscriptions) stored in Taproot witness data. Inscriptions can contain images, text, HTML, or other media up to the ~4 MB block weight limit, creating non-fungible digital artifacts natively on Bitcoin. Over 63 million inscriptions were created by early 2024.",
     "category": "blockchain-general",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["Ordinals", "Inscriptions"],
     "related": [
       "bitcoin",
@@ -505,7 +505,7 @@
     "term": "Mempool",
     "definition": "The memory pool maintained by each blockchain node containing unconfirmed transactions that have been validated but not yet included in a block. Miners/validators select transactions from the mempool typically prioritizing those with the highest fee rate. Each node's mempool is independent and may differ based on propagation delays; during high-demand periods, the mempool can grow significantly, causing fee spikes as users compete for limited block space.",
     "category": "blockchain-general",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["Memory Pool", "Transaction Pool"],
     "related": ["bitcoin", "proof-of-work-mining", "transaction-fee-general"]
   },
@@ -550,7 +550,7 @@
     "term": "Zcash",
     "definition": "A privacy-focused cryptocurrency launched in October 2016 that pioneered the use of zk-SNARKs to enable fully shielded transactions where sender, receiver, and amount are cryptographically hidden on a public blockchain. Zcash uses a UTXO model derived from Bitcoin and maintains multiple value pools (transparent, Sapling, Orchard) with a turnstile mechanism ensuring supply integrity. Major upgrades include Sapling (2018) for efficient proofs and NU5/Orchard (2022) introducing Halo 2 to eliminate trusted setup.",
     "category": "blockchain-general",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["ZEC"],
     "related": ["shielded-transaction", "zcash-sapling", "utxo-model"]
   },
@@ -617,7 +617,7 @@
     "term": "Point (Validator Rewards)",
     "definition": "A weighted credit unit used in Solana's validator reward calculation regime. Points represent the product of a validator's vote credits and its active stake, determining its proportional share of the epoch's inflation rewards. Validators with more stake and more vote credits accumulate more points, translating to higher absolute rewards distributed at epoch boundaries.",
     "category": "blockchain-general",
-    "depth": 2,
+    "depth": 3,
     "related": ["vote-credit", "staking-rewards", "validator"]
   },
   {
@@ -625,7 +625,7 @@
     "term": "Client Diversity",
     "definition": "The practice of maintaining multiple independent validator client implementations for a blockchain network to reduce the risk of a single software bug causing network-wide failures. On Solana, client diversity is achieved through Agave (Rust, maintained by Anza) and Firedancer (C, maintained by Jump Crypto), with Frankendancer as a hybrid. Ethereum similarly encourages diversity across Geth, Nethermind, Besu, and Erigon to prevent correlated failures.",
     "category": "blockchain-general",
-    "depth": 3,
+    "depth": 2,
     "related": ["validator", "agave", "firedancer"]
   },
   {
@@ -710,7 +710,7 @@
     "term": "Blockchain Trilemma",
     "definition": "Concept articulated by Vitalik Buterin that blockchains can optimize for only two of three properties: decentralization, security, and scalability. Solana prioritizes scalability and security with specialized hardware requirements, while Ethereum L2s sacrifice some sovereignty for throughput. No chain has definitively solved the trilemma.",
     "category": "blockchain-general",
-    "depth": 2,
+    "depth": 1,
     "related": ["scalability", "consensus", "layer-1"]
   },
   {
@@ -743,7 +743,7 @@
     "term": "Validator Economics",
     "definition": "The financial model governing validator profitability including staking rewards (inflation), transaction fee revenue, MEV tips, and operational costs (hardware, bandwidth, data center). On Solana, validators earn ~6-7% APY from inflation plus priority fees and Jito MEV tips, offset by costs of running high-spec hardware.",
     "category": "blockchain-general",
-    "depth": 3,
+    "depth": 2,
     "related": ["validator", "staking-rewards", "inflation"]
   }
 ]

@@ -36,7 +36,7 @@
     "term": "Account Reloading Attack",
     "definition": "A vulnerability in Anchor programs where a program reads an account's data before making a CPI call, the CPI modifies that account's lamports or data, but the program continues using the stale pre-CPI snapshot instead of reloading the account from the runtime. In Anchor, after a CPI the account reference still holds the pre-call data unless account.reload() is explicitly called, meaning balance checks, state assertions, or further computation can operate on incorrect values. Attackers can exploit this to pass checks using an initial account state that the CPI subsequently invalidates.",
     "category": "security",
-    "depth": 5,
+    "depth": 4,
     "related": ["cpi", "account"]
   },
   {
@@ -92,7 +92,7 @@
     "term": "Precision Loss / Rounding Errors",
     "definition": "A class of numerical vulnerability where integer division discards fractional remainders, causing systematic under-accounting of fees, interest, or token amounts that an attacker can exploit through repeated small transactions to drain protocol funds or receive more than entitled. Because Solana programs use integer arithmetic exclusively (no native floating point in on-chain code), division operations like amount / price always truncate toward zero, and protocols must decide whether to round in favor of the protocol (ceiling division for fees collected, floor division for tokens distributed) using formulas such as (numerator + denominator - 1) / denominator. Precision errors can also compound across fixed-point representations, so high-precision intermediate scaling (e.g., multiplying by 10^9 before dividing) is a common mitigation.",
     "category": "security",
-    "depth": 4,
+    "depth": 3,
     "related": ["integer-overflow"]
   },
   {
@@ -116,7 +116,7 @@
     "term": "Sysvar Spoofing",
     "definition": "A vulnerability where a program retrieves a sysvar (such as Clock, Rent, or SlotHashes) by deserializing an account passed in the instruction's account list rather than using the runtime's native sysvar access API, allowing an attacker to substitute a fake account at the well-known sysvar address with crafted data — for example, a manipulated clock timestamp to bypass time locks. The safe pattern in modern Solana programs is to use Clock::get(), Rent::get(), and equivalent intrinsics that read from the runtime directly without trusting any account; Anchor's Sysvar<'info, Clock> account type validates the address but native programs should prefer the get() API.",
     "category": "security",
-    "depth": 5,
+    "depth": 4,
     "related": ["sysvar", "clock"]
   },
   {
@@ -188,7 +188,7 @@
     "term": "Denial of Service (DoS)",
     "definition": "A class of attacks that prevent legitimate users from successfully executing transactions against a Solana program, either by exhausting the compute budget (e.g., triggering O(n) iteration over an unbounded on-chain list to force CU exhaustion), filling an account's allocated space to block appends, or exploiting program logic to cause systematic transaction failure. On Solana, each transaction has a compute budget cap of 1.4 million CUs by default (extendable to 1.4 million via ComputeBudgetInstruction), so programs that loop over caller-controlled data sizes are vulnerable. Mitigations include bounding all on-chain collections, paginating iteration, and preferring off-chain indexing over on-chain enumeration.",
     "category": "security",
-    "depth": 2,
+    "depth": 3,
     "related": ["compute-units", "transaction"]
   },
   {
@@ -212,7 +212,7 @@
     "term": "ZK-EVM",
     "definition": "A zero-knowledge virtual machine that generates cryptographic validity proofs for Ethereum-compatible smart contract execution, enabling ZK rollups that run existing Solidity code. Vitalik Buterin's Type 1-4 classification captures the trade-off between full Ethereum equivalence (Type 1, slower proving) and modified execution (Type 4, faster proving). Major implementations include Polygon zkEVM, zkSync Era, Scroll, and Linea.",
     "category": "security",
-    "depth": 4,
+    "depth": 3,
     "aliases": ["zkEVM"],
     "related": ["rollup", "zk-proofs"]
   },
@@ -221,7 +221,7 @@
     "term": "ZK Coprocessor",
     "definition": "An off-chain computation service that executes complex operations and returns results with zero-knowledge proofs of correctness verified on-chain. ZK coprocessors extend smart contract capabilities beyond gas limits by outsourcing intensive computation while maintaining trustless verification. Projects like Brevis, RISC Zero Steel, and Lagrange enable dApps to access verified off-chain computation.",
     "category": "security",
-    "depth": 5,
+    "depth": 4,
     "aliases": ["ZK Data Coprocessor"],
     "related": ["zk-proofs", "zk-evm"]
   },
@@ -230,7 +230,7 @@
     "term": "Recursive Proofs",
     "definition": "A cryptographic technique where a zero-knowledge proof verifies the correctness of another proof, enabling incremental verification of unbounded computations and proof aggregation. Recursive composition allows a single compact proof to attest to an arbitrarily long chain of computations, essential for rollup proof aggregation and reducing on-chain verification costs. Systems like Plonky2, Halo2, and Nova implement recursive proving.",
     "category": "security",
-    "depth": 5,
+    "depth": 4,
     "aliases": ["Proof Recursion", "Proof Aggregation"],
     "related": ["zk-proofs", "zk-evm"]
   },
@@ -271,7 +271,7 @@
     "term": "Property-Based Testing",
     "definition": "A testing methodology where developers define properties (invariants) that must hold true for all valid inputs, and a test framework generates random inputs to attempt to falsify those properties. Unlike unit tests that check specific examples, property-based testing explores the input space stochastically. For Solana programs, properties might include 'total token supply never changes during transfers' or 'only the authority can modify the config account.' Tools like Trident and proptest support this approach.",
     "category": "security",
-    "depth": 4,
+    "depth": 3,
     "related": ["invariant-testing", "fuzzing", "testing"]
   },
   {
@@ -295,7 +295,7 @@
     "term": "Audit Severity Levels",
     "definition": "A standardized classification system for security audit findings: Critical (immediate fund loss or protocol compromise, must fix before deployment), High (significant risk of loss under specific conditions), Medium (limited risk or requires unlikely preconditions), Low (minor issues with minimal impact), and Informational (code quality, gas optimization, or best practice suggestions). Severity ratings help teams prioritize remediation and communicate risk to users. Most Solana audit firms (OtterSec, Ackee, sec3) follow this five-tier scale.",
     "category": "security",
-    "depth": 3,
+    "depth": 2,
     "related": ["audit", "fuzzing"]
   },
   {
@@ -311,7 +311,7 @@
     "term": "OtterSec",
     "definition": "Leading Solana security audit firm that has audited major protocols including Jupiter, Marinade, Jito, and the Solana runtime. Known for deep expertise in Rust/Solana program security and responsible vulnerability disclosure. One of the most trusted names in Solana security.",
     "category": "security",
-    "depth": 3,
+    "depth": 2,
     "related": ["audit", "fuzzing"]
   },
   {
@@ -319,7 +319,7 @@
     "term": "Neodyme",
     "definition": "Security research firm specializing in Solana program auditing and vulnerability research. Published influential work on common Solana vulnerabilities and maintains educational resources on program security patterns. Based in Germany.",
     "category": "security",
-    "depth": 3,
+    "depth": 2,
     "related": ["audit", "fuzzing"]
   },
   {
@@ -327,7 +327,7 @@
     "term": "Sec3 (formerly Soteria)",
     "definition": "Solana security platform providing automated vulnerability detection, real-time program monitoring, and audit services. Their X-ray tool performs static analysis on Solana programs to detect common vulnerability patterns like missing signer checks and integer overflows.",
     "category": "security",
-    "depth": 3,
+    "depth": 2,
     "aliases": ["Soteria"],
     "related": ["audit", "fuzzing", "missing-signer-check"]
   },
@@ -336,7 +336,7 @@
     "term": "Halborn",
     "definition": "Blockchain security company providing smart contract auditing, penetration testing, and security advisory services across multiple chains including Solana. Known for auditing both DeFi protocols and infrastructure-level code.",
     "category": "security",
-    "depth": 3,
+    "depth": 2,
     "related": ["audit", "fuzzing"]
   },
   {
@@ -344,7 +344,7 @@
     "term": "Instruction Ordering Attack",
     "definition": "Exploit where an attacker crafts a transaction with instructions in a specific order to manipulate program state between instructions within the same transaction. Since Solana executes all instructions in a transaction sequentially, earlier instructions can modify account state that later instructions depend on, enabling unexpected state transitions.",
     "category": "security",
-    "depth": 4,
+    "depth": 3,
     "related": ["instruction", "transaction", "front-running"]
   },
   {
@@ -360,7 +360,7 @@
     "term": "Rent Evasion",
     "definition": "Attack technique where a malicious actor attempts to circumvent Solana's rent mechanism by manipulating account lamport balances to avoid rent-exemption thresholds, or by exploiting programs that don't properly enforce minimum balance requirements when withdrawing lamports from accounts.",
     "category": "security",
-    "depth": 5,
+    "depth": 4,
     "related": ["rent", "rent-exemption", "lamport"]
   },
   {
@@ -368,7 +368,7 @@
     "term": "Access Control Bypass",
     "definition": "Category of vulnerabilities where program authorization checks are insufficient or missing, allowing unauthorized users to execute privileged operations. Includes missing signer checks, owner checks, PDA validation, and constraint violations. The most common class of critical Solana program vulnerabilities.",
     "category": "security",
-    "depth": 4,
+    "depth": 3,
     "related": [
       "missing-signer-check",
       "missing-owner-check",

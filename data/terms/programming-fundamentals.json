@@ -4,7 +4,7 @@
     "term": "Rust",
     "definition": "A systems programming language emphasizing memory safety, zero-cost abstractions, and concurrency without a garbage collector. Rust uses an ownership model with borrow checking at compile time to prevent data races and null pointer bugs. It is the primary language for Solana program development (via Anchor or native solana-program crate) and the Agave validator client.",
     "category": "programming-fundamentals",
-    "depth": 2,
+    "depth": 1,
     "related": ["anchor", "solana-rust-sdk"]
   },
   {
@@ -121,7 +121,7 @@
     "term": "Docker",
     "definition": "A platform for packaging applications into lightweight, portable containers that include all dependencies. In Solana development, Docker is used for: deterministic program builds (solana-verify), running local validators, reproducible test environments, and CI/CD pipelines. Docker ensures 'works on my machine' consistency across development, testing, and deployment.",
     "category": "programming-fundamentals",
-    "depth": 2,
+    "depth": 1,
     "related": ["ci-cd", "solana-verify"]
   },
   {
@@ -137,7 +137,7 @@
     "term": "Public Key Cryptography",
     "definition": "A cryptographic system using mathematically linked key pairs: a public key (shared freely) and a private key (kept secret). Used for digital signatures (sender signs with private key, anyone verifies with public key) and encryption (encrypt with public key, decrypt with private key). Solana uses Ed25519 for signatures and Curve25519/Ristretto255 for encryption.",
     "category": "programming-fundamentals",
-    "depth": 2,
+    "depth": 1,
     "aliases": ["Asymmetric Cryptography"],
     "related": ["ed25519", "keypair"]
   },
@@ -154,7 +154,7 @@
     "term": "Account Model vs UTXO Model",
     "definition": "Two models for tracking blockchain state. Account model (Solana, Ethereum): each account has a balance and state that is updated in place. UTXO model (Bitcoin, Cardano): transactions consume unspent transaction outputs and create new ones. Account models are more intuitive for smart contracts; UTXO models offer better privacy and parallelism for simple transfers.",
     "category": "programming-fundamentals",
-    "depth": 3,
+    "depth": 2,
     "aliases": ["UTXO"],
     "related": ["account", "nullifier"]
   },
@@ -180,7 +180,7 @@
     "term": "Little-Endian",
     "definition": "A byte ordering convention where the least significant byte is stored at the lowest memory address. Solana uses little-endian byte order for all on-chain data serialization (Borsh defaults to little-endian), matching the native byte order of x86/ARM CPUs that run validators. When manually reading or writing multi-byte integers from account data, developers must use little-endian functions (e.g., u64::from_le_bytes in Rust, readUInt32LE in Node.js).",
     "category": "programming-fundamentals",
-    "depth": 3,
+    "depth": 4,
     "related": ["borsh", "serialization", "account-data"]
   },
   {
@@ -205,7 +205,7 @@
     "term": "WebAssembly (WASM)",
     "definition": "A portable binary instruction format designed as a compilation target for high-level languages, enabling near-native execution speed in web browsers and other environments. While Solana uses SBF (not WASM) for on-chain program execution, WASM is relevant to the ecosystem: some blockchain VMs (Polkadot, NEAR) use WASM, and Solana client-side tools may compile to WASM for browser-based dApps. Anchor IDL clients can run in WASM environments via @solana/web3.js.",
     "category": "programming-fundamentals",
-    "depth": 3,
+    "depth": 4,
     "aliases": ["WASM"],
     "related": ["sbf", "svm"]
   },
@@ -222,7 +222,7 @@
     "term": "Deterministic Address Derivation",
     "definition": "The process of computing an account address from known inputs without randomness, ensuring the same inputs always produce the same address. On Solana, this includes PDAs (derived from program ID + seeds + bump), Associated Token Accounts (derived from wallet + mint + token program), and keypairs derived from seed phrases. Deterministic derivation enables clients to compute account addresses off-chain without querying the network, simplifying account discovery and transaction construction.",
     "category": "programming-fundamentals",
-    "depth": 4,
+    "depth": 3,
     "related": ["pda", "find-program-address", "seeds"]
   },
   {
@@ -230,7 +230,7 @@
     "term": "Pipelining",
     "definition": "Processing technique where multiple stages of a task execute in overlapping fashion, like an assembly line. Solana's validator pipeline processes transactions through fetch, SigVerify, banking, and broadcast stages simultaneously, achieving higher throughput than sequential processing. Essential to Solana's 400ms slot production.",
     "category": "programming-fundamentals",
-    "depth": 3,
+    "depth": 4,
     "related": ["tpu", "tvu", "parallel-execution"]
   },
   {
@@ -247,7 +247,7 @@
     "term": "Lamport Timestamp",
     "definition": "Logical clock mechanism proposed by Leslie Lamport (1978) for ordering events in distributed systems without synchronized physical clocks. Solana's Proof of History extends this concept by using a SHA-256 hash chain as a verifiable, cryptographic logical clock, creating a global ordering of events without requiring validators to communicate timestamps.",
     "category": "programming-fundamentals",
-    "depth": 4,
+    "depth": 5,
     "aliases": ["Logical Clock"],
     "related": ["proof-of-history", "sha256-hash-chain", "consensus"]
   },
@@ -265,7 +265,7 @@
     "term": "PBFT",
     "definition": "Practical Byzantine Fault Tolerance. Classical BFT consensus algorithm (Castro & Liskov, 1999) tolerating up to f faulty nodes in 3f+1 total, requiring O(n^2) message complexity per round. Solana's Tower BFT reduces this to O(n) by using Proof of History as a clock, replacing round-based message exchanges with time-based vote lockouts.",
     "category": "programming-fundamentals",
-    "depth": 4,
+    "depth": 5,
     "aliases": ["Practical Byzantine Fault Tolerance", "PBFT"],
     "related": ["tower-bft", "byzantine-fault-tolerance", "consensus"]
   },
@@ -274,7 +274,7 @@
     "term": "Amdahl's Law",
     "definition": "Theoretical limit on parallel speedup: if P% of a task is parallelizable, maximum speedup is 1/(1-P + P/N) for N processors. Limits Sealevel's gains — transactions touching the same account must serialize. Solana mitigates this through account-level locking (maximizing P) and local fee markets (pricing serial contention).",
     "category": "programming-fundamentals",
-    "depth": 4,
+    "depth": 5,
     "aliases": ["Amdahl's Law"],
     "related": ["parallel-execution", "sealevel", "account-locking"]
   },
@@ -283,7 +283,7 @@
     "term": "Memory-Mapped I/O",
     "definition": "Technique where files are mapped directly into process virtual memory, allowing the OS to handle reads/writes through page faults. Solana's AccountsDB uses memory-mapped files (AppendVec) to store account data, enabling efficient random access to gigabytes of account state without loading everything into heap memory.",
     "category": "programming-fundamentals",
-    "depth": 4,
+    "depth": 5,
     "aliases": ["mmap"],
     "related": ["accounts-db", "append-vec", "heap-memory"]
   },
@@ -292,7 +292,7 @@
     "term": "Copy-on-Write",
     "definition": "Memory optimization where data is shared between readers until a writer modifies it, at which point only the modified portion is copied. Solana's AccountsDB uses copy-on-write semantics — accounts are written to new AppendVec entries rather than modifying in place, enabling snapshot creation without pausing transaction processing.",
     "category": "programming-fundamentals",
-    "depth": 4,
+    "depth": 5,
     "aliases": ["CoW"],
     "related": ["accounts-db", "append-vec"]
   },
@@ -301,7 +301,7 @@
     "term": "Bloom Filter",
     "definition": "Probabilistic data structure that tests set membership with no false negatives and configurable false positive rate, using minimal memory. Solana validators use bloom filters to deduplicate transactions — quickly checking if a transaction signature has been seen recently without storing all signatures in memory. Space-efficient alternative to hash sets.",
     "category": "programming-fundamentals",
-    "depth": 4,
+    "depth": 5,
     "related": ["validator", "tpu"]
   },
   {
@@ -369,7 +369,7 @@
     "term": "Eventual Consistency",
     "definition": "Distributed systems model where replicas may temporarily diverge but converge to the same state given sufficient time without new updates. Contrasts with strong consistency where reads always return the latest write. Solana RPC nodes may exhibit eventual consistency — different nodes may return different slot data briefly before converging.",
     "category": "programming-fundamentals",
-    "depth": 3,
+    "depth": 4,
     "related": ["cap-theorem", "concurrency", "rpc"]
   },
   {

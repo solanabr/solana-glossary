@@ -99,7 +99,7 @@
     "term": "MEV (Maximal Extractable Value)",
     "definition": "The profit validators/block producers can extract by reordering, inserting, or censoring transactions within a block. MEV includes frontrunning (trading before a large order), sandwich attacks (surrounding a swap with buy/sell), and arbitrage. On Solana, Jito's block engine provides an MEV auction system where searchers submit bundles with tips.",
     "category": "web3",
-    "depth": 3,
+    "depth": 2,
     "aliases": ["MEV"],
     "related": ["mev", "sandwich-attack", "arbitrage"]
   },
@@ -116,7 +116,7 @@
     "term": "Composability",
     "definition": "The ability of blockchain protocols to interact with and build upon each other like building blocks ('money legos'). A lending protocol can accept LP tokens as collateral, which were minted by a DEX, which uses an oracle for pricing—all in a single transaction. Solana's CPI mechanism and shared account model make composability a core design principle.",
     "category": "web3",
-    "depth": 3,
+    "depth": 2,
     "related": ["cpi", "defi-general"]
   },
   {
@@ -493,7 +493,7 @@
     "term": "Exit Liquidity",
     "definition": "Describes retail buyers who purchase a token while insiders or early holders sell, unknowingly providing the liquidity for those early holders to exit their positions profitably. 'You are the exit liquidity' is a cynical observation about memecoin and NFT dynamics where latecomers absorb losses so early participants can take profits. Understanding this concept is critical for evaluating token launches.",
     "category": "web3",
-    "depth": 2,
+    "depth": 1,
     "related": ["rug-pull", "bagholder", "pump-fun"]
   },
   {
@@ -518,7 +518,7 @@
     "term": "OPOS",
     "definition": "Acronym for 'Only Possible on Solana.' A community phrase highlighting features or applications that cannot be replicated on other chains due to their technical limitations. Used to describe high-frequency DeFi applications, massive concurrent NFT drops, sub-second settlement, and other use cases that leverage Solana's unique throughput and low fees.",
     "category": "web3",
-    "depth": 2,
+    "depth": 1,
     "aliases": ["Only Possible on Solana", "OPOS"],
     "related": ["sol-maxi", "solana-summer"]
   },
@@ -536,7 +536,7 @@
     "term": "LFB",
     "definition": "Acronym for 'Let's F***ing Build.' A builder-culture rallying cry emphasizing shipping code and creating products over speculation and trading. LFB signals commitment to development and construction rather than price-watching, distinguishing builders from traders within the Solana community. Often used during hackathons, developer meetups, and shipping announcements.",
     "category": "web3",
-    "depth": 2,
+    "depth": 1,
     "aliases": ["LFB"],
     "related": ["lfg", "wagmi", "opos"]
   },
@@ -561,7 +561,7 @@
     "term": "Sniping",
     "definition": "Buying a token immediately at launch using automated bots that detect pool creation events and execute buy transactions in the same block. Snipers monitor new Raydium liquidity pools and Pump.fun graduation migrations to buy before other traders can react. Anti-snipe mechanics such as delayed trading windows and launch taxes are designed to mitigate this practice.",
     "category": "web3",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["Snipe"],
     "related": ["trading-bot", "mev", "front-running"]
   },
@@ -595,7 +595,7 @@
     "term": "Wash Trading",
     "definition": "Practice of simultaneously buying and selling the same asset to artificially inflate trading volume. Common in NFT markets where traders trade between their own wallets to fabricate activity metrics, manipulate collection rankings, or farm airdrop eligibility. Solana's low fees make wash trading cheaper than on other chains.",
     "category": "web3",
-    "depth": 2,
+    "depth": 3,
     "related": ["nft-general", "dex-general"]
   },
   {

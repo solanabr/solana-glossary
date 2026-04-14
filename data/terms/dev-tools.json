@@ -271,7 +271,7 @@
     "term": "Gaming on Solana",
     "definition": "The ecosystem of on-chain games and gaming infrastructure on Solana. Key technologies: MagicBlock (ephemeral rollups for real-time games), Bolt (ECS framework), Solana Unity SDK (Unity integration), and session keys (for gasless UX). Solana's low fees and fast finality make it suitable for gaming where frequent state updates are needed.",
     "category": "dev-tools",
-    "depth": 2,
+    "depth": 3,
     "related": ["magicblock", "bolt", "unity-sdk"]
   },
   {
@@ -346,7 +346,7 @@
     "term": "Seeker (Solana Phone)",
     "definition": "The second-generation Solana mobile device with a native Seed Vault wallet, dApp Store 2.0, and a soulbound Seeker Genesis Token for exclusive ecosystem rewards. Priced at $450-$500, it surpassed 1 million pre-orders across 57 countries. Saga's BONK airdrops briefly pushed secondary market prices above $2,000, validating token-incentive distribution via hardware.",
     "category": "dev-tools",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["Chapter 2", "Solana Seeker"],
     "related": ["solana-mobile-stack", "wallet-general"]
   },
@@ -484,7 +484,7 @@
     "term": "Solana Explorer",
     "definition": "The official Solana Foundation block explorer at explorer.solana.com providing transaction details, account inspection, program views, validator info, and network statistics. Supports mainnet, devnet, testnet, and custom RPC endpoints. The default tool for inspecting on-chain activity.",
     "category": "dev-tools",
-    "depth": 2,
+    "depth": 1,
     "related": ["explorer", "rpc", "solana-cli"]
   },
   {

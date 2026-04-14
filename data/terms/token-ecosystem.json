@@ -114,7 +114,7 @@
     "term": "Non-Transferable Token",
     "definition": "A Token-2022 extension that prevents tokens from being transferred between accounts, making them soulbound. Non-transferable tokens can only be minted to and burned from accounts. Use cases include achievement badges, identity credentials, governance participation tokens, and certifications.",
     "category": "token-ecosystem",
-    "depth": 3,
+    "depth": 2,
     "aliases": ["Soulbound"],
     "related": ["token-2022"]
   },
@@ -131,7 +131,7 @@
     "term": "Default Account State",
     "definition": "A Token-2022 extension that sets the initial state of all new token accounts for a mint to either Initialized or Frozen. When set to Frozen, new token accounts are frozen by default and must be explicitly thawed by the freeze authority before they can receive or send tokens. Enables KYC/AML gating.",
     "category": "token-ecosystem",
-    "depth": 4,
+    "depth": 3,
     "related": ["token-2022", "freeze-authority"]
   },
   {
@@ -155,7 +155,7 @@
     "term": "Group / Member Pointer",
     "definition": "A Token-2022 extension that enables token grouping by pointing a mint to a group account or member account. The Group Pointer marks a mint as a group, and Member Pointer marks a mint as belonging to a group. Useful for NFT collections and hierarchical token relationships without requiring Metaplex.",
     "category": "token-ecosystem",
-    "depth": 4,
+    "depth": 3,
     "related": ["token-2022"]
   },
   {
@@ -262,7 +262,7 @@
     "term": "SPL Token Swap",
     "definition": "An SPL program that implements a constant-product AMM (x*y=k) for swapping between two SPL tokens. It was one of the first DeFi primitives on Solana but has been largely superseded by more sophisticated DEXs like Raydium, Orca, and Meteora. The program manages liquidity pools and issues LP tokens to liquidity providers.",
     "category": "token-ecosystem",
-    "depth": 2,
+    "depth": 3,
     "related": ["amm", "spl"]
   },
   {
@@ -304,7 +304,7 @@
     "term": "Token Group Extension",
     "definition": "A Token-2022 extension that natively represents collections of tokens without requiring Metaplex. A mint with the Token Group extension acts as a collection, storing max_size and current_size. Mints with Token Group Member point to their group mint. This provides lightweight, protocol-level NFT collections directly in the token program.",
     "category": "token-ecosystem",
-    "depth": 4,
+    "depth": 3,
     "related": ["token-2022", "group-pointer"]
   },
   {
@@ -312,7 +312,7 @@
     "term": "Candy Machine",
     "definition": "Metaplex's on-chain program for creating and managing NFT minting launches on Solana. Candy Machine handles sequential or random minting from a pre-loaded collection, enforcing supply limits and mint pricing. It supports multiple payment tokens (SOL, SPL tokens) and integrates with Candy Guard for access control. Candy Machine v3 is the current version, widely used for PFP and generative art drops.",
     "category": "token-ecosystem",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["CM", "Candy Machine v3"],
     "related": ["candy-guard", "nft", "metaplex-metadata"]
   },
@@ -375,7 +375,7 @@
     "term": "NFT Staking",
     "definition": "The process of locking NFTs in a program to earn rewards, typically in the form of a project's token. Staking programs verify NFT ownership and collection membership, track staking duration, and distribute rewards proportionally. On Solana, NFT staking is commonly implemented using Metaplex's freeze delegate or by transferring the NFT to a program-controlled escrow account. Rewards incentivize holding over flipping.",
     "category": "token-ecosystem",
-    "depth": 2,
+    "depth": 3,
     "related": ["nft", "collection"]
   },
   {
@@ -383,7 +383,7 @@
     "term": "Floor Price",
     "definition": "The lowest listed sale price for any NFT within a collection on marketplaces. Floor price serves as the baseline valuation for a collection and is the most commonly tracked metric for NFT market health. It fluctuates based on demand, new listings, and broader market conditions. Rarer traits within a collection typically trade at multiples above the floor. Tensor and Magic Eden display real-time floor prices for Solana collections.",
     "category": "token-ecosystem",
-    "depth": 1,
+    "depth": 2,
     "related": ["nft", "collection", "tensor"]
   },
   {
@@ -391,7 +391,7 @@
     "term": "Collection Bid",
     "definition": "An open offer to purchase any NFT from a specific collection at a stated price, regardless of which specific token is sold. Collection bids provide instant liquidity to NFT holders who want to sell immediately without waiting for a buyer. Marketplaces like Tensor match collection bids with sellers. Bids can be funded with SOL or other tokens and are typically set at or near the floor price.",
     "category": "token-ecosystem",
-    "depth": 2,
+    "depth": 3,
     "related": ["nft", "collection", "floor-price", "tensor"]
   },
   {
@@ -425,7 +425,7 @@
     "term": "Inscription (Solana)",
     "definition": "Data inscribed directly into on-chain Solana account data, inspired by Bitcoin Ordinals. Solana inscriptions store images, text, or other content as raw bytes in account data rather than pointing to off-chain storage. While more expensive than off-chain metadata (requiring rent for storage), inscriptions are fully on-chain and immutable once the account's update authority is revoked. They emerged as an experimental standard in late 2023.",
     "category": "token-ecosystem",
-    "depth": 3,
+    "depth": 4,
     "related": ["nft", "account-data", "rent-exemption"]
   },
   {
@@ -441,7 +441,7 @@
     "term": "Securitize",
     "definition": "SEC-registered transfer agent and broker-dealer providing infrastructure for digital securities: KYC/AML, transfer restriction enforcement, and secondary market compliance. Transfer agent for BlackRock's BUIDL fund. Enforces compliance through programmable transfer logic.",
     "category": "token-ecosystem",
-    "depth": 3,
+    "depth": 4,
     "related": [
       "transfer-agent",
       "security-token",
@@ -454,7 +454,7 @@
     "term": "BAXUS",
     "definition": "Solana platform for tokenizing fine spirits (whisky, bourbon) and collectibles as digital assets with physical custody in regulated storage. Uses NFTs for individual bottles and fungible tokens for fractionalized casks. One of few Solana RWA protocols focused on alternative assets.",
     "category": "token-ecosystem",
-    "depth": 3,
+    "depth": 4,
     "related": [
       "rwa-tokenization",
       "asset-tokenization",

@@ -169,7 +169,7 @@
     "term": "LaserStream",
     "definition": "A Helius proprietary ultra-low-latency streaming product built on Geyser plugin infrastructure that delivers real-time transaction and account update notifications directly from validator nodes to subscribers, targeting sub-10ms delivery latency from transaction processing to client receipt. LaserStream is positioned for latency-critical applications such as liquidation bots, arbitrage systems, and real-time portfolio trackers that need faster and more reliable data delivery than standard WebSocket subscriptions.",
     "category": "infrastructure",
-    "depth": 4,
+    "depth": 5,
     "related": ["helius", "geyser"]
   },
   {
@@ -210,7 +210,7 @@
     "term": "Blinks (Blockchain Links)",
     "definition": "Client-side renderers and URL wrappers that convert Solana Actions endpoints into interactive, embeddable UI components — such as buttons, input fields, and transaction previews — that can appear inside wallets, browser extensions, and social media platforms without requiring users to navigate to a dApp. A Blink is essentially a URL prefixed with https://dial.to/?action= that signals to compatible clients to fetch and render the corresponding Action metadata, enabling one-click on-chain transactions from any webpage or feed.",
     "category": "infrastructure",
-    "depth": 2,
+    "depth": 1,
     "aliases": ["Blinks"],
     "related": ["actions"]
   },
@@ -352,7 +352,7 @@
     "term": "RPC Encoding",
     "definition": "The data serialization format used to represent account data in Solana RPC responses. Supported encodings include base58 (human-readable but slow for large data), base64 (efficient binary encoding, most common), base64+zstd (compressed base64 for large accounts), and jsonParsed (structured JSON for known programs like SPL Token and System Program). The encoding parameter is specified per-request and affects response size and parse complexity on the client side.",
     "category": "infrastructure",
-    "depth": 4,
+    "depth": 3,
     "related": ["rpc-methods", "account-data", "serialization"]
   },
   {
@@ -360,7 +360,7 @@
     "term": "Staked Connection",
     "definition": "An RPC connection routed through a validator or RPC node that holds delegated stake, granting the connection higher priority under Solana's Stake-Weighted Quality of Service (SWQoS) system. Transactions submitted via staked connections receive preferential bandwidth allocation to the leader's TPU, significantly improving landing rates during periods of network congestion. RPC providers like Helius and Triton offer staked connections as a premium feature for production applications.",
     "category": "infrastructure",
-    "depth": 4,
+    "depth": 3,
     "related": ["stake-weighted-qos", "rpc-node", "transaction-landing"]
   }
 ]

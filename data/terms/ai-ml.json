@@ -173,7 +173,7 @@
     "term": "DePIN (Decentralized Physical Infrastructure Networks)",
     "definition": "Blockchain protocols that coordinate and incentivize physical infrastructure through token rewards. DePIN projects on Solana include: Helium (wireless networks), Render (GPU rendering), Hivemapper (mapping), and io.net (distributed GPU compute for AI). Contributors provide physical resources (hardware, bandwidth) and earn tokens. DePIN bridges blockchain economics with real-world infrastructure.",
     "category": "ai-ml",
-    "depth": 3,
+    "depth": 2,
     "aliases": ["DePIN"],
     "related": ["gpu-compute", "blockchain"]
   },
@@ -182,7 +182,7 @@
     "term": "GPU Compute (Decentralized)",
     "definition": "Blockchain-coordinated networks that aggregate GPU resources for AI training and inference. Projects like Render Network and io.net on Solana allow GPU owners to rent out compute to AI researchers and developers. This democratizes access to expensive GPU hardware needed for AI workloads. Token incentives align supply (GPU providers) with demand (AI developers).",
     "category": "ai-ml",
-    "depth": 3,
+    "depth": 2,
     "related": ["depin", "training", "inference"]
   },
   {
@@ -190,7 +190,7 @@
     "term": "AI × Blockchain Integration",
     "definition": "The convergence of AI and blockchain technologies. Key patterns: AI agents executing on-chain transactions autonomously, blockchain providing verifiable compute receipts for AI inference, decentralized GPU networks for AI training, on-chain governance of AI model parameters, NFTs for AI-generated content provenance, and LLMs as smart contract development assistants.",
     "category": "ai-ml",
-    "depth": 3,
+    "depth": 2,
     "related": ["agent-ai", "depin", "gpu-compute"]
   },
   {
@@ -206,7 +206,7 @@
     "term": "Tokenomics",
     "definition": "The economic design of a cryptocurrency token: supply schedule, distribution, utility, incentive mechanisms, and value accrual. Key parameters: total/circulating supply, inflation/deflation, vesting schedules, staking rewards, fee burning, and governance rights. Good tokenomics aligns incentives between users, developers, and token holders. AI tools increasingly help analyze tokenomics models.",
     "category": "ai-ml",
-    "depth": 2,
+    "depth": 1,
     "related": ["governance-token", "staking-general"]
   },
   {
@@ -358,7 +358,7 @@
     "term": "Stable Diffusion",
     "definition": "An open-source image generation model by Stability AI that runs locally on consumer hardware, enabling privacy and customization without API costs. SD 3.5 (2024) ships in multiple variants for different hardware. Its open nature enables a vast ecosystem of community fine-tunes (LoRAs), control methods (ControlNet), and custom workflows (ComfyUI). Competitors include FLUX (Black Forest Labs) and Google Imagen.",
     "category": "ai-ml",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["SD", "SDXL"],
     "related": ["diffusion-model", "open-source-ai"]
   },
@@ -403,7 +403,7 @@
     "term": "Bittensor (TAO)",
     "definition": "A blockchain protocol that decentralizes AI by creating an open marketplace for machine intelligence. Built on Substrate with a Yuma consensus mechanism, Bittensor rewards contributors with TAO tokens based on the quality of their AI outputs. The network hosts 100+ specialized subnets for different AI tasks. TAO supply is capped at 21M with Bitcoin-style halvings.",
     "category": "ai-ml",
-    "depth": 3,
+    "depth": 2,
     "aliases": ["TAO"],
     "related": ["depin", "gpu-compute", "decentralized-inference"]
   },
@@ -421,7 +421,7 @@
     "term": "DeepSeek",
     "definition": "A Chinese AI lab that released DeepSeek-R1 in January 2025, a 671B-parameter open-weight reasoning model achieving performance comparable to OpenAI's o1 at significantly lower cost. DeepSeek-R1 generates visible chain-of-thought reasoning using GRPO training and demonstrated that pure RL with verifiable rewards can produce emergent reasoning. DeepSeek-V3 uses a MoE architecture with ~37B active parameters.",
     "category": "ai-ml",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["DeepSeek-R1", "DeepSeek-V3"],
     "related": ["reasoning-model", "mixture-of-experts", "open-source-ai"]
   },
@@ -439,7 +439,7 @@
     "term": "Nosana",
     "definition": "A decentralized GPU compute marketplace built on Solana that connects GPU providers with users needing compute for AI inference workloads. Node operators supply idle GPU capacity and earn NOS tokens for completed jobs. Nosana focuses on cost-effective AI inference rather than training, using Solana for job coordination, payment settlement, and reputation tracking. It supports containerized workloads across consumer and enterprise GPUs.",
     "category": "ai-ml",
-    "depth": 3,
+    "depth": 2,
     "related": ["gpu-compute", "decentralized-inference", "depin"]
   },
   {
@@ -455,7 +455,7 @@
     "term": "io.net",
     "definition": "A decentralized GPU network built on Solana that aggregates underutilized GPU resources from data centers, crypto miners, and individual contributors into clusters for AI and machine learning workloads. io.net uses the IO token for payments and staking, and enables users to deploy GPU clusters on demand at costs significantly below centralized cloud providers. The network supports training, inference, and fine-tuning workflows.",
     "category": "ai-ml",
-    "depth": 3,
+    "depth": 2,
     "aliases": ["IO"],
     "related": ["gpu-compute", "depin", "decentralized-inference"]
   },
@@ -464,7 +464,7 @@
     "term": "Grass",
     "definition": "A DePIN protocol on Solana where users share unused internet bandwidth through a browser extension, contributing to a decentralized data pipeline for AI training datasets. Participants earn GRASS tokens for bandwidth contributions, which are used to scrape and structure publicly available web data. Grass addresses the growing demand for high-quality training data by creating an incentivized, distributed web crawling network.",
     "category": "ai-ml",
-    "depth": 3,
+    "depth": 2,
     "related": ["depin", "training", "sol"]
   },
   {

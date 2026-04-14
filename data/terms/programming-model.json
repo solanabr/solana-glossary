@@ -132,7 +132,7 @@
     "term": "invoke()",
     "definition": "The Solana SDK function used to execute a CPI without PDA signing: `invoke(instruction, account_infos)`. All required signers must have already signed the outer transaction. Use invoke when calling programs that only need signatures from user wallets, not from PDAs.",
     "category": "programming-model",
-    "depth": 4,
+    "depth": 3,
     "related": ["cpi", "invoke-signed"]
   },
   {
@@ -140,7 +140,7 @@
     "term": "invoke_signed()",
     "definition": "The Solana SDK function for CPIs where a PDA must sign: `invoke_signed(instruction, account_infos, signer_seeds)`. The runtime verifies that the seeds + bump produce the expected PDA pubkey and grants signer privileges for that account. This is how programs authorize actions on behalf of PDAs they own.",
     "category": "programming-model",
-    "depth": 4,
+    "depth": 3,
     "related": ["cpi", "invoke", "pda"]
   },
   {
@@ -277,7 +277,7 @@
     "term": "Sysvar",
     "definition": "Special read-only accounts maintained by the runtime that expose cluster state to programs. Key sysvars include Clock (slot, timestamp), Rent (lamports-per-byte), EpochSchedule (epoch parameters), RecentBlockhashes, StakeHistory, and Fees. Programs access sysvars by including the sysvar account in the instruction or via the sol_get_sysvar syscall.",
     "category": "programming-model",
-    "depth": 4,
+    "depth": 3,
     "related": ["clock", "rent-exemption", "epoch-schedule"]
   },
   {
@@ -394,7 +394,7 @@
     "term": "Discriminator",
     "definition": "An 8-byte identifier prepended to account data and instruction data to distinguish types. Anchor computes it as the first 8 bytes of `sha256('account:<AccountName>')` for accounts and `sha256('global:<function_name>')` for instructions. Discriminators prevent type cosplay attacks by ensuring data is deserialized as the correct type.",
     "category": "programming-model",
-    "depth": 4,
+    "depth": 3,
     "related": ["anchor", "instruction", "account-data"]
   },
   {
@@ -427,7 +427,7 @@
     "term": "Inner Instruction",
     "definition": "An instruction generated during cross-program invocation (CPI) that appears in a transaction's metadata as a nested instruction under its parent. Inner instructions are not declared in the original transaction message but are produced at runtime when a program calls another program via invoke or invoke_signed. They are visible in explorers and via the getTransaction RPC method's innerInstructions field.",
     "category": "programming-model",
-    "depth": 4,
+    "depth": 3,
     "aliases": ["CPI Instruction"],
     "related": ["cpi", "instruction", "invoke"]
   },
@@ -452,7 +452,7 @@
     "term": "Private Key",
     "definition": "The secret 32-byte component of an Ed25519 keypair used to produce digital signatures. The private key must be kept confidential — anyone with access to it can sign transactions and transfer assets from the corresponding account. Private keys are typically stored in JSON files (as 64-byte arrays including the public key) by the Solana CLI or encrypted within wallet software.",
     "category": "programming-model",
-    "depth": 2,
+    "depth": 1,
     "related": ["keypair", "pubkey", "ed25519"]
   },
   {
@@ -469,7 +469,7 @@
     "term": "Realloc (Account Resize)",
     "definition": "The process of resizing an on-chain account's data allocation after creation. Realloc can increase or decrease the data field size, but each instruction can increase by at most 10,240 bytes (10KB). The account owner program must sign the realloc, and if the account grows, additional lamports must be provided to maintain rent exemption. In Anchor, the realloc constraint on #[account(mut, realloc = new_size, realloc::payer = payer, realloc::zero = false)] handles this automatically.",
     "category": "programming-model",
-    "depth": 4,
+    "depth": 3,
     "related": ["account", "rent-exemption", "account-data"]
   },
   {
@@ -509,7 +509,7 @@
     "term": "Syscall (System Call)",
     "definition": "The interface through which SBF programs request services from the Solana runtime, analogous to OS system calls. Syscalls provide access to operations that cannot be implemented in userspace BPF code: cryptographic functions (SHA-256, Keccak, Poseidon, secp256k1 recovery), logging (sol_log), account data access, CPI (invoke/invoke_signed), program return data, and sysvar reads. Each syscall has a defined compute unit cost.",
     "category": "programming-model",
-    "depth": 5,
+    "depth": 4,
     "aliases": ["System Call"],
     "related": ["svm", "sbf", "compute-units"]
   },
@@ -542,7 +542,7 @@
     "term": "Nonce Account",
     "definition": "A special account managed by the System Program that stores a durable nonce value, enabling transactions with extended or indefinite lifetimes. Normally, transactions reference a recent blockhash and expire after ~60-90 seconds. Nonce accounts replace the blockhash with a stored nonce that remains valid until explicitly advanced, enabling offline signing workflows, scheduled transactions, and custodial operations where signing and submission happen at different times.",
     "category": "programming-model",
-    "depth": 4,
+    "depth": 3,
     "related": ["durable-nonce", "system-program", "blockhash"]
   },
   {
@@ -566,7 +566,7 @@
     "term": "Transaction Mortality",
     "definition": "The limited lifespan of a Solana transaction determined by its referenced blockhash. A transaction's blockhash must correspond to a block within the last 150 slots (~60-90 seconds) or the transaction is rejected as expired. This mechanism prevents replay attacks and bounds the time validators must track transaction deduplication. Durable nonces bypass mortality for use cases requiring long-lived transactions.",
     "category": "programming-model",
-    "depth": 4,
+    "depth": 3,
     "related": ["blockhash", "durable-nonce", "transaction"]
   }
 ]

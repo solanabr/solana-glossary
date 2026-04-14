@@ -106,7 +106,7 @@
     "term": "Jupiter",
     "definition": "The dominant DEX aggregator on Solana, routing trades across 20+ DEX protocols to find optimal pricing. Jupiter splits orders across multiple routes and pools to minimize price impact. It also offers limit orders, DCA, perpetuals (via Jupiter Perps), and a token launchpad (LFG). The JUP governance token was airdropped in January 2024.",
     "category": "defi",
-    "depth": 1,
+    "depth": 2,
     "aliases": ["Jup"],
     "related": ["dex-aggregator", "swap", "limit-order"]
   },
@@ -147,7 +147,7 @@
     "term": "Impermanent Loss",
     "definition": "The unrealized loss an LP experiences when the price ratio of pooled tokens diverges from the ratio at deposit. If one token appreciates significantly, the LP holds less of that token than if they had simply held it. The loss is 'impermanent' because it reverses if prices return to the original ratio. For a 2x price change, IL is ~5.7%.",
     "category": "defi",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["IL"],
     "related": ["liquidity-pool", "amm"]
   },
@@ -237,7 +237,7 @@
     "term": "LTV (Loan-to-Value)",
     "definition": "Loan-to-Value ratio—the percentage of collateral value that can be borrowed. Each lending protocol sets max LTV per asset (e.g., 75% for SOL means $100 SOL collateral = max $75 borrow). If debt/collateral exceeds the liquidation LTV (e.g., 85%), the position is liquidatable. Conservative LTV settings protect against rapid price drops.",
     "category": "defi",
-    "depth": 3,
+    "depth": 2,
     "aliases": ["LTV"],
     "related": ["collateral", "liquidation"]
   },
@@ -246,7 +246,7 @@
     "term": "Flash Loan",
     "definition": "An uncollateralized loan that must be borrowed and repaid within the same transaction. If the loan isn't repaid by transaction end, the entire transaction reverts atomically. Flash loans enable arbitrage, collateral swaps, and self-liquidation with zero capital. On Solana, Solend and MarginFi offer flash loans; they're also used in sandwich attacks.",
     "category": "defi",
-    "depth": 3,
+    "depth": 4,
     "related": ["lending", "arbitrage"]
   },
   {
@@ -372,7 +372,7 @@
     "term": "Restaking",
     "definition": "A mechanism where staked SOL or LSTs are used as economic security for additional protocols beyond Solana consensus. Restaking protocols (e.g., Solayer, Jito Restaking) allow stakers to opt-in to securing bridges, oracles, or rollups while earning additional yield. Slashing risk extends to these secondary protocols.",
     "category": "defi",
-    "depth": 3,
+    "depth": 2,
     "related": ["liquid-staking", "stake"]
   },
   {
@@ -416,7 +416,7 @@
     "term": "Tensor",
     "definition": "A Solana NFT marketplace and trading protocol that launched the TNSR governance token in April 2024. Tensor provides advanced trading features including collection-level bidding, real-time price feeds, and lending against NFT collateral. It competes with Magic Eden as a primary NFT trading venue on Solana.",
     "category": "defi",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["Tensor Trade", "TNSR"],
     "related": ["nft", "compressed-nft"]
   },
@@ -443,7 +443,7 @@
     "term": "EigenLayer",
     "definition": "The dominant restaking protocol on Ethereum that allows stakers to opt in to securing additional services (Actively Validated Services or AVSs) by restaking their ETH or liquid staking tokens. EigenLayer creates a shared security marketplace where smaller protocols can bootstrap validator sets. With over $18 billion TVL and 85%+ market share by 2025, EigenLayer underpins critical infrastructure including EigenDA, oracle networks, and bridges.",
     "category": "defi",
-    "depth": 3,
+    "depth": 2,
     "related": ["restaking", "liquid-staking"]
   },
   {
@@ -522,7 +522,7 @@
     "term": "Borrow APY",
     "definition": "The annualized interest rate paid by borrowers in a lending protocol, expressed as annual percentage yield with compounding. Borrow APY is determined algorithmically by the interest rate model based on the pool's utilization rate. On Solana lending protocols like Kamino and MarginFi, borrow APY typically ranges from 2-15% for major assets but can spike above 100% during high utilization periods.",
     "category": "defi",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["Borrow Rate"],
     "related": ["lending", "utilization-rate", "supply-apy"]
   },
@@ -531,7 +531,7 @@
     "term": "Supply APY",
     "definition": "The annualized interest rate earned by depositors (lenders) in a lending protocol. Supply APY equals the borrow APY multiplied by the utilization rate, minus any protocol fees. For example, if borrow APY is 10% and utilization is 80% with a 10% protocol cut, supply APY is approximately 7.2%. Depositors earn yield passively as borrowers pay interest on their loans.",
     "category": "defi",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["Lend APY", "Deposit APY"],
     "related": ["lending", "utilization-rate", "borrow-apy"]
   },
@@ -540,7 +540,7 @@
     "term": "Health Factor",
     "definition": "A ratio that measures the safety of a borrowing position in a lending protocol, calculated as the risk-adjusted collateral value divided by the total borrow value. A health factor above 1 means the position is safe; at or below 1, the position becomes eligible for liquidation. Users monitor health factor to avoid liquidation, and protocols display it prominently as the primary risk indicator.",
     "category": "defi",
-    "depth": 3,
+    "depth": 2,
     "related": ["lending", "liquidation", "collateral", "ltv"]
   },
   {
@@ -548,7 +548,7 @@
     "term": "Interest Rate Model",
     "definition": "The algorithm a lending protocol uses to determine borrow and supply interest rates based on pool utilization. Most Solana lending protocols use a kinked (piecewise linear) model with a gentle slope below optimal utilization and a steep slope above it, creating urgency to repay when liquidity becomes scarce. Parameters include base rate, optimal utilization point, and slope values for each segment.",
     "category": "defi",
-    "depth": 4,
+    "depth": 3,
     "related": ["utilization-rate", "borrow-apy", "supply-apy", "lending"]
   },
   {
@@ -556,7 +556,7 @@
     "term": "Liquidation Bonus",
     "definition": "A discount on collateral that incentivizes liquidators to repay the debt of unhealthy positions in lending protocols. When a position's health factor drops below 1, liquidators can repay a portion of the debt and receive the equivalent collateral value plus a bonus (typically 5-15%). The bonus must be large enough to cover transaction costs and risk, but not so large that borrowers suffer excessive losses.",
     "category": "defi",
-    "depth": 3,
+    "depth": 2,
     "aliases": ["Liquidation Incentive", "Liquidation Penalty"],
     "related": ["liquidation", "health-factor", "lending"]
   },
@@ -605,7 +605,7 @@
     "term": "Open Interest",
     "definition": "The total value or number of outstanding derivative contracts (perpetuals, options) that have not been settled or closed. Open interest increases when new positions are opened and decreases when positions are closed. High open interest indicates active market participation and can signal strong conviction. Perps platforms use open interest caps to manage protocol risk exposure.",
     "category": "defi",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["OI"],
     "related": ["perpetuals", "funding-rate"]
   },
@@ -638,7 +638,7 @@
     "term": "Auto-Compounding",
     "definition": "The automatic reinvestment of earned yields (trading fees, farming rewards, interest) back into a DeFi position to generate compound returns. Instead of manually claiming and restaking rewards, auto-compounding vaults or protocols handle this continuously. On Solana, Kamino vaults and Meteora dynamic vaults auto-compound concentrated liquidity fees and incentive rewards for their depositors.",
     "category": "defi",
-    "depth": 2,
+    "depth": 3,
     "related": ["vault", "yield-farming", "yield-aggregator"]
   },
   {
@@ -662,7 +662,7 @@
     "term": "Capital Efficiency",
     "definition": "A measure of how much trading volume or yield a unit of deposited liquidity can support. Higher capital efficiency means LPs earn more fees per dollar locked. Concentrated liquidity (CLMM/DLMM) dramatically improves capital efficiency over constant product AMMs by focusing liquidity in active price ranges. Capital efficiency is often expressed as the ratio of trading volume to TVL.",
     "category": "defi",
-    "depth": 3,
+    "depth": 2,
     "related": ["clmm", "dlmm", "liquidity-pool", "amm"]
   },
   {
@@ -678,7 +678,7 @@
     "term": "Yield Aggregator",
     "definition": "A protocol that automatically allocates user deposits across multiple DeFi strategies to optimize yield. Yield aggregators monitor rates across lending protocols, liquidity pools, and staking programs, rebalancing capital to the highest-returning opportunities. On Solana, Meteora dynamic vaults and Tulip Protocol serve as yield aggregators, abstracting strategy management and auto-compounding returns for depositors.",
     "category": "defi",
-    "depth": 2,
+    "depth": 3,
     "related": ["vault", "yield-farming", "auto-compounding"]
   },
   {
@@ -686,7 +686,7 @@
     "term": "Bonding Curve",
     "definition": "A mathematical formula that determines a token's price as a function of its supply. As more tokens are purchased, the price rises along the curve; selling decreases supply and lowers the price. Pump.fun popularized bonding curves on Solana for token launches, using them for initial price discovery before a token graduates to a DEX. The curve shape determines how quickly price accelerates with demand.",
     "category": "defi",
-    "depth": 3,
+    "depth": 2,
     "related": ["pump-fun", "graduation", "amm"]
   },
   {
@@ -694,7 +694,7 @@
     "term": "Graduation",
     "definition": "The process by which a token launched on a bonding curve platform like Pump.fun migrates to a standard DEX liquidity pool after reaching a predefined market cap threshold (typically ~$69K on Pump.fun). At graduation, the bonding curve liquidity is deposited into a Raydium or PumpSwap pool, enabling open market trading. Graduation signals initial market validation of a token launch.",
     "category": "defi",
-    "depth": 3,
+    "depth": 2,
     "related": ["bonding-curve", "pump-fun", "liquidity-pool"]
   },
   {
@@ -784,7 +784,7 @@
     "term": "Fair Launch",
     "definition": "A token distribution method where there is no pre-mine, private sale, or insider allocation—all participants have equal opportunity to acquire tokens from the start. Fair launches aim to prevent concentrated ownership and VC dumping on retail buyers. On Solana, Pump.fun's bonding curve model approximates a fair launch, though early buyers still have a price advantage.",
     "category": "defi",
-    "depth": 2,
+    "depth": 3,
     "related": ["launchpad", "bonding-curve", "tge"]
   },
   {
@@ -792,7 +792,7 @@
     "term": "USDC (Native Solana)",
     "definition": "Circle-issued USDC minted directly on Solana through the SPL Token program, as opposed to bridged USDC from other chains. Native USDC (mint: EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v) is the most widely used stablecoin on Solana with deep DeFi integration. Circle maintains freeze authority over the mint for regulatory compliance and supports CCTP for native cross-chain transfers.",
     "category": "defi",
-    "depth": 1,
+    "depth": 2,
     "aliases": ["USDC"],
     "related": ["stablecoin", "cctp", "spl-token"]
   },
@@ -801,7 +801,7 @@
     "term": "PYUSD (PayPal USD on Solana)",
     "definition": "PayPal's USD-backed stablecoin deployed natively on Solana, fully backed by US dollar deposits, US Treasuries, and similar cash equivalents. PYUSD on Solana launched in May 2024 and uses the SPL Token program. It aims to bridge traditional payment rails with DeFi, leveraging Solana's low fees and fast settlement. PYUSD integrates with major Solana DEXs and lending protocols.",
     "category": "defi",
-    "depth": 2,
+    "depth": 3,
     "aliases": ["PYUSD", "PayPal USD"],
     "related": ["stablecoin", "spl-token"]
   },
@@ -810,7 +810,7 @@
     "term": "Algorithmic Stablecoin",
     "definition": "A stablecoin that maintains its peg through algorithmic mechanisms (mint/burn arbitrage, elastic supply) rather than being fully backed by reserves. Algorithmic stablecoins use smart contracts to expand or contract supply based on demand. The category carries significant risk after the UST/Luna collapse in 2022. On Solana, UXD Protocol attempted a delta-neutral algorithmic design.",
     "category": "defi",
-    "depth": 3,
+    "depth": 2,
     "related": ["stablecoin", "depeg"]
   },
   {
@@ -818,7 +818,7 @@
     "term": "Depeg",
     "definition": "An event where a stablecoin's market price deviates significantly from its intended peg (typically $1.00). Depegs can result from loss of confidence in reserves, algorithmic failure, liquidity crises, or smart contract exploits. Even temporary depegs cause cascading liquidations across DeFi as collateral values drop. Notable depegs include UST (total collapse), USDC (briefly during SVB crisis), and various algorithmic stablecoins.",
     "category": "defi",
-    "depth": 2,
+    "depth": 3,
     "related": ["stablecoin", "algorithmic-stablecoin", "liquidation"]
   },
   {
@@ -876,7 +876,7 @@
     "term": "Oracle Staleness",
     "definition": "The condition where an oracle price feed has not been updated within an acceptable time window, making the price data potentially unreliable. Stale prices can lead to incorrect liquidations, mispriced trades, or exploitable arbitrage. Solana DeFi protocols must check the timestamp of oracle updates and reject or pause operations when prices exceed a staleness threshold (e.g., 30 seconds for Pyth feeds).",
     "category": "defi",
-    "depth": 4,
+    "depth": 3,
     "related": ["oracle", "price-feed", "bad-debt"]
   },
   {
@@ -1156,7 +1156,7 @@
     "term": "Atomic Settlement",
     "definition": "Simultaneous, all-or-nothing completion of both legs of a trade (asset + cash) in a single transaction. Eliminates settlement risk. A Solana transaction either fully executes all instructions or reverts completely, making partial settlement impossible by construction.",
     "category": "defi",
-    "depth": 3,
+    "depth": 2,
     "related": ["finality-general", "dvp", "clearing-settlement"]
   },
   {

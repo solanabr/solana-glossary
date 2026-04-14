@@ -36,7 +36,7 @@
     "term": "Helium",
     "definition": "A decentralized wireless infrastructure network that migrated from its own L1 blockchain to Solana in April 2023 for improved scalability and composability. Helium incentivizes individuals to deploy hotspots providing LoRaWAN (IoT) and 5G cellular coverage, earning HNT, MOBILE, and IOT tokens. With over 900,000 hotspots deployed globally, Helium is one of the largest DePIN projects on Solana.",
     "category": "solana-ecosystem",
-    "depth": 2,
+    "depth": 1,
     "related": ["depin", "sol", "compressed-nft"]
   },
   {
@@ -44,7 +44,7 @@
     "term": "Render Network",
     "definition": "A decentralized GPU rendering network that migrated to Solana in November 2023 from Ethereum for lower fees and higher throughput. Render connects artists and studios needing GPU power for 3D rendering, motion graphics, and AI workloads with node operators who supply idle GPUs. Contributors earn RENDER tokens for completed jobs. The migration leveraged Solana's state compression for efficient job tracking.",
     "category": "solana-ecosystem",
-    "depth": 2,
+    "depth": 1,
     "related": ["depin", "gpu-compute", "sol"]
   },
   {
@@ -76,7 +76,7 @@
     "term": "Colosseum",
     "definition": "The organization behind Solana's major hackathons and accelerator programs. Colosseum runs online hackathons attracting thousands of developers building on Solana, with prize pools and follow-on funding for winning projects. Its accelerator provides mentorship, funding, and ecosystem connections to promising teams. Many successful Solana projects originated from Colosseum hackathons.",
     "category": "solana-ecosystem",
-    "depth": 2,
+    "depth": 1,
     "related": ["solana-foundation", "superteam", "solana-breakpoint"]
   },
   {
@@ -108,7 +108,7 @@
     "term": "deBridge",
     "definition": "A cross-chain interoperability protocol supporting high-performance bridging between Solana, Ethereum, and other major chains. deBridge uses a network of independent validators to verify cross-chain messages and enables asset transfers, cross-chain swaps, and arbitrary message passing. Its DLN (Decentralized Liquidity Network) facilitates zero-slippage cross-chain trades through a maker-taker model.",
     "category": "solana-ecosystem",
-    "depth": 3,
+    "depth": 2,
     "related": ["bridge", "interoperability", "wormhole"]
   },
   {
@@ -124,7 +124,7 @@
     "term": "Realms",
     "definition": "The primary governance platform on Solana, built on the SPL Governance program. Realms enables DAOs, protocol teams, and communities to create governance structures with token-weighted voting, proposal creation, treasury management, and council-based decision making. Major Solana protocols including Marinade, Mango, and MonkeDAO use Realms for on-chain governance and treasury operations.",
     "category": "solana-ecosystem",
-    "depth": 3,
+    "depth": 2,
     "related": ["dao", "governance-token", "spl"]
   },
   {
@@ -220,7 +220,7 @@
     "term": "Solend / Save",
     "definition": "One of the earliest lending and borrowing protocols on Solana, originally launched as Solend in 2021 and later rebranded to Save. The protocol enables users to deposit assets to earn interest and borrow against collateral with algorithmic interest rates. It supports isolated lending pools, permissionless pool creation, and has processed billions in cumulative lending volume on Solana.",
     "category": "solana-ecosystem",
-    "depth": 3,
+    "depth": 2,
     "aliases": ["Solend", "Save"],
     "related": ["lending", "borrowing", "marginfi"]
   },
@@ -261,7 +261,7 @@
     "term": "Solana Crossroads",
     "definition": "A community-organized annual Solana conference in Istanbul, led by the Step Finance team rather than the Solana Foundation. Crossroads attracted over 2,500 attendees in 2024, making it one of the largest independently run Solana events. It is one of the few major Solana conferences entirely organized by ecosystem contributors, featuring talks, panels, and side events.",
     "category": "solana-ecosystem",
-    "depth": 3,
+    "depth": 2,
     "related": ["step-finance", "solana-breakpoint", "solana-foundation"]
   },
   {
@@ -471,7 +471,7 @@
     "term": "Armada",
     "definition": "Token launch infrastructure on Solana providing customizable launch pools, vesting schedules, and staking programs for new projects. Armada offers a suite of composable smart contracts that handle token distribution mechanics including cliff vesting, linear unlock schedules, and staking rewards, enabling projects to manage their token economics without building custom launch infrastructure.",
     "category": "solana-ecosystem",
-    "depth": 4,
+    "depth": 3,
     "related": ["defi-general", "sol", "dapp"]
   },
   {
@@ -904,7 +904,7 @@
     "term": "Jupiter Perpetuals",
     "definition": "Jupiter's perpetual futures trading platform using a pool-based model (JLP) where liquidity providers deposit assets to earn trading fees while traders access up to 100x leverage on SOL, ETH, and BTC. JLP holders earn real yield from trading fees and liquidations, making it one of the highest-yield opportunities on Solana. The platform integrates directly with Jupiter's swap infrastructure.",
     "category": "solana-ecosystem",
-    "depth": 3,
+    "depth": 2,
     "aliases": ["JLP"],
     "related": ["jupiter", "perpetuals", "defi-general"]
   },
@@ -947,7 +947,7 @@
     "term": "Jito Foundation",
     "definition": "The organization governing the Jito protocol ecosystem including JitoSOL liquid staking, MEV rewards distribution, and the JTO governance token. The Jito Foundation oversees protocol upgrades, manages the treasury, and conducts governance votes on fee structures and ecosystem grants. JitoSOL distinguishes itself by passing MEV rewards to stakers in addition to standard staking yield.",
     "category": "solana-ecosystem",
-    "depth": 2,
+    "depth": 1,
     "aliases": ["Jito", "JTO"],
     "related": ["jito-sol", "liquid-staking", "validator"]
   },

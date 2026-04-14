@@ -21,7 +21,7 @@
     "term": "Compressed Account",
     "definition": "A compressed account is a Solana account whose state is stored as a leaf in an on-chain Concurrent Merkle Tree rather than as a dedicated on-chain account, making it 100–1,000x cheaper to create and maintain because no rent-exempt lamport balance is required per account. Compressed accounts are identified by a hash of their data and position in the tree; to interact with one, a client must supply a Merkle proof (or rely on the canopy) showing the leaf is part of the current tree root, which the on-chain program verifies before processing the state change. Light Protocol's compressed account model supports arbitrary data, discriminators, and owner programs, making it a general-purpose replacement for expensive on-chain accounts in high-volume use cases.",
     "category": "zk-compression",
-    "depth": 4,
+    "depth": 3,
     "related": ["zk-compression", "state-compression"]
   },
   {
@@ -161,7 +161,7 @@
     "term": "Nullifier",
     "definition": "A nullifier is a cryptographic value derived deterministically from a compressed account's leaf hash (and optionally a secret) that is published and recorded on-chain when that compressed account is consumed (spent) in a state transition, permanently marking the account as used and preventing it from being spent a second time in a double-spend attack. In Light Protocol, nullifiers are inserted into an on-chain nullifier queue account and periodically batch-processed by Forester nodes into a nullifier set stored in a separate Merkle tree, allowing the validity proof to assert both that the input account exists (inclusion proof) and that its nullifier has not yet been recorded (non-membership proof). The nullifier scheme allows compressed accounts to be treated as UTXOs — each account is consumed once and replaced by one or more output accounts — while maintaining the privacy and succinctness properties of the ZK proof system.",
     "category": "zk-compression",
-    "depth": 5,
+    "depth": 4,
     "related": ["zk-proofs", "compressed-account"]
   },
   {
@@ -277,7 +277,7 @@
     "term": "Proof Aggregation",
     "definition": "Technique of combining multiple zero-knowledge proofs into a single, compact proof that can be verified more efficiently than verifying each proof individually. Reduces on-chain verification costs by batching proofs. Used in ZK compression systems to batch-verify multiple state transitions in a single verification step on Solana.",
     "category": "zk-compression",
-    "depth": 5,
+    "depth": 4,
     "related": ["zk-proofs", "zk-compression", "validity-proof"]
   }
 ]
