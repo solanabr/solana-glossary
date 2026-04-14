@@ -1,9 +1,14 @@
 # @stbr/solana-glossary
 
 [![npm version](https://img.shields.io/npm/v/@stbr/solana-glossary)](https://www.npmjs.com/package/@stbr/solana-glossary)
+[![npm downloads](https://img.shields.io/npm/dm/@stbr/solana-glossary)](https://www.npmjs.com/package/@stbr/solana-glossary)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Terms](https://img.shields.io/badge/terms-1059-brightgreen)
 ![Categories](https://img.shields.io/badge/categories-14-blue)
+![Tags](https://img.shields.io/badge/tags-16-orange)
+![i18n](https://img.shields.io/badge/i18n-pt%20%7C%20es-yellow)
+
+> **[View on npm](https://www.npmjs.com/package/@stbr/solana-glossary)**
 
 **The most comprehensive Solana glossary ever built — 1059 terms, 14 categories, full cross-references, and i18n support. Packaged as an SDK.**
 
