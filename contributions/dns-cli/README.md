@@ -32,6 +32,8 @@ sol glossary.help        # All commands
 <!-- DEMO GIF PLACEHOLDER -->
 <!-- Replace with: ![Solana Glossary DNS CLI Demo](./demo.gif) -->
 <!-- Record with: asciinema or ttyrec, then convert to GIF with agg/termtosvg -->
+![Demo](https://github.com/monikadhayal/solana-glossary/blob/feat/dns-cli-glossary/glossary_cli_demo.gif)
+
 
 ```
 $ sol proof-of-history
