@@ -499,5 +499,29 @@
     "definition": "The limited lifespan of a Solana transaction determined by its referenced blockhash. A transaction's blockhash must correspond to a block within the last 150 slots (~60-90 seconds) or the transaction is rejected as expired. This mechanism prevents replay attacks and bounds the time validators must track transaction deduplication. Durable nonces bypass mortality for use cases requiring long-lived transactions.",
     "category": "programming-model",
     "related": ["blockhash", "durable-nonce", "transaction"]
+  },
+  {
+    "id": "cpi-passthrough",
+    "term": "CPI Passthrough",
+    "definition": "A design pattern where a Solana program receives pre-built instruction data from the client, validates security constraints (authority, PDA, discriminator prefix), and forwards the raw bytes to another program via invoke_signed. Unlike standard CPI where the caller constructs the instruction, passthrough delegates serialization to the client while the on-chain program acts as a validated relay. Used when the target program's format is complex or version-dependent.",
+    "category": "programming-model",
+    "aliases": ["CPI Relay", "CPI Forward"],
+    "related": ["cpi", "invoke-signed", "discriminator"]
+  },
+  {
+    "id": "instruction-fallback",
+    "term": "Instruction Fallback (Anchor)",
+    "definition": "Anchor's default error handler that triggers when incoming instruction data doesn't match any registered 8-byte discriminator. Returns error code 0x65 (101) with message 'InstructionFallbackNotFound'. Most commonly seen when a client sends a discriminator format the program doesn't understand — e.g., a V2 single-byte disc to an Anchor V1 program expecting 8-byte SHA256 discriminators. Native Solana programs handle unknown discriminators with their own match logic.",
+    "category": "programming-model",
+    "aliases": ["InstructionFallbackNotFound", "Anchor Error 0x65"],
+    "related": ["discriminator", "anchor"]
+  },
+  {
+    "id": "program-upgrade",
+    "term": "Program Upgrade",
+    "definition": "Deploying new bytecode to an existing Solana program address via the Upgradeable BPF Loader. The program's public key and all derived PDAs remain unchanged — only the executable binary is replaced. Requires the upgrade authority (a designated signer) to approve. This enables shipping fixes without breaking integrations, but a compromised authority can silently replace program logic. Programs can be made immutable by setting the upgrade authority to None.",
+    "category": "programming-model",
+    "aliases": ["Upgradeable Program", "Program Redeploy"],
+    "related": ["upgradeable-loader", "bpf-loader", "upgrade-authority"]
   }
 ]
