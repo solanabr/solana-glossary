@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 dist/
+.next/
 
 # Environment variables
 .env
@@ -34,3 +35,9 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+.vercel
+
+# Generated data expansion reports
+data/expansion/last-report.json
+data/expansion/fixture-report.json
+.env*.local

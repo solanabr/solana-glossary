@@ -494,6 +494,13 @@
     "related": ["preflight-check", "rpc", "compute-units"]
   },
   {
+    "id": "transaction-simulation",
+    "term": "Transaction Simulation",
+    "definition": "The broader developer workflow of dry-running a Solana transaction before broadcast to inspect logs, catch runtime failures, estimate compute usage, and verify account assumptions. Transaction simulation can happen through the simulateTransaction RPC method, preflight checks inside sendTransaction, or specialized bundle and bot pipelines that repeatedly simulate against fresh state before deciding to submit.",
+    "category": "programming-model",
+    "related": ["simulate-transaction", "preflight-check", "bundle-simulation"]
+  },
+  {
     "id": "transaction-mortality",
     "term": "Transaction Mortality",
     "definition": "The limited lifespan of a Solana transaction determined by its referenced blockhash. A transaction's blockhash must correspond to a block within the last 150 slots (~60-90 seconds) or the transaction is rejected as expired. This mechanism prevents replay attacks and bounds the time validators must track transaction deduplication. Durable nonces bypass mortality for use cases requiring long-lived transactions.",
