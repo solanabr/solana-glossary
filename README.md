@@ -180,7 +180,7 @@ Terms without a translation automatically fall back to English.
 {
   "proof-of-history": {
     "term": "Prova de História (PoH)",
-    "definition": "Um mecanismo de relógio criptográfico que..."
+    "definition": "Um mecanismo de relogio que prova criptograficamente a passagem de tempo entre eventos..."
   }
 }
 ```
