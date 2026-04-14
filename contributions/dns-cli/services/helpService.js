@@ -4,16 +4,13 @@
 export function getHelpLines(serverHost = "sdns.fun") {
   const h = serverHost;
   return [
-    `Solana Glossary DNS CLI - access 1000+ Solana terms via DNS queries.`,
-    `This DNS server takes creative liberties with the DNS protocol to offer`,
-    `handy Solana utilities easily accessible via CLI without a browser.`,
-    ``,
-    `ALIAS SETUP (add to ~/.bashrc or ~/.zshrc, then: source ~/.bashrc):`,
-    `  sol() { dig +short "\${1}" @${h}; }`,
+    `Solana Glossary DNS CLI - access 1000+ Solana terms via DNS queries directly from CLI.`,
+    "============================================================",
+    `ALIAS SETUP (for shortcut):`,
+    `  echo 'sol() { dig +short "${1}" @sdns.fun; }' >> ~/.bashrc && source ~/.bashrc`,
     `  Then just type: sol help | sol poh | sol find.defi`,
-    ``,
+    "============================================================",
     `AVAILABLE DNS COMMANDS:`,
-    `-------------------`,
     `sol <term>              - Look up a Solana glossary term`,
     `sol find.<category>     - Browse terms by category (e.g. sol find.defi)`,
     `sol search.<word>       - Search terms by keyword`,
