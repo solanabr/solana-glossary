@@ -210,6 +210,23 @@ const tooltip = getTerm("pda")?.definition;
 
 ---
 
+## Lightweight RAG pipeline (local)
+
+This repository includes scripts to build a local embedding index and query it for prompt-ready context:
+
+- `npm run rag:build` -> generates `.rag/index.json` from glossary terms
+- `npm run rag:query -- "your question"` -> returns top-k retrieved context
+
+Requires:
+
+- `OPENAI_API_KEY` exported in your shell
+
+Full usage and flags:
+
+- [docs/rag-pipeline.md](docs/rag-pipeline.md)
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on adding terms, translations, and submitting PRs.

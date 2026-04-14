@@ -28,11 +28,14 @@
     "test": "vitest run",
     "lint": "tsc --noEmit",
     "validate": "node scripts/validate.js",
-    "stats": "node -e \"const g = require('./dist/index.js'); console.log('Total terms:', g.allTerms.length); console.log('With definitions:', g.allTerms.filter(t => t.definition).length); console.log('Categories:', [...new Set(g.allTerms.map(t => t.category))].length)\""
+    "stats": "node -e \"const g = require('./dist/index.js'); console.log('Total terms:', g.allTerms.length); console.log('With definitions:', g.allTerms.filter(t => t.definition).length); console.log('Categories:', [...new Set(g.allTerms.map(t => t.category))].length)\"",
+    "rag:build": "tsx scripts/build-index.ts",
+    "rag:query": "tsx scripts/query-rag.ts"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
     "tsup": "^8.0.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.4.0",
     "vitest": "^3.2.0"
   },
