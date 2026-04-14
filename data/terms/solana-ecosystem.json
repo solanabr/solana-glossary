@@ -796,7 +796,7 @@
     "definition": "Jupiter's perpetual futures trading platform using a pool-based model (JLP) where liquidity providers deposit assets to earn trading fees while traders access up to 100x leverage on SOL, ETH, and BTC. JLP holders earn real yield from trading fees and liquidations, making it one of the highest-yield opportunities on Solana. The platform integrates directly with Jupiter's swap infrastructure.",
     "category": "solana-ecosystem",
     "aliases": ["JLP"],
-    "related": ["jupiter", "perpetuals", "defi-general"]
+    "related": ["jupiter", "perpetuals", "defi-general", "jlp-pool"]
   },
   {
     "id": "sanctum-infinity",
@@ -804,7 +804,7 @@
     "definition": "Sanctum's multi-LST liquidity pool that accepts all Solana liquid staking tokens into a single unified pool, solving the liquidity fragmentation problem across dozens of LST providers. Sanctum Infinity issues the INF token representing a diversified basket of staked SOL across multiple validators and staking protocols, providing deep liquidity and instant swaps between any Solana LST.",
     "category": "solana-ecosystem",
     "aliases": ["INF"],
-    "related": ["sanctum", "liquid-staking", "liquidity-pool"]
+    "related": ["sanctum", "liquid-staking", "liquidity-pool", "sanctum-router"]
   },
   {
     "id": "famous-fox-federation",

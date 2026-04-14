@@ -9,7 +9,7 @@
   {
     "id": "program",
     "term": "Program",
-    "definition": "Executable code deployed on-chain, equivalent to a smart contract on other blockchains. Programs are stateless\u2014they store no data themselves but read/write data in separate accounts they own. Programs are compiled to SBF bytecode and loaded via the BPF Loader. Every program has a unique Program ID (its account's public key).",
+    "definition": "Executable code deployed on-chain, equivalent to a smart contract on other blockchains. Programs are stateless—they store no data themselves but read/write data in separate accounts they own. Programs are compiled to SBF bytecode and loaded via the BPF Loader. Every program has a unique Program ID (its account's public key).",
     "category": "programming-model",
     "aliases": ["Smart Contract"],
     "related": ["account", "instruction", "bpf"]
@@ -25,7 +25,7 @@
   {
     "id": "transaction",
     "term": "Transaction",
-    "definition": "An atomic unit of execution containing one or more instructions, a recent blockhash, and one or more signatures. All instructions in a transaction execute sequentially and atomically\u2014if any instruction fails, the entire transaction reverts. Transactions have a 1,232-byte size limit (matching IPv6 MTU) and a default 200,000 CU budget.",
+    "definition": "An atomic unit of execution containing one or more instructions, a recent blockhash, and one or more signatures. All instructions in a transaction execute sequentially and atomically—if any instruction fails, the entire transaction reverts. Transactions have a 1,232-byte size limit (matching IPv6 MTU) and a default 200,000 CU budget.",
     "category": "programming-model",
     "aliases": ["TX"],
     "related": ["instruction", "signature", "message"]
@@ -80,7 +80,7 @@
     "definition": "An account address derived deterministically from a program ID and a set of seeds, with no corresponding private key. PDAs are created by finding a pubkey that does NOT lie on the Ed25519 curve (using a bump seed). Since there's no private key, only the deriving program can sign for the PDA via invoke_signed, making PDAs ideal for program-controlled state.",
     "category": "programming-model",
     "aliases": ["PDA"],
-    "related": ["seeds", "bump", "find-program-address"]
+    "related": ["seeds", "bump", "find-program-address", "program-as-authority"]
   },
   {
     "id": "seeds",
@@ -107,24 +107,31 @@
   {
     "id": "cpi",
     "term": "Cross-Program Invocation (CPI)",
-    "definition": "A mechanism for one program to call another program's instructions during execution. CPIs enable composability\u2014e.g., a DeFi program can call the Token Program to transfer tokens. CPI depth is limited to 4 levels. The caller passes accounts and instruction data, and the callee runs with the same transaction context.",
+    "definition": "A mechanism for one program to call another program's instructions during execution. CPIs enable composability—e.g., a DeFi program can call the Token Program to transfer tokens. CPI depth is limited to 4 levels. The caller passes accounts and instruction data, and the callee runs with the same transaction context.",
     "category": "programming-model",
     "aliases": ["CPI"],
-    "related": ["program", "instruction", "invoke", "invoke-signed"]
+    "related": [
+      "program",
+      "instruction",
+      "invoke",
+      "invoke-signed",
+      "cpi-depth-attack",
+      "cpi-passthrough"
+    ]
   },
   {
     "id": "invoke",
     "term": "invoke()",
     "definition": "The Solana SDK function used to execute a CPI without PDA signing: `invoke(instruction, account_infos)`. All required signers must have already signed the outer transaction. Use invoke when calling programs that only need signatures from user wallets, not from PDAs.",
     "category": "programming-model",
-    "related": ["cpi", "invoke-signed"]
+    "related": ["cpi", "invoke-signed", "cpi-depth-attack"]
   },
   {
     "id": "invoke-signed",
     "term": "invoke_signed()",
     "definition": "The Solana SDK function for CPIs where a PDA must sign: `invoke_signed(instruction, account_infos, signer_seeds)`. The runtime verifies that the seeds + bump produce the expected PDA pubkey and grants signer privileges for that account. This is how programs authorize actions on behalf of PDAs they own.",
     "category": "programming-model",
-    "related": ["cpi", "invoke", "pda"]
+    "related": ["cpi", "invoke", "pda", "program-as-authority"]
   },
   {
     "id": "system-program",
@@ -178,21 +185,21 @@
   {
     "id": "authority",
     "term": "Authority",
-    "definition": "A pubkey with administrative privileges over a resource\u2014such as the mint authority (can mint tokens), freeze authority (can freeze accounts), upgrade authority (can upgrade a program), or the signer authorized to perform operations on a PDA-controlled account. Authority is a convention, not a runtime concept.",
+    "definition": "A pubkey with administrative privileges over a resource—such as the mint authority (can mint tokens), freeze authority (can freeze accounts), upgrade authority (can upgrade a program), or the signer authorized to perform operations on a PDA-controlled account. Authority is a convention, not a runtime concept.",
     "category": "programming-model",
     "related": ["owner", "signer", "multisig"]
   },
   {
     "id": "signer",
     "term": "Signer",
-    "definition": "An account that has provided a valid Ed25519 signature in the current transaction. The runtime enforces the is_signer flag on instruction account metas\u2014if an instruction declares an account as a signer, the transaction must include its signature. Missing signer checks are a common vulnerability in Solana programs.",
+    "definition": "An account that has provided a valid Ed25519 signature in the current transaction. The runtime enforces the is_signer flag on instruction account metas—if an instruction declares an account as a signer, the transaction must include its signature. Missing signer checks are a common vulnerability in Solana programs.",
     "category": "programming-model",
     "related": ["authority", "keypair", "transaction"]
   },
   {
     "id": "writable",
     "term": "Writable Account",
-    "definition": "An account marked as writable in an instruction's account metas, allowing the program to modify its data or lamport balance. Non-writable accounts are read-only. The runtime enforces that programs can only modify writable accounts. Writable accounts also affect scheduling\u2014transactions sharing writable accounts cannot run in parallel.",
+    "definition": "An account marked as writable in an instruction's account metas, allowing the program to modify its data or lamport balance. Non-writable accounts are read-only. The runtime enforces that programs can only modify writable accounts. Writable accounts also affect scheduling—transactions sharing writable accounts cannot run in parallel.",
     "category": "programming-model",
     "related": ["account", "transaction"]
   },
@@ -235,7 +242,7 @@
   {
     "id": "native-program",
     "term": "Native Program",
-    "definition": "A program compiled directly into the validator binary rather than deployed as SBF bytecode. Native programs include the System Program, Vote Program, Stake Program, BPF Loader, and others. They have hardcoded addresses and cannot be upgraded through the normal program upgrade mechanism\u2014they change only with validator software updates.",
+    "definition": "A program compiled directly into the validator binary rather than deployed as SBF bytecode. Native programs include the System Program, Vote Program, Stake Program, BPF Loader, and others. They have hardcoded addresses and cannot be upgraded through the normal program upgrade mechanism—they change only with validator software updates.",
     "category": "programming-model",
     "related": ["system-program", "spl", "runtime"]
   },
@@ -244,14 +251,19 @@
     "term": "Sysvar",
     "definition": "Special read-only accounts maintained by the runtime that expose cluster state to programs. Key sysvars include Clock (slot, timestamp), Rent (lamports-per-byte), EpochSchedule (epoch parameters), RecentBlockhashes, StakeHistory, and Fees. Programs access sysvars by including the sysvar account in the instruction or via the sol_get_sysvar syscall.",
     "category": "programming-model",
-    "related": ["clock", "rent-exemption", "epoch-schedule"]
+    "related": [
+      "clock",
+      "rent-exemption",
+      "epoch-schedule",
+      "sysvar-instructions"
+    ]
   },
   {
     "id": "clock",
     "term": "Clock Sysvar",
     "definition": "A sysvar (address: SysvarC1ock11111111111111111111111111111111) that provides the current slot, epoch, unix_timestamp, and leader_schedule_epoch. Programs use Clock to implement time-based logic like lockups or vesting schedules. In Anchor, accessed via `Clock::get()` or as a sysvar account in the accounts struct.",
     "category": "programming-model",
-    "related": ["sysvar", "slot", "epoch"]
+    "related": ["sysvar", "slot", "epoch", "on-chain-rate-limiting"]
   },
   {
     "id": "account-data",
@@ -263,7 +275,7 @@
   {
     "id": "borsh",
     "term": "Borsh",
-    "definition": "Binary Object Representation Serializer for Hashing\u2014the standard serialization format for Solana program data. Borsh produces deterministic, compact binary encodings with a fixed schema. It's used by Anchor for all account and instruction data serialization/deserialization. Borsh supports structs, enums, vectors, and other Rust types.",
+    "definition": "Binary Object Representation Serializer for Hashing—the standard serialization format for Solana program data. Borsh produces deterministic, compact binary encodings with a fixed schema. It's used by Anchor for all account and instruction data serialization/deserialization. Borsh supports structs, enums, vectors, and other Rust types.",
     "category": "programming-model",
     "aliases": ["Binary Object Representation Serializer for Hashing"],
     "related": ["serialization", "account-data"]
@@ -297,12 +309,12 @@
     "definition": "The maximum compute units a transaction can consume. Default is 200,000 CU per instruction (max 1.4M CU per transaction). Programs can request specific limits via the ComputeBudgetProgram's SetComputeUnitLimit instruction. Under-requesting CU risks transaction failure; over-requesting wastes priority fee budget.",
     "category": "programming-model",
     "aliases": ["CU Budget"],
-    "related": ["compute-units", "priority-fee"]
+    "related": ["compute-units", "priority-fee", "cu-estimation"]
   },
   {
     "id": "compute-units",
     "term": "Compute Units (CU)",
-    "definition": "A measure of computational resources consumed by transaction execution, analogous to gas on Ethereum. Each BPF instruction costs CU; syscalls have predefined CU costs (e.g., SHA-256: 85 CU base + per-byte). Default per-instruction limit is 200,000 CU; max per-transaction is 1,400,000 CU. Priority fee cost = CU price \u00d7 CU consumed.",
+    "definition": "A measure of computational resources consumed by transaction execution, analogous to gas on Ethereum. Each BPF instruction costs CU; syscalls have predefined CU costs (e.g., SHA-256: 85 CU base + per-byte). Default per-instruction limit is 200,000 CU; max per-transaction is 1,400,000 CU. Priority fee cost = CU price × CU consumed.",
     "category": "programming-model",
     "aliases": ["CU"],
     "related": ["compute-budget", "priority-fee"]
@@ -352,7 +364,7 @@
   {
     "id": "idl",
     "term": "IDL (Interface Definition Language)",
-    "definition": "Interface Definition Language\u2014a JSON specification that describes a program's instructions, accounts, types, and error codes. Anchor auto-generates the IDL from the program source code. Client libraries (TypeScript, Python) use the IDL to serialize/deserialize instruction data and accounts, enabling type-safe interaction without manual encoding.",
+    "definition": "Interface Definition Language—a JSON specification that describes a program's instructions, accounts, types, and error codes. Anchor auto-generates the IDL from the program source code. Client libraries (TypeScript, Python) use the IDL to serialize/deserialize instruction data and accounts, enabling type-safe interaction without manual encoding.",
     "category": "programming-model",
     "aliases": ["IDL"],
     "related": ["anchor", "program"]
@@ -491,14 +503,19 @@
     "term": "Simulate Transaction",
     "definition": "The simulateTransaction RPC method that dry-runs a transaction against a specified bank state without submitting it to the network or consuming fees. Simulation returns the execution result including logs, compute units consumed, return data, and any error. Developers use simulation to estimate CU usage, debug program errors, and verify transaction correctness before sending. Simulation does not require valid signatures.",
     "category": "programming-model",
-    "related": ["preflight-check", "rpc", "compute-units"]
+    "related": ["preflight-check", "rpc", "compute-units", "cu-estimation"]
   },
   {
     "id": "transaction-mortality",
     "term": "Transaction Mortality",
     "definition": "The limited lifespan of a Solana transaction determined by its referenced blockhash. A transaction's blockhash must correspond to a block within the last 150 slots (~60-90 seconds) or the transaction is rejected as expired. This mechanism prevents replay attacks and bounds the time validators must track transaction deduplication. Durable nonces bypass mortality for use cases requiring long-lived transactions.",
     "category": "programming-model",
-    "related": ["blockhash", "durable-nonce", "transaction"]
+    "related": [
+      "blockhash",
+      "durable-nonce",
+      "transaction",
+      "blockhash-management"
+    ]
   },
   {
     "id": "sbpf",
@@ -547,5 +564,81 @@
     "category": "programming-model",
     "aliases": ["Upgradeable Program", "Program Redeploy"],
     "related": ["upgradeable-loader", "bpf-loader", "upgrade-authority"]
+  },
+  {
+    "id": "cu-estimation",
+    "term": "CU Estimation via Simulation",
+    "definition": "The practice of calling simulateTransaction to measure exact compute unit consumption before submitting a transaction, then setting SetComputeUnitLimit to the simulated value plus a small margin (typically 10-20%). This pattern avoids both over-requesting CU (which inflates priority fee costs since fee = CU_price * CU_limit) and under-requesting (which causes the transaction to fail with a ComputeBudget exceeded error). The simulation returns unitsConsumed in its response, which developers use to right-size the compute budget instruction.",
+    "category": "programming-model",
+    "aliases": ["Compute Unit Estimation"],
+    "related": [
+      "simulate-transaction",
+      "compute-budget",
+      "compute-units",
+      "priority-fee"
+    ]
+  },
+  {
+    "id": "send-and-confirm-pattern",
+    "term": "Send-and-Confirm Pattern",
+    "definition": "A client-side transaction lifecycle pattern that combines sendTransaction (with skipPreflight: true for freshest state) with polling via getSignatureStatuses or a WebSocket signatureSubscribe until the desired commitment level is reached or the blockhash expires. The canonical implementation: fetch a recent blockhash with its lastValidBlockHeight, sign and send the transaction, then poll in a loop checking both the signature status and whether the current blockHeight exceeds lastValidBlockHeight. If the blockhash expires without confirmation, the transaction is guaranteed to never land and can be safely retried with a fresh blockhash.",
+    "category": "programming-model",
+    "related": [
+      "transaction-landing",
+      "transaction-retry",
+      "blockhash",
+      "commitment-levels"
+    ]
+  },
+  {
+    "id": "retry-strategy",
+    "term": "Retry Strategy (Transaction)",
+    "definition": "A client-side pattern for reliably landing Solana transactions despite the network's fire-and-forget submission model. Production strategies include: aggressive resubmission of the same signed transaction every 1-2 seconds until confirmation or blockhash expiry, sending to multiple RPC endpoints or directly to leader TPU addresses via QUIC for redundancy, exponential backoff for transient RPC errors, and fresh-blockhash retry where a new transaction is signed after the previous blockhash expires. The key invariant is that resubmitting an identical signed transaction is idempotent due to transaction deduplication.",
+    "category": "programming-model",
+    "related": [
+      "transaction-retry",
+      "transaction-landing",
+      "transaction-deduplication",
+      "send-and-confirm-pattern"
+    ]
+  },
+  {
+    "id": "blockhash-management",
+    "term": "Blockhash Management",
+    "definition": "The set of client-side practices for maintaining a valid recent blockhash to maximize transaction landing probability. Key techniques include polling getLatestBlockhash at intervals shorter than the ~60-90 second validity window, caching both the blockhash and its lastValidBlockHeight for expiry detection, using the confirmed commitment level for blockhash fetches to balance freshness and stability, and replacing stale blockhashes in retry logic before re-signing. Poor blockhash management is one of the most common causes of transaction failures in production Solana applications.",
+    "category": "programming-model",
+    "related": [
+      "blockhash",
+      "transaction-mortality",
+      "send-and-confirm-pattern",
+      "durable-nonce"
+    ]
+  },
+  {
+    "id": "instruction-introspection",
+    "term": "Instruction Introspection",
+    "definition": "A technique where a Solana program reads the Instructions sysvar (Sysvar1nstructions1111111111111111111111111) to inspect other instructions within the same transaction, enabling cross-instruction validation without CPI. The primary use cases are verifying that an Ed25519 or Secp256k1 precompile instruction exists earlier in the transaction (proving a signature was verified), enforcing that specific instructions co-occur (e.g., requiring a memo), and detecting whether the current instruction was invoked via CPI. Programs call load_instruction_at or get_instruction_relative to read sibling instructions.",
+    "category": "programming-model",
+    "related": ["sysvar-instructions", "ed25519", "cpi-guard"]
+  },
+  {
+    "id": "account-validation-pattern",
+    "term": "Account Validation Pattern",
+    "definition": "The systematic set of checks every Solana program must perform on each account before processing an instruction: ownership check (verify account.owner matches the expected program), signer check (assert is_signer for privileged accounts), writable check (confirm is_writable for accounts being modified), PDA re-derivation (recompute the PDA from seeds and compare to the passed address), discriminator check (validate the first 8 bytes match the expected type), and key equality (confirm specific accounts match known addresses like the token program ID). Anchor automates these via its Account trait derive macro and constraint attributes.",
+    "category": "programming-model",
+    "related": [
+      "missing-signer-check",
+      "missing-owner-check",
+      "pda-substitution",
+      "discriminator",
+      "account-discriminator-check"
+    ]
+  },
+  {
+    "id": "sysvar-instructions",
+    "term": "Instructions Sysvar",
+    "definition": "A special sysvar account (address: Sysvar1nstructions1111111111111111111111111) that provides on-chain programs read access to all instructions in the current transaction. Unlike other sysvars, it cannot be read via sol_get_sysvar and must be explicitly included as an account in the instruction. Programs use it for instruction introspection: verifying co-occurrence of precompile signature verifications (Ed25519/Secp256k1), detecting CPI context (distinguishing top-level calls from nested CPI), and enforcing instruction ordering constraints.",
+    "category": "programming-model",
+    "related": ["sysvar", "instruction-introspection", "ed25519", "cpi"]
   }
 ]

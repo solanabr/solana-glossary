@@ -10,7 +10,7 @@
   {
     "id": "spl",
     "term": "Solana Program Library (SPL)",
-    "definition": "Solana Program Library\u2014a collection of on-chain programs and client libraries maintained by Solana Labs. Key SPL programs include Token, Token-2022, Associated Token Account, Memo, Name Service, Stake Pool, and Account Compression. SPL programs are deployed to well-known addresses and serve as the standard building blocks for Solana applications.",
+    "definition": "Solana Program Library—a collection of on-chain programs and client libraries maintained by Solana Labs. Key SPL programs include Token, Token-2022, Associated Token Account, Memo, Name Service, Stake Pool, and Account Compression. SPL programs are deployed to well-known addresses and serve as the standard building blocks for Solana applications.",
     "category": "token-ecosystem",
     "aliases": ["SPL"],
     "related": ["spl-token", "associated-token-account"]
@@ -21,7 +21,15 @@
     "definition": "The next-generation token program (TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb) that extends SPL Token with configurable extensions. Extensions include transfer fees, confidential transfers, transfer hooks, permanent delegate, non-transferable tokens, interest-bearing tokens, metadata, and more. Token-2022 is backwards-compatible with SPL Token for basic operations.",
     "category": "token-ecosystem",
     "aliases": ["Token Extensions", "Token22"],
-    "related": ["spl-token", "transfer-hook", "confidential-transfers"]
+    "related": [
+      "spl-token",
+      "transfer-hook",
+      "confidential-transfers",
+      "metadata-pointer",
+      "confidential-mint-burn",
+      "immutable-owner",
+      "mint-close-authority"
+    ]
   },
   {
     "id": "mint",
@@ -49,9 +57,9 @@
   {
     "id": "mint-authority",
     "term": "Mint Authority",
-    "definition": "The pubkey authorized to mint new tokens via the MintTo instruction. Set at mint creation and can be changed or revoked (set to None) by the current authority. Revoking mint authority makes the supply fixed\u2014critical for trust in fungible tokens. For NFTs, mint authority is typically revoked after minting the single token.",
+    "definition": "The pubkey authorized to mint new tokens via the MintTo instruction. Set at mint creation and can be changed or revoked (set to None) by the current authority. Revoking mint authority makes the supply fixed—critical for trust in fungible tokens. For NFTs, mint authority is typically revoked after minting the single token.",
     "category": "token-ecosystem",
-    "related": ["mint", "authority"]
+    "related": ["mint", "authority", "fixed-supply", "authority-separation"]
   },
   {
     "id": "freeze-authority",
@@ -80,14 +88,19 @@
     "definition": "A Token-2022 extension that uses zero-knowledge proofs (Twisted ElGamal encryption over Ristretto255) to hide transfer amounts while keeping the token mint and accounts public. Balances are stored in encrypted form with separate 'pending' and 'available' pools. The account owner can decrypt their balance but others cannot see amounts.",
     "category": "token-ecosystem",
     "aliases": ["CT"],
-    "related": ["token-2022", "zk-proofs"]
+    "related": ["token-2022", "zk-proofs", "confidential-mint-burn"]
   },
   {
     "id": "transfer-fee",
     "term": "Transfer Fee Extension",
     "definition": "A Token-2022 extension that automatically withholds a percentage of every transfer as a fee. The fee (basis points + max fee) is configured on the mint by the transfer fee authority. Withheld fees accumulate in recipient token accounts and can be harvested by the withdraw authority. Enables on-chain royalties for fungible tokens.",
     "category": "token-ecosystem",
-    "related": ["token-2022", "mint"]
+    "related": [
+      "token-2022",
+      "mint",
+      "transfer-fee-config",
+      "withdraw-withheld-authority"
+    ]
   },
   {
     "id": "permanent-delegate",
@@ -107,7 +120,7 @@
   {
     "id": "interest-bearing",
     "term": "Interest-Bearing Token",
-    "definition": "A Token-2022 extension that applies a continuously compounding interest rate to the display amount of a token without changing the actual on-chain balance. The UI amount is calculated as: amount \u00d7 e^(rate \u00d7 elapsed_time). Useful for rebasing tokens and lending receipt tokens.",
+    "definition": "A Token-2022 extension that applies a continuously compounding interest rate to the display amount of a token without changing the actual on-chain balance. The UI amount is calculated as: amount × e^(rate × elapsed_time). Useful for rebasing tokens and lending receipt tokens.",
     "category": "token-ecosystem",
     "related": ["token-2022"]
   },
@@ -130,7 +143,7 @@
     "term": "Token Metadata Extension",
     "definition": "A Token-2022 extension that stores token metadata (name, symbol, URI, and custom key-value pairs) directly on the mint account instead of requiring a separate Metaplex metadata account. Reduces account creation costs and simplifies token setup. The update authority can modify metadata fields after creation.",
     "category": "token-ecosystem",
-    "related": ["token-2022", "metaplex-metadata"]
+    "related": ["token-2022", "metaplex-metadata", "metadata-pointer"]
   },
   {
     "id": "group-pointer",
@@ -144,7 +157,7 @@
     "term": "CPI Guard",
     "definition": "A Token-2022 extension that protects token accounts from certain actions during CPI. When enabled, it blocks approve, close, and transfer operations via CPI while still allowing them in top-level instructions. This prevents malicious programs from draining or closing token accounts during composable calls.",
     "category": "token-ecosystem",
-    "related": ["token-2022", "cpi"]
+    "related": ["token-2022", "cpi", "instruction-introspection"]
   },
   {
     "id": "metaplex-metadata",
@@ -157,7 +170,7 @@
   {
     "id": "nft",
     "term": "NFT (Non-Fungible Token)",
-    "definition": "A non-fungible token on Solana\u2014an SPL token with 0 decimals, supply of 1, and revoked mint authority. The NFT's metadata (image, attributes) is stored off-chain (Arweave/IPFS) linked via the Metaplex metadata account's URI field. NFTs can be standard, compressed (cNFT), programmable (pNFT), or Core assets, each with different trade-offs.",
+    "definition": "A non-fungible token on Solana—an SPL token with 0 decimals, supply of 1, and revoked mint authority. The NFT's metadata (image, attributes) is stored off-chain (Arweave/IPFS) linked via the Metaplex metadata account's URI field. NFTs can be standard, compressed (cNFT), programmable (pNFT), or Core assets, each with different trade-offs.",
     "category": "token-ecosystem",
     "aliases": ["NFT"],
     "related": [
@@ -171,7 +184,7 @@
   {
     "id": "master-edition",
     "term": "Master Edition",
-    "definition": "A Metaplex account attached to an NFT that certifies it as a one-of-one or the master for prints. Master Edition marks mint authority and freeze authority as controlled by the Metaplex program, preventing further minting. It also enables limited or unlimited edition prints\u2014copies of the original NFT with sequential edition numbers.",
+    "definition": "A Metaplex account attached to an NFT that certifies it as a one-of-one or the master for prints. Master Edition marks mint authority and freeze authority as controlled by the Metaplex program, preventing further minting. It also enables limited or unlimited edition prints—copies of the original NFT with sequential edition numbers.",
     "category": "token-ecosystem",
     "related": ["nft", "metaplex-metadata"]
   },
@@ -180,7 +193,7 @@
     "term": "Collection (NFT)",
     "definition": "A Metaplex standard for grouping NFTs under a parent NFT that represents the collection. Each NFT's metadata includes a collection field with the collection mint address and a 'verified' flag (set by the collection authority via the Verify instruction). Collections enable marketplace grouping, royalty enforcement, and verification.",
     "category": "token-ecosystem",
-    "related": ["nft", "metaplex-metadata"]
+    "related": ["nft", "metaplex-metadata", "core-collection"]
   },
   {
     "id": "compressed-nft",
@@ -203,7 +216,7 @@
     "definition": "Metaplex's latest NFT standard (mpl-core) that uses a single account per asset instead of multiple accounts (mint + metadata + master edition + token account). Core NFTs are cheaper to mint (~0.003 SOL), have built-in plugin support (royalties, freeze, attributes, app data), and native collection-level operations. Designed to replace the legacy Token Metadata standard.",
     "category": "token-ecosystem",
     "aliases": ["Core Asset", "mpl-core"],
-    "related": ["nft", "metaplex-metadata"]
+    "related": ["nft", "metaplex-metadata", "metaplex-core-plugin"]
   },
   {
     "id": "token-metadata-standard",
@@ -237,7 +250,7 @@
   {
     "id": "memo-program",
     "term": "Memo Program",
-    "definition": "An SPL program (MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr) that validates a UTF-8 string and records it in the transaction log. Memos attach human-readable notes to transactions\u2014used for exchange deposit identification, compliance metadata, and transaction tagging. The memo must be signed by at least one account.",
+    "definition": "An SPL program (MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr) that validates a UTF-8 string and records it in the transaction log. Memos attach human-readable notes to transactions—used for exchange deposit identification, compliance metadata, and transaction tagging. The memo must be signed by at least one account.",
     "category": "token-ecosystem",
     "related": ["spl", "transaction"]
   },
@@ -255,14 +268,25 @@
     "definition": "A Metaplex NFT type (pNFT) that enforces creator-defined rules on transfers using an on-chain authorization rules engine. pNFTs always require the token record (state PDA) and must go through the Metaplex program for transfers, enabling royalty enforcement. Transfer rules are defined in a RuleSet account that can allow/deny based on program IDs, collections, or custom logic.",
     "category": "token-ecosystem",
     "aliases": ["pNFT"],
-    "related": ["nft", "metaplex-metadata", "authorization-rules"]
+    "related": [
+      "nft",
+      "metaplex-metadata",
+      "authorization-rules",
+      "token-record",
+      "rule-set"
+    ]
   },
   {
     "id": "authorization-rules",
     "term": "Authorization Rules",
-    "definition": "A Metaplex program that defines and evaluates rule sets for programmable NFTs. Rules specify conditions for transfer, delegate, and other operations\u2014e.g., allow transfers only through specific marketplaces (by program ID), require payment of royalties, or restrict to certain collections. Rules are composable using AND/OR/NOT logic.",
+    "definition": "A Metaplex program that defines and evaluates rule sets for programmable NFTs. Rules specify conditions for transfer, delegate, and other operations—e.g., allow transfers only through specific marketplaces (by program ID), require payment of royalties, or restrict to certain collections. Rules are composable using AND/OR/NOT logic.",
     "category": "token-ecosystem",
-    "related": ["programmable-nft", "metaplex-metadata"]
+    "related": [
+      "programmable-nft",
+      "metaplex-metadata",
+      "token-record",
+      "rule-set"
+    ]
   },
   {
     "id": "token-group",
@@ -312,7 +336,7 @@
   {
     "id": "seller-fee-basis-points",
     "term": "Seller Fee Basis Points",
-    "definition": "A field in Metaplex NFT metadata that specifies the creator royalty percentage on secondary sales, denominated in basis points (100 = 1%). For example, 500 means a 5% royalty split among the creators array according to their share percentages. Enforcement varies by marketplace\u2014some honor royalties voluntarily, while programmable NFTs (pNFTs) enforce them at the protocol level.",
+    "definition": "A field in Metaplex NFT metadata that specifies the creator royalty percentage on secondary sales, denominated in basis points (100 = 1%). For example, 500 means a 5% royalty split among the creators array according to their share percentages. Enforcement varies by marketplace—some honor royalties voluntarily, while programmable NFTs (pNFTs) enforce them at the protocol level.",
     "category": "token-ecosystem",
     "related": ["metaplex-metadata", "royalty-enforcement", "programmable-nft"]
   },
@@ -351,7 +375,7 @@
   {
     "id": "dynamic-nft",
     "term": "Dynamic NFT (dNFT)",
-    "definition": "An NFT whose metadata, image, or attributes can change based on on-chain events, oracle data, or program logic. Unlike static NFTs with fixed metadata, dynamic NFTs evolve over time\u2014a gaming character gaining experience, artwork changing with seasons, or stats updating from real-world data. On Solana, Metaplex Core's plugin system and Token-2022 metadata extension facilitate dynamic NFT implementations.",
+    "definition": "An NFT whose metadata, image, or attributes can change based on on-chain events, oracle data, or program logic. Unlike static NFTs with fixed metadata, dynamic NFTs evolve over time—a gaming character gaining experience, artwork changing with seasons, or stats updating from real-world data. On Solana, Metaplex Core's plugin system and Token-2022 metadata extension facilitate dynamic NFT implementations.",
     "category": "token-ecosystem",
     "aliases": ["dNFT"],
     "related": ["nft", "core-nft", "metadata-extension"]
@@ -359,7 +383,7 @@
   {
     "id": "sft",
     "term": "SFT (Semi-Fungible Token)",
-    "definition": "A token type that combines properties of fungible and non-fungible tokens\u2014multiple identical copies exist (like fungible tokens) but they represent a specific asset class (like NFTs). On Solana, SFTs are SPL tokens with 0 decimals but supply greater than 1, with Metaplex metadata attached. Use cases include event tickets, game items with limited editions, and redeemable vouchers.",
+    "definition": "A token type that combines properties of fungible and non-fungible tokens—multiple identical copies exist (like fungible tokens) but they represent a specific asset class (like NFTs). On Solana, SFTs are SPL tokens with 0 decimals but supply greater than 1, with Metaplex metadata attached. Use cases include event tickets, game items with limited editions, and redeemable vouchers.",
     "category": "token-ecosystem",
     "aliases": ["Semi-Fungible Token"],
     "related": ["nft", "mint", "metaplex-metadata"]
@@ -477,7 +501,12 @@
     "term": "Metaplex Core Collection",
     "definition": "A first-class collection entity in the Metaplex Core standard that acts as a parent for Core Assets. Unlike the legacy Token Metadata approach where collections were regular NFTs with a flag, Core Collections are purpose-built accounts that track size, enforce royalties, and manage plugins (freeze, burn, transfer delegates) at the collection level. Collection-wide operations like updating royalties propagate to all member assets automatically.",
     "category": "token-ecosystem",
-    "related": ["core-nft", "collection", "metaplex-metadata"]
+    "related": [
+      "core-nft",
+      "collection",
+      "metaplex-metadata",
+      "metaplex-core-plugin"
+    ]
   },
   {
     "id": "fixed-supply",
@@ -486,5 +515,59 @@
     "category": "token-ecosystem",
     "aliases": ["Revoked Mint Authority", "Sealed Supply", "Immutable Supply"],
     "related": ["mint-authority", "mint", "tokenomics"]
+  },
+  {
+    "id": "metadata-pointer",
+    "term": "Metadata Pointer Extension",
+    "definition": "A Token-2022 extension that stores a pointer to the account holding metadata for a given mint, enabling flexible metadata storage rather than requiring a fixed account layout. When the metadata pointer points to the mint itself, the Token Metadata Extension on that mint is used. When it points to an external account, any compliant metadata program can store the data. This separation of where to find metadata from how metadata is stored allows Token-2022 mints to work with both the built-in metadata extension and third-party standards like Metaplex.",
+    "category": "token-ecosystem",
+    "related": ["token-2022", "metadata-extension", "group-pointer"]
+  },
+  {
+    "id": "transfer-fee-config",
+    "term": "Transfer Fee Config",
+    "definition": "The on-mint configuration state for the Token-2022 transfer fee extension, storing two fee schedules: the current epoch's fee and a pending fee that activates at a future epoch. Each schedule specifies a fee in basis points (max 10,000) and a maximum fee cap in token base units. The two-schedule design allows the transfer fee authority to enqueue a fee change without disrupting current operations. Fee parameters are set at mint initialization and modifiable only by the transfer fee authority.",
+    "category": "token-ecosystem",
+    "related": ["transfer-fee", "token-2022", "epoch"]
+  },
+  {
+    "id": "withdraw-withheld-authority",
+    "term": "Withdraw Withheld Authority",
+    "definition": "The designated authority on a Token-2022 mint with the transfer fee extension that can harvest accumulated withheld fees from recipient token accounts. When transfer fees are collected, they remain frozen within each recipient's token account until the withdraw withheld authority invokes either WithdrawWithheldTokensFromAccounts (harvest from specific accounts) or HarvestWithheldTokensToMint (move fees to the mint, then withdraw). This two-step design allows fees to be efficiently batch-collected and supports permissionless harvesting to the mint by any party.",
+    "category": "token-ecosystem",
+    "related": ["transfer-fee", "transfer-fee-config", "token-2022"]
+  },
+  {
+    "id": "confidential-mint-burn",
+    "term": "Confidential Mint and Burn",
+    "definition": "A Token-2022 extension that applies zero-knowledge proofs to minting and burning operations, concealing the amounts being created or destroyed while maintaining a verifiable supply invariant. Like confidential transfers, it uses Twisted ElGamal encryption so that an auditor holding a decrypt key configured on the mint can verify supply consistency without revealing individual mint/burn amounts to the public. This extension complements confidential transfers to provide end-to-end amount privacy across the entire token lifecycle.",
+    "category": "token-ecosystem",
+    "related": ["confidential-transfers", "token-2022", "elgamal-encryption"]
+  },
+  {
+    "id": "token-record",
+    "term": "Token Record (pNFT State PDA)",
+    "definition": "A PDA account created by the Metaplex Token Metadata program for each programmable NFT (pNFT) token account, storing the delegation state, lock status, and rule set revision for that specific holding. The token record is derived from seeds [metadata, program_id, mint, token_record, token_account] and must be passed to every pNFT transfer, delegate, or revoke instruction. Its existence forces all pNFT operations through the Metaplex program rather than the raw SPL Token program, enabling royalty enforcement.",
+    "category": "token-ecosystem",
+    "related": [
+      "programmable-nft",
+      "authorization-rules",
+      "metaplex-metadata",
+      "pda"
+    ]
+  },
+  {
+    "id": "rule-set",
+    "term": "Rule Set (Authorization Rules)",
+    "definition": "A versioned on-chain account in the Metaplex Authorization Rules program that defines a tree of composable rules governing pNFT operations (transfer, delegate, burn). Rules include Allow, Deny, ProgramOwnedList (whitelist by program ID), PubkeyMatch, and AdditionalSigner, composed with All (AND), Any (OR), and Not operators. A rule set is referenced by a pNFT's metadata account and evaluated on every operation; if the rule tree evaluates to Deny, the transaction fails. Creators use rule sets to restrict transfers to approved marketplaces or enforce royalty payment.",
+    "category": "token-ecosystem",
+    "related": ["authorization-rules", "programmable-nft", "token-record"]
+  },
+  {
+    "id": "metaplex-core-plugin",
+    "term": "Metaplex Core Plugin",
+    "definition": "An extensibility mechanism in the Metaplex Core NFT standard that attaches optional behaviors to assets or collections without requiring additional accounts. Plugins include Royalties (enforce creator fees), FreezeDelegate (lock transfers), BurnDelegate (authorize burn), TransferDelegate (authorize transfer), Attributes (key-value metadata), and AppData (program-writable data blobs). Plugins can be added at either the asset or collection level, and collection-level plugins apply as defaults to all members. Each plugin specifies its own authority and lifecycle rules, enabling modular composition of NFT functionality.",
+    "category": "token-ecosystem",
+    "related": ["core-nft", "core-collection", "programmable-nft"]
   }
 ]

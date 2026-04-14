@@ -23,7 +23,7 @@
   {
     "id": "tps",
     "term": "TPS (Transactions Per Second)",
-    "definition": "The rate at which a Solana cluster processes and commits transactions; Solana's theoretical maximum exceeds 65,000 TPS due to its parallel execution model, though real-world sustained throughput on Mainnet Beta typically ranges from 2,000\u20135,000 non-vote TPS under normal load. Vote transactions (used for consensus) make up a significant portion of all on-chain activity and are counted separately. High TPS is enabled by Proof of History timestamps, Sealevel parallel execution, and Gulf Stream mempool-less forwarding.",
+    "definition": "The rate at which a Solana cluster processes and commits transactions; Solana's theoretical maximum exceeds 65,000 TPS due to its parallel execution model, though real-world sustained throughput on Mainnet Beta typically ranges from 2,000–5,000 non-vote TPS under normal load. Vote transactions (used for consensus) make up a significant portion of all on-chain activity and are counted separately. High TPS is enabled by Proof of History timestamps, Sealevel parallel execution, and Gulf Stream mempool-less forwarding.",
     "category": "network",
     "aliases": ["TPS"],
     "related": ["transaction", "parallel-execution"]
@@ -45,14 +45,14 @@
   {
     "id": "base-fee",
     "term": "Base Fee",
-    "definition": "The fixed, non-negotiable minimum fee charged per transaction signature on Solana, currently set at 5,000 lamports (0.000005 SOL) per signature. A transaction with N signatures pays N \u00d7 5,000 lamports as a base fee regardless of compute usage or network load. Fifty percent of the base fee is burned and fifty percent is paid to the current slot leader, making Solana mildly deflationary with usage.",
+    "definition": "The fixed, non-negotiable minimum fee charged per transaction signature on Solana, currently set at 5,000 lamports (0.000005 SOL) per signature. A transaction with N signatures pays N × 5,000 lamports as a base fee regardless of compute usage or network load. Fifty percent of the base fee is burned and fifty percent is paid to the current slot leader, making Solana mildly deflationary with usage.",
     "category": "network",
     "related": ["priority-fee", "transaction-fee", "compute-units"]
   },
   {
     "id": "priority-fee",
     "term": "Priority Fee",
-    "definition": "An optional additional fee paid on top of the base fee to increase the likelihood that a transaction is processed quickly by the current leader, expressed as a price in micro-lamports per compute unit (CU). The total priority fee equals (compute unit price \u00d7 compute unit limit) / 1,000,000 lamports. Leaders sort transactions in their queue by fee-per-CU, so setting a competitive priority fee is the primary mechanism for ensuring reliable transaction landing during congestion.",
+    "definition": "An optional additional fee paid on top of the base fee to increase the likelihood that a transaction is processed quickly by the current leader, expressed as a price in micro-lamports per compute unit (CU). The total priority fee equals (compute unit price × compute unit limit) / 1,000,000 lamports. Leaders sort transactions in their queue by fee-per-CU, so setting a competitive priority fee is the primary mechanism for ensuring reliable transaction landing during congestion.",
     "category": "network",
     "aliases": ["Compute Unit Price"],
     "related": ["compute-units", "base-fee", "transaction-fee"]
@@ -60,7 +60,7 @@
   {
     "id": "transaction-fee",
     "term": "Transaction Fee",
-    "definition": "The total SOL cost to submit a transaction on Solana, composed of the base fee (5,000 lamports per signature) plus any optional priority fee (compute unit price \u00d7 compute units consumed). Unlike Ethereum, Solana fees are not purely dynamic gas auctions \u2014 the base fee is fixed and priority fees are additive. Fees are deducted from the fee-payer account before execution; if the account lacks sufficient SOL, the transaction fails.",
+    "definition": "The total SOL cost to submit a transaction on Solana, composed of the base fee (5,000 lamports per signature) plus any optional priority fee (compute unit price × compute units consumed). Unlike Ethereum, Solana fees are not purely dynamic gas auctions — the base fee is fixed and priority fees are additive. Fees are deducted from the fee-payer account before execution; if the account lacks sufficient SOL, the transaction fails.",
     "category": "network",
     "related": ["base-fee", "priority-fee", "lamport"]
   },
@@ -90,7 +90,7 @@
   {
     "id": "mev",
     "term": "MEV (Maximal Extractable Value)",
-    "definition": "The profit a block producer (leader) or sophisticated trader can extract by controlling the ordering, inclusion, or exclusion of transactions within a block \u2014 including strategies like front-running, back-running, sandwich attacks, and arbitrage. On Solana, MEV dynamics differ from Ethereum because there is no public mempool; transactions are forwarded directly to the current leader, making latency and validator relationships central to MEV capture. The Jito infrastructure provides the dominant MEV marketplace on Solana through bundles and tips.",
+    "definition": "The profit a block producer (leader) or sophisticated trader can extract by controlling the ordering, inclusion, or exclusion of transactions within a block — including strategies like front-running, back-running, sandwich attacks, and arbitrage. On Solana, MEV dynamics differ from Ethereum because there is no public mempool; transactions are forwarded directly to the current leader, making latency and validator relationships central to MEV capture. The Jito infrastructure provides the dominant MEV marketplace on Solana through bundles and tips.",
     "category": "network",
     "aliases": ["MEV"],
     "related": ["jito", "front-running", "sandwich-attack"]
@@ -129,35 +129,51 @@
     "term": "Scheduler",
     "definition": "The component within Solana's TPU pipeline responsible for ordering transactions from the banking stage's queues, acquiring account read/write locks, and dispatching transactions to worker threads for execution. The scheduler enforces account conflict serialization (ensuring write-locked accounts are processed by only one thread at a time) while maximizing parallelism across non-conflicting transactions. Solana has iterated on scheduler designs (including the central scheduler introduced in 2024) to improve throughput and reduce lock contention under load.",
     "category": "network",
-    "related": ["tpu", "parallel-execution"]
+    "related": ["tpu", "parallel-execution", "block-packing"]
   },
   {
     "id": "banking-stage",
     "term": "Banking Stage",
     "definition": "The critical TPU pipeline stage in which Solana validators execute transactions, update account state, and produce entries that will be packed into a block. Banking stage receives forwarded transactions from the fetch and sigverify stages, acquires account locks via the scheduler, runs transactions through the SVM, and writes results to the accounts database. It is the computational heart of block production and is where compute unit limits, priority fee ordering, and parallel execution all converge.",
     "category": "network",
-    "related": ["tpu", "scheduler", "transaction"]
+    "related": ["tpu", "scheduler", "transaction", "block-packing"]
   },
   {
     "id": "transaction-landing",
     "term": "Transaction Landing",
     "definition": "The outcome of a transaction being successfully included and confirmed in a Solana block, as opposed to being dropped, expiring, or failing simulation. Landing probability is influenced by priority fee competitiveness, blockhash freshness (must be within ~150 slots of creation), submission routing (direct to leader vs. RPC rebroadcast), and network congestion on the accounts involved. Developers optimize landing rates by using current-leader TPU endpoints, setting appropriate priority fees, and preflight-checking transactions before submission.",
     "category": "network",
-    "related": ["transaction", "priority-fee", "stake-weighted-qos"]
+    "related": [
+      "transaction",
+      "priority-fee",
+      "stake-weighted-qos",
+      "send-and-confirm-pattern",
+      "retry-strategy"
+    ]
   },
   {
     "id": "transaction-retry",
     "term": "Transaction Retry / Rebroadcast",
-    "definition": "The practice of resubmitting a transaction multiple times until it lands or its blockhash expires, necessary because Solana does not guarantee delivery of any single submission and drops can occur at any pipeline stage. By default, Solana RPC nodes rebroadcast submitted transactions periodically, but this is unreliable; production applications implement client-side retry loops that resubmit the same signed transaction (with unchanged signature) at short intervals until confirmation is received or the blockhash expires (roughly 60\u201390 seconds after creation).",
+    "definition": "The practice of resubmitting a transaction multiple times until it lands or its blockhash expires, necessary because Solana does not guarantee delivery of any single submission and drops can occur at any pipeline stage. By default, Solana RPC nodes rebroadcast submitted transactions periodically, but this is unreliable; production applications implement client-side retry loops that resubmit the same signed transaction (with unchanged signature) at short intervals until confirmation is received or the blockhash expires (roughly 60–90 seconds after creation).",
     "category": "network",
-    "related": ["transaction-landing", "rpc"]
+    "related": [
+      "transaction-landing",
+      "rpc",
+      "send-and-confirm-pattern",
+      "retry-strategy"
+    ]
   },
   {
     "id": "blockhash",
     "term": "Blockhash (Recent)",
-    "definition": "A 32-byte hash derived from the bank's state at a given slot, included in every Solana transaction to prove the transaction was created recently and to prevent replay attacks. A blockhash remains valid for approximately 150 slots (~60\u201390 seconds at normal slot times); transactions submitted with an expired blockhash are rejected outright. Clients must fetch a fresh blockhash before signing and ideally reuse it for as short a window as possible to maximize landing probability.",
+    "definition": "A 32-byte hash derived from the bank's state at a given slot, included in every Solana transaction to prove the transaction was created recently and to prevent replay attacks. A blockhash remains valid for approximately 150 slots (~60–90 seconds at normal slot times); transactions submitted with an expired blockhash are rejected outright. Clients must fetch a fresh blockhash before signing and ideally reuse it for as short a window as possible to maximize landing probability.",
     "category": "network",
-    "related": ["transaction", "durable-nonce"]
+    "related": [
+      "transaction",
+      "durable-nonce",
+      "transaction-deduplication",
+      "blockhash-management"
+    ]
   },
   {
     "id": "durable-nonce",
@@ -176,7 +192,7 @@
   {
     "id": "airdrop",
     "term": "Airdrop (Devnet/Testnet)",
-    "definition": "The process of receiving free, valueless SOL on Devnet or Testnet via the Solana CLI (`solana airdrop`) or public faucet endpoints, used to fund accounts for testing without spending real SOL. Airdrops are rate-limited per IP and per address (typically 1\u20132 SOL per request, a few requests per hour) to prevent abuse. The term is also used colloquially for token distribution events on Mainnet Beta, but in a network/infrastructure context it specifically refers to the test-cluster faucet mechanism.",
+    "definition": "The process of receiving free, valueless SOL on Devnet or Testnet via the Solana CLI (`solana airdrop`) or public faucet endpoints, used to fund accounts for testing without spending real SOL. Airdrops are rate-limited per IP and per address (typically 1–2 SOL per request, a few requests per hour) to prevent abuse. The term is also used colloquially for token distribution events on Mainnet Beta, but in a network/infrastructure context it specifically refers to the test-cluster faucet mechanism.",
     "category": "network",
     "related": ["devnet", "sol"]
   },
@@ -190,14 +206,14 @@
   {
     "id": "staking-rewards",
     "term": "Staking Rewards",
-    "definition": "SOL earned by validators and their delegators each epoch as compensation for participating in consensus and securing the network, funded by protocol inflation rather than solely transaction fees. Rewards are proportional to a validator's active stake and are credited at the end of each epoch to stake accounts automatically; the effective APY depends on the current inflation rate, the percentage of total SOL staked, and the validator's commission rate. Validators set a commission (0\u2013100%) representing the fraction of rewards they keep before passing the remainder to delegators.",
+    "definition": "SOL earned by validators and their delegators each epoch as compensation for participating in consensus and securing the network, funded by protocol inflation rather than solely transaction fees. Rewards are proportional to a validator's active stake and are credited at the end of each epoch to stake accounts automatically; the effective APY depends on the current inflation rate, the percentage of total SOL staked, and the validator's commission rate. Validators set a commission (0–100%) representing the fraction of rewards they keep before passing the remainder to delegators.",
     "category": "network",
     "related": ["inflation", "stake", "epoch"]
   },
   {
     "id": "slashing",
     "term": "Slashing",
-    "definition": "The punitive reduction of a validator's stake as a penalty for provable misbehavior such as double-signing or equivocation \u2014 confirming two conflicting blocks at the same slot. As of 2025, Solana does not yet enforce automatic on-chain slashing (unlike Ethereum), though it is a planned addition to the protocol; the primary deterrents currently are social consensus, stake withdrawal by delegators, and future slashing implementation. The lack of slashing means Solana validators face lower direct financial risk from bugs but also reduced cryptographic accountability compared to slashing-enabled networks.",
+    "definition": "The punitive reduction of a validator's stake as a penalty for provable misbehavior such as double-signing or equivocation — confirming two conflicting blocks at the same slot. As of 2025, Solana does not yet enforce automatic on-chain slashing (unlike Ethereum), though it is a planned addition to the protocol; the primary deterrents currently are social consensus, stake withdrawal by delegators, and future slashing implementation. The lack of slashing means Solana validators face lower direct financial risk from bugs but also reduced cryptographic accountability compared to slashing-enabled networks.",
     "category": "network",
     "related": ["validator", "stake"]
   },
@@ -211,9 +227,9 @@
   {
     "id": "vote-transaction",
     "term": "Vote Transaction",
-    "definition": "A special-purpose transaction submitted by each validator every slot to record its vote on the current fork of the blockchain, serving as the on-chain mechanism for Solana's Tower BFT consensus. Vote transactions are exempt from compute unit limits and priority fee requirements, are processed by a dedicated vote transaction path separate from user transactions, and account for the majority of raw TPS on the network (typically 70\u201380% of all transactions). Validators pay vote transaction fees from their vote account, which is one reason validator economics require sufficient stake to cover ongoing operating costs.",
+    "definition": "A special-purpose transaction submitted by each validator every slot to record its vote on the current fork of the blockchain, serving as the on-chain mechanism for Solana's Tower BFT consensus. Vote transactions are exempt from compute unit limits and priority fee requirements, are processed by a dedicated vote transaction path separate from user transactions, and account for the majority of raw TPS on the network (typically 70–80% of all transactions). Validators pay vote transaction fees from their vote account, which is one reason validator economics require sufficient stake to cover ongoing operating costs.",
     "category": "network",
-    "related": ["vote-account", "validator", "transaction-fee"]
+    "related": ["vote-account", "validator", "transaction-fee", "vote-cost"]
   },
   {
     "id": "skip-rate",
@@ -232,7 +248,7 @@
   {
     "id": "token-extensions-network",
     "term": "Token Extensions (Network Impact)",
-    "definition": "The aggregate effect on Solana network resources \u2014 primarily compute units and account space \u2014 introduced by Token Extensions (Token-2022), which adds on-chain extension data and additional CPI calls compared to the original SPL Token program. Tokens with multiple extensions (e.g., transfer fees + confidential transfers + interest-bearing) require significantly more compute budget per instruction, affecting transaction size, CPI depth, and priority fee calculations. Developers must account for the higher CU consumption of Token-2022 instructions when setting compute unit limits and priority fees to ensure reliable transaction landing.",
+    "definition": "The aggregate effect on Solana network resources — primarily compute units and account space — introduced by Token Extensions (Token-2022), which adds on-chain extension data and additional CPI calls compared to the original SPL Token program. Tokens with multiple extensions (e.g., transfer fees + confidential transfers + interest-bearing) require significantly more compute budget per instruction, affecting transaction size, CPI depth, and priority fee calculations. Developers must account for the higher CU consumption of Token-2022 instructions when setting compute unit limits and priority fees to ensure reliable transaction landing.",
     "category": "network",
     "related": ["token-2022", "compute-units"]
   },

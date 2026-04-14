@@ -12,7 +12,12 @@
     "definition": "ZK Compression, pioneered by Light Protocol, extends Solana's state compression model beyond NFTs to general-purpose compressed accounts by using zero-knowledge proofs (specifically Groth16 SNARKs verified via the alt_bn128 syscall) to prove the validity of state transitions without storing full account state on-chain. Compressed accounts live in on-chain Merkle trees but their data is reconstructed from the Solana ledger by indexers like Photon, enabling developers to build applications that use thousands of accounts at a fraction of the normal rent cost — often 1,000x to 5,000x cheaper than regular accounts. The protocol introduces compressed tokens, compressed PDAs, and a system of nullifiers to prevent double-spends while maintaining Solana's throughput.",
     "category": "zk-compression",
     "aliases": ["Light Protocol"],
-    "related": ["state-compression", "compressed-account"]
+    "related": [
+      "state-compression",
+      "compressed-account",
+      "state-tree",
+      "nullifier-queue"
+    ]
   },
   {
     "id": "compressed-account",
@@ -41,7 +46,12 @@
     "term": "Merkle Tree",
     "definition": "A Merkle tree is a binary hash tree in which every leaf node contains a cryptographic hash of a data block, and every non-leaf (internal) node contains the hash of its two children, such that the single root hash cryptographically commits to the entire dataset and any modification to any leaf produces a detectably different root. In Solana, Merkle trees underpin state compression: the SPL Account Compression program maintains Concurrent Merkle Trees on-chain with only the root hash persisted in account storage, while all leaf data is derivable from transaction logs. The Poseidon hash function is preferred over SHA-256 for ZK-friendly Merkle trees because it is algebraically efficient inside arithmetic circuits used for zero-knowledge proof generation.",
     "category": "zk-compression",
-    "related": ["merkle-proof", "state-compression"]
+    "related": [
+      "merkle-proof",
+      "state-compression",
+      "state-tree",
+      "nullifier-queue"
+    ]
   },
   {
     "id": "canopy",
@@ -135,14 +145,19 @@
     "term": "Compressed Token",
     "definition": "A compressed token is an SPL-compatible fungible or semi-fungible token whose per-account token balances are stored as leaves in a Concurrent Merkle Tree via Light Protocol's Compressed Token Program rather than as individual Token or Token-2022 accounts, reducing the account creation cost from ~0.002 SOL per token account to a negligible fraction of a lamport per leaf. Compressed tokens implement the same mint, transfer, burn, and delegation semantics as standard SPL tokens, but every operation requires a Merkle proof of the source leaf's existence and a validity proof of the state transition; the Compressed Token Program wraps the Light System Program to handle this ZK machinery transparently. This design is particularly valuable for airdrops, gaming economies, and reward systems where millions of user token accounts would otherwise impose prohibitive rent costs on the issuer or recipient.",
     "category": "zk-compression",
-    "related": ["zk-compression", "compressed-account", "spl-token"]
+    "related": [
+      "zk-compression",
+      "compressed-account",
+      "spl-token",
+      "compressed-burn"
+    ]
   },
   {
     "id": "nullifier",
     "term": "Nullifier",
     "definition": "A nullifier is a cryptographic value derived deterministically from a compressed account's leaf hash (and optionally a secret) that is published and recorded on-chain when that compressed account is consumed (spent) in a state transition, permanently marking the account as used and preventing it from being spent a second time in a double-spend attack. In Light Protocol, nullifiers are inserted into an on-chain nullifier queue account and periodically batch-processed by Forester nodes into a nullifier set stored in a separate Merkle tree, allowing the validity proof to assert both that the input account exists (inclusion proof) and that its nullifier has not yet been recorded (non-membership proof). The nullifier scheme allows compressed accounts to be treated as UTXOs — each account is consumed once and replaced by one or more output accounts — while maintaining the privacy and succinctness properties of the ZK proof system.",
     "category": "zk-compression",
-    "related": ["zk-proofs", "compressed-account"]
+    "related": ["zk-proofs", "compressed-account", "compressed-burn"]
   },
   {
     "id": "zkp-syscall",

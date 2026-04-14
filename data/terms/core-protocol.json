@@ -10,7 +10,7 @@
   {
     "id": "tower-bft",
     "term": "Tower BFT",
-    "definition": "Solana's custom BFT consensus algorithm built on top of Proof of History. Tower BFT uses PoH as a clock to reduce communication overhead in traditional PBFT from O(n\u00b2) to O(n). Validators vote on forks with exponentially increasing lockout periods\u2014each consecutive vote doubles the lockout, making rollbacks progressively more expensive. A fork is finalized when it reaches supermajority (66.7%+ of stake).",
+    "definition": "Solana's custom BFT consensus algorithm built on top of Proof of History. Tower BFT uses PoH as a clock to reduce communication overhead in traditional PBFT from O(n²) to O(n). Validators vote on forks with exponentially increasing lockout periods—each consecutive vote doubles the lockout, making rollbacks progressively more expensive. A fork is finalized when it reaches supermajority (66.7%+ of stake).",
     "category": "core-protocol",
     "aliases": ["Tower"],
     "related": ["proof-of-history", "vote-account", "fork"]
@@ -18,7 +18,7 @@
   {
     "id": "slot",
     "term": "Slot",
-    "definition": "A time window during which a designated leader validator can produce a block. Each slot lasts approximately 400 milliseconds. Slots are numbered sequentially from genesis and grouped into epochs of 432,000 slots (~2-3 days). Not every slot produces a block\u2014a skipped slot means the leader was offline or too slow.",
+    "definition": "A time window during which a designated leader validator can produce a block. Each slot lasts approximately 400 milliseconds. Slots are numbered sequentially from genesis and grouped into epochs of 432,000 slots (~2-3 days). Not every slot produces a block—a skipped slot means the leader was offline or too slow.",
     "category": "core-protocol",
     "related": ["block", "epoch", "leader-schedule"]
   },
@@ -34,7 +34,12 @@
     "term": "Epoch",
     "definition": "A period of 432,000 slots (approximately 2-3 days) that defines a staking cycle. At each epoch boundary, the leader schedule is recalculated based on stake weights, stake activations/deactivations take effect, and inflation rewards are distributed to validators and delegators.",
     "category": "core-protocol",
-    "related": ["slot", "leader-schedule", "stake-weighted-qos"]
+    "related": [
+      "slot",
+      "leader-schedule",
+      "stake-weighted-qos",
+      "epoch-boundary"
+    ]
   },
   {
     "id": "leader-schedule",
@@ -56,12 +61,12 @@
     "definition": "An on-chain account that records a validator's Tower BFT votes and tracks their voting history. Each validator has one vote account that stores the last 32 vote slots with their confirmation counts. The vote account also tracks earned credits used to calculate epoch rewards. Vote transactions constitute ~70-80% of all transactions on Solana.",
     "category": "core-protocol",
     "aliases": ["Vote"],
-    "related": ["validator", "tower-bft"]
+    "related": ["validator", "tower-bft", "vote-cost"]
   },
   {
     "id": "stake",
     "term": "Stake",
-    "definition": "SOL tokens that are delegated to a validator to increase its voting weight and earn staking rewards. Staking is non-custodial\u2014stakers retain ownership of their SOL. Stake activates/deactivates at epoch boundaries with a warmup/cooldown period. Validators with more stake are assigned more leader slots and have proportionally more influence in consensus.",
+    "definition": "SOL tokens that are delegated to a validator to increase its voting weight and earn staking rewards. Staking is non-custodial—stakers retain ownership of their SOL. Stake activates/deactivates at epoch boundaries with a warmup/cooldown period. Validators with more stake are assigned more leader slots and have proportionally more influence in consensus.",
     "category": "core-protocol",
     "related": ["validator", "delegator", "stake-account"]
   },
@@ -75,7 +80,7 @@
   {
     "id": "delegator",
     "term": "Delegator",
-    "definition": "A SOL holder who delegates tokens to a validator's stake without running a node themselves. Delegators earn a share of inflation rewards proportional to their stake, minus the validator's commission (typically 0-10%). Delegation is non-custodial\u2014the delegator retains the ability to redelegate or withdraw at any time.",
+    "definition": "A SOL holder who delegates tokens to a validator's stake without running a node themselves. Delegators earn a share of inflation rewards proportional to their stake, minus the validator's commission (typically 0-10%). Delegation is non-custodial—the delegator retains the ability to redelegate or withdraw at any time.",
     "category": "core-protocol",
     "related": ["stake", "validator", "stake-account"]
   },
@@ -96,7 +101,7 @@
   {
     "id": "ghost",
     "term": "GHOST (Greedy Heaviest Observed SubTree)",
-    "definition": "Greedy Heaviest Observed SubTree\u2014a fork-choice rule where validators select the fork that has the most cumulative stake-weighted votes. Unlike longest-chain rules, GHOST considers all votes in the tree, not just the tip. Solana's implementation weighs votes by stake and factors in Tower BFT lockout periods.",
+    "definition": "Greedy Heaviest Observed SubTree—a fork-choice rule where validators select the fork that has the most cumulative stake-weighted votes. Unlike longest-chain rules, GHOST considers all votes in the tree, not just the tip. Solana's implementation weighs votes by stake and factors in Tower BFT lockout periods.",
     "category": "core-protocol",
     "aliases": ["GHOST"],
     "related": ["fork-choice", "tower-bft"]
@@ -118,7 +123,7 @@
   {
     "id": "shred",
     "term": "Shred",
-    "definition": "The smallest unit of block data propagated through the network via Turbine. Blocks are split into shreds of up to 1,228 bytes each (fitting in a single UDP packet). Shreds are Reed-Solomon erasure coded\u2014typically 32 data shreds produce 32 recovery shreds\u2014so blocks can be reconstructed even if up to half the shreds are lost.",
+    "definition": "The smallest unit of block data propagated through the network via Turbine. Blocks are split into shreds of up to 1,228 bytes each (fitting in a single UDP packet). Shreds are Reed-Solomon erasure coded—typically 32 data shreds produce 32 recovery shreds—so blocks can be reconstructed even if up to half the shreds are lost.",
     "category": "core-protocol",
     "related": ["block", "turbine", "erasure-coding"]
   },
@@ -140,21 +145,21 @@
   {
     "id": "block-propagation",
     "term": "Block Propagation",
-    "definition": "The process of distributing a newly produced block from the leader to all validators in the cluster. Solana uses Turbine for fast propagation\u2014the leader shreds the block, erasure-codes the shreds, and feeds them into the Turbine tree. Target propagation latency is under 200ms for the full cluster.",
+    "definition": "The process of distributing a newly produced block from the leader to all validators in the cluster. Solana uses Turbine for fast propagation—the leader shreds the block, erasure-codes the shreds, and feeds them into the Turbine tree. Target propagation latency is under 200ms for the full cluster.",
     "category": "core-protocol",
     "related": ["turbine", "shred", "gossip"]
   },
   {
     "id": "gossip",
     "term": "Gossip Protocol",
-    "definition": "A protocol used by validators to exchange metadata and discover peers without relying on a central server. Gossip propagates contact info, vote status, shred versions, epoch slots, and other protocol messages via CRDS. It does not carry transaction or block data\u2014those use TPU and Turbine respectively.",
+    "definition": "A protocol used by validators to exchange metadata and discover peers without relying on a central server. Gossip propagates contact info, vote status, shred versions, epoch slots, and other protocol messages via CRDS. It does not carry transaction or block data—those use TPU and Turbine respectively.",
     "category": "core-protocol",
     "related": ["cluster", "validator", "crds"]
   },
   {
     "id": "crds",
     "term": "CRDS (Cluster Replicated Data Store)",
-    "definition": "Cluster Replicated Data Store\u2014the data structure underlying Solana's gossip protocol. CRDS uses a push/pull model where validators exchange versioned, signed records (contact info, vote state, epoch slots). Records have wallclock timestamps and are pruned when stale. Each record is keyed by (source pubkey, label).",
+    "definition": "Cluster Replicated Data Store—the data structure underlying Solana's gossip protocol. CRDS uses a push/pull model where validators exchange versioned, signed records (contact info, vote state, epoch slots). Records have wallclock timestamps and are pruned when stale. Each record is keyed by (source pubkey, label).",
     "category": "core-protocol",
     "aliases": ["CRDS"],
     "related": ["gossip", "cluster"]
@@ -162,15 +167,15 @@
   {
     "id": "tpu",
     "term": "TPU (Transaction Processing Unit)",
-    "definition": "Transaction Processing Unit\u2014the pipeline within a leader validator that ingests, verifies, and executes transactions. The TPU has stages: fetch (receive packets via QUIC), sigverify (verify Ed25519 signatures), banking (execute against current bank state), and broadcast (shred and send via Turbine). Non-leader validators forward transactions to the current leader's TPU.",
+    "definition": "Transaction Processing Unit—the pipeline within a leader validator that ingests, verifies, and executes transactions. The TPU has stages: fetch (receive packets via QUIC), sigverify (verify Ed25519 signatures), banking (execute against current bank state), and broadcast (shred and send via Turbine). Non-leader validators forward transactions to the current leader's TPU.",
     "category": "core-protocol",
     "aliases": ["TPU"],
-    "related": ["tvu", "transaction", "leader-schedule"]
+    "related": ["tvu", "transaction", "leader-schedule", "sigverify-stage"]
   },
   {
     "id": "tvu",
     "term": "TVU (Transaction Validation Unit)",
-    "definition": "Transaction Validation Unit\u2014the pipeline on non-leader validators that receives shreds, reconstructs blocks, and replays transactions. TVU stages include: shred-fetch, retransmit, replay (execute transactions and verify results), and vote (submit Tower BFT votes). TVU runs continuously on all validators.",
+    "definition": "Transaction Validation Unit—the pipeline on non-leader validators that receives shreds, reconstructs blocks, and replays transactions. TVU stages include: shred-fetch, retransmit, replay (execute transactions and verify results), and vote (submit Tower BFT votes). TVU runs continuously on all validators.",
     "category": "core-protocol",
     "aliases": ["TVU"],
     "related": ["tpu", "validator", "replay-stage"]
@@ -214,7 +219,7 @@
   {
     "id": "blockstore",
     "term": "Blockstore",
-    "definition": "A RocksDB-based database that stores raw shreds and block metadata on the validator's disk. Blockstore indexes shreds by slot and shred index, enabling block reconstruction and historical queries. It is separate from AccountsDB\u2014Blockstore holds the ledger history while AccountsDB holds the current state.",
+    "definition": "A RocksDB-based database that stores raw shreds and block metadata on the validator's disk. Blockstore indexes shreds by slot and shred index, enabling block reconstruction and historical queries. It is separate from AccountsDB—Blockstore holds the ledger history while AccountsDB holds the current state.",
     "category": "core-protocol",
     "related": ["block", "shred", "ledger"]
   },
@@ -235,7 +240,7 @@
   {
     "id": "sealevel",
     "term": "Sealevel",
-    "definition": "Solana's parallel transaction execution engine. Sealevel can process thousands of transactions simultaneously by analyzing each transaction's declared account inputs\u2014transactions that don't touch the same writable accounts run in parallel across available CPU cores. This account-level parallelism is what enables Solana's high throughput.",
+    "definition": "Solana's parallel transaction execution engine. Sealevel can process thousands of transactions simultaneously by analyzing each transaction's declared account inputs—transactions that don't touch the same writable accounts run in parallel across available CPU cores. This account-level parallelism is what enables Solana's high throughput.",
     "category": "core-protocol",
     "aliases": ["SVM Runtime"],
     "related": ["svm", "parallel-execution", "transaction"]
@@ -243,23 +248,23 @@
   {
     "id": "svm",
     "term": "Solana Virtual Machine (SVM)",
-    "definition": "The Solana Virtual Machine\u2014the execution environment that runs on-chain programs. SVM loads SBF bytecode, provides syscalls for account access and cryptographic operations, enforces compute budgets, and manages memory. The SVM is being modularized (via the SVM API) to enable use in rollups and other environments outside the main Solana validator.",
+    "definition": "The Solana Virtual Machine—the execution environment that runs on-chain programs. SVM loads SBF bytecode, provides syscalls for account access and cryptographic operations, enforces compute budgets, and manages memory. The SVM is being modularized (via the SVM API) to enable use in rollups and other environments outside the main Solana validator.",
     "category": "core-protocol",
     "aliases": ["SVM"],
-    "related": ["sealevel", "bpf", "sbf"]
+    "related": ["sealevel", "bpf", "sbf", "sbpf"]
   },
   {
     "id": "bpf",
     "term": "BPF (Berkeley Packet Filter)",
-    "definition": "Berkeley Packet Filter\u2014the original bytecode format used for Solana programs, inherited from Linux's eBPF. Programs written in Rust or C are compiled to BPF bytecode and executed in a sandboxed VM. BPF has been superseded by SBF on Solana but the tooling names (BPF Loader, cargo build-bpf) persist for historical reasons.",
+    "definition": "Berkeley Packet Filter—the original bytecode format used for Solana programs, inherited from Linux's eBPF. Programs written in Rust or C are compiled to BPF bytecode and executed in a sandboxed VM. BPF has been superseded by SBF on Solana but the tooling names (BPF Loader, cargo build-bpf) persist for historical reasons.",
     "category": "core-protocol",
     "aliases": ["BPF", "eBPF"],
-    "related": ["sbf", "svm"]
+    "related": ["sbf", "svm", "sbpf"]
   },
   {
     "id": "sbf",
     "term": "SBF (Solana Bytecode Format)",
-    "definition": "Solana Bytecode Format\u2014Solana's customized evolution of BPF. SBF adds Solana-specific syscalls, modifies calling conventions, disables certain eBPF instructions, and adds features like position-independent code. Programs are compiled with `cargo build-sbf` and deployed as SBF ELF binaries. SBF replaced BPF as the canonical bytecode format.",
+    "definition": "Solana Bytecode Format—Solana's customized evolution of BPF. SBF adds Solana-specific syscalls, modifies calling conventions, disables certain eBPF instructions, and adds features like position-independent code. Programs are compiled with `cargo build-sbf` and deployed as SBF ELF binaries. SBF replaced BPF as the canonical bytecode format.",
     "category": "core-protocol",
     "aliases": ["SBF"],
     "related": ["bpf", "svm"]
@@ -267,7 +272,7 @@
   {
     "id": "vdf",
     "term": "VDF (Verifiable Delay Function)",
-    "definition": "Verifiable Delay Function\u2014a function that takes a prescribed amount of sequential computation to evaluate but whose output can be quickly verified. Solana's Proof of History uses a SHA-256 hash chain as a practical VDF: computing the chain is inherently sequential, but verifying any segment can be parallelized across multiple cores.",
+    "definition": "Verifiable Delay Function—a function that takes a prescribed amount of sequential computation to evaluate but whose output can be quickly verified. Solana's Proof of History uses a SHA-256 hash chain as a practical VDF: computing the chain is inherently sequential, but verifying any segment can be parallelized across multiple cores.",
     "category": "core-protocol",
     "aliases": ["VDF"],
     "related": ["proof-of-history", "sha256-hash-chain"]
@@ -275,7 +280,7 @@
   {
     "id": "sha256-hash-chain",
     "term": "SHA-256 Hash Chain",
-    "definition": "The core mechanism of Proof of History. A SHA-256 hash is computed sequentially\u2014each hash takes the previous hash as input\u2014creating an ordered, unforgeable timestamp sequence. The PoH generator runs approximately 400,000 hashes per slot. Data (transactions) can be inserted into the chain by mixing their hash with the current state.",
+    "definition": "The core mechanism of Proof of History. A SHA-256 hash is computed sequentially—each hash takes the previous hash as input—creating an ordered, unforgeable timestamp sequence. The PoH generator runs approximately 400,000 hashes per slot. Data (transactions) can be inserted into the chain by mixing their hash with the current state.",
     "category": "core-protocol",
     "related": ["proof-of-history", "vdf", "tick"]
   },
@@ -303,14 +308,14 @@
   {
     "id": "rooted",
     "term": "Rooted",
-    "definition": "A slot that has been finalized by achieving maximum lockout in Tower BFT\u2014meaning 31+ consecutive confirmations have been built on top of it. Once rooted, a slot and its transactions are considered irreversible. Rooted corresponds to the 'finalized' commitment level and takes approximately 12-13 seconds.",
+    "definition": "A slot that has been finalized by achieving maximum lockout in Tower BFT—meaning 31+ consecutive confirmations have been built on top of it. Once rooted, a slot and its transactions are considered irreversible. Rooted corresponds to the 'finalized' commitment level and takes approximately 12-13 seconds.",
     "category": "core-protocol",
     "related": ["finality", "slot"]
   },
   {
     "id": "commitment-levels",
     "term": "Commitment Levels",
-    "definition": "The three transaction confirmation tiers exposed by Solana RPC: 'processed' (transaction executed by leader, not yet voted on), 'confirmed' (optimistic confirmation\u201466.7%+ stake voted, ~400ms), and 'finalized' (rooted\u201431+ confirmations, ~12-13s). Applications choose the level based on their security vs. latency requirements.",
+    "definition": "The three transaction confirmation tiers exposed by Solana RPC: 'processed' (transaction executed by leader, not yet voted on), 'confirmed' (optimistic confirmation—66.7%+ stake voted, ~400ms), and 'finalized' (rooted—31+ confirmations, ~12-13s). Applications choose the level based on their security vs. latency requirements.",
     "category": "core-protocol",
     "aliases": ["processed", "confirmed", "finalized"],
     "related": ["finality", "rpc"]
@@ -346,7 +351,7 @@
   {
     "id": "firedancer",
     "term": "Firedancer",
-    "definition": "A from-scratch Solana validator client written in C by Jump Crypto. Firedancer aims for significant performance improvements through a tiled, zero-copy architecture and hardware-optimized networking. It provides client diversity\u2014critical for network resilience\u2014and targets 1M+ TPS. Frankendancer is the intermediate version running Firedancer's networking stack with the Agave execution engine.",
+    "definition": "A from-scratch Solana validator client written in C by Jump Crypto. Firedancer aims for significant performance improvements through a tiled, zero-copy architecture and hardware-optimized networking. It provides client diversity—critical for network resilience—and targets 1M+ TPS. Frankendancer is the intermediate version running Firedancer's networking stack with the Agave execution engine.",
     "category": "core-protocol",
     "aliases": ["FD"],
     "related": ["validator", "frankendancer"]
@@ -380,7 +385,12 @@
     "definition": "A formal specification document describing proposed and accepted changes to the Solana protocol, analogous to Ethereum's EIPs. SIMDs are categorized as Standard (Core, Networking, Interface) or Meta, and require supermajority validator stake-weighted voting (66.67%) to pass. Notable SIMDs include SIMD-33 (Timely Vote Credits), SIMD-123 (Block Revenue Sharing), SIMD-228 (Market-Based Emissions), and SIMD-326 (Alpenglow).",
     "category": "core-protocol",
     "aliases": ["Solana Improvement Document"],
-    "related": ["validator", "consensus", "epoch"]
+    "related": [
+      "validator",
+      "consensus",
+      "epoch",
+      "feature-activation-pipeline"
+    ]
   },
   {
     "id": "alpenglow",
@@ -547,7 +557,7 @@
     "term": "Feature Gate",
     "definition": "The mechanism for activating protocol changes on Solana's mainnet cluster. Each feature is identified by a unique pubkey and activated when validators representing a supermajority of stake signal support by creating a feature account. Feature gates control runtime behavior changes, new syscalls, parameter adjustments, and program upgrades. This system allows gradual, stake-weighted rollout of protocol changes without hard forks.",
     "category": "core-protocol",
-    "related": ["validator", "simd", "runtime"]
+    "related": ["validator", "simd", "runtime", "feature-activation-pipeline"]
   },
   {
     "id": "secp256k1-precompile",
@@ -674,5 +684,65 @@
     "category": "core-protocol",
     "aliases": ["MessageV0", "Versioned Message"],
     "related": ["versioned-transaction", "address-lookup-table", "transaction"]
+  },
+  {
+    "id": "sigverify-stage",
+    "term": "SigVerify Stage",
+    "definition": "The second stage in Solana's TPU pipeline, positioned between fetch and banking, responsible for verifying all Ed25519 signatures on incoming transaction packets. SigVerify uses GPU-accelerated batch verification to validate thousands of signatures per second, discarding packets with invalid signatures before they consume execution resources. Each transaction's first signature doubles as its unique ID, so deduplication also occurs at this stage by checking the signature against a recent cache.",
+    "category": "core-protocol",
+    "aliases": ["Signature Verification Stage"],
+    "related": ["tpu", "signature", "ed25519", "banking-stage"]
+  },
+  {
+    "id": "feature-activation-pipeline",
+    "term": "Feature Activation Pipeline",
+    "definition": "The multi-step process by which a protocol change transitions from SIMD proposal to live mainnet behavior. A feature is assigned a unique keypair; once merged into the client, it remains inactive until a validator with sufficient stake creates the feature account via `solana feature activate`. Activation takes effect at the start of the next epoch after the feature account is created. The pipeline allows coordinated rollout: features first activate on testnet/devnet, then mainnet, and validators running older clients that lack the feature code will halt at the activation slot boundary rather than diverge.",
+    "category": "core-protocol",
+    "related": ["feature-gate", "simd", "epoch", "validator"]
+  },
+  {
+    "id": "block-packing",
+    "term": "Block Packing",
+    "definition": "The process by which the leader validator assembles transactions into a block during its leader slots, subject to the 48M compute unit cap per block, the 12,500 non-vote transaction limit, and account-level write-lock constraints. The scheduler prioritizes transactions by fee-per-CU, attempts to maximize parallelism across non-conflicting account sets, and packs entries until the compute budget or slot time is exhausted. Block packing efficiency directly determines a leader's fee revenue and the network's effective throughput.",
+    "category": "core-protocol",
+    "related": ["banking-stage", "scheduler", "compute-units", "block"]
+  },
+  {
+    "id": "transaction-deduplication",
+    "term": "Transaction Deduplication",
+    "definition": "Solana's mechanism for preventing the same transaction from being processed twice within a slot or across consecutive slots. Each transaction is uniquely identified by its first signature; the runtime maintains a status cache of recently processed signatures spanning roughly 150 slots (~60-90 seconds). If a transaction with an already-seen signature arrives, it is silently dropped. This cache is why retry logic can safely resubmit the same signed transaction without risk of double-execution, and why transactions with expired blockhashes are rejected even if the signature is novel.",
+    "category": "core-protocol",
+    "related": [
+      "blockhash",
+      "signature",
+      "transaction-retry",
+      "transaction-mortality"
+    ]
+  },
+  {
+    "id": "epoch-boundary",
+    "term": "Epoch Boundary",
+    "definition": "The transition point between two consecutive epochs at every 432,000th slot, during which the runtime performs critical state transitions: the leader schedule for the next epoch is computed from current stake weights, pending stake activations and deactivations take effect, inflation rewards are credited to validators and delegators, and the vote-credit-based reward distribution is finalized. Epoch boundaries are computationally expensive and can cause brief increases in slot times as the leader processes these one-time operations.",
+    "category": "core-protocol",
+    "related": [
+      "epoch",
+      "epoch-schedule",
+      "leader-schedule",
+      "stake",
+      "block-reward"
+    ]
+  },
+  {
+    "id": "vote-cost",
+    "term": "Vote Cost (Validator Economics)",
+    "definition": "The ongoing SOL expense validators incur from submitting vote transactions every slot, constituting the largest operational cost alongside hardware. Each vote transaction costs approximately 5,000 lamports in base fees, and validators submit roughly 432,000 votes per epoch, totaling 2-3 SOL per epoch in vote fees alone. Vote costs are paid from the validator's vote account balance. This constant drain means validators with insufficient stake delegation may operate at a loss, as their share of inflation rewards must exceed vote costs plus hardware expenses to be profitable.",
+    "category": "core-protocol",
+    "related": [
+      "vote-transaction",
+      "vote-account",
+      "validator",
+      "block-reward",
+      "transaction-fee"
+    ]
   }
 ]

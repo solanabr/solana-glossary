@@ -59,7 +59,7 @@
   },
   {
     "id": "seahorse",
-    "term": "Seahorse (Python \u2192 Anchor)",
+    "term": "Seahorse (Python → Anchor)",
     "definition": "A Python-to-Anchor transpiler that lets developers write Solana programs in Python syntax and compiles them to Rust/Anchor code. Seahorse supports a subset of Python with Solana-specific decorators. It lowers the barrier to entry for Python developers but may lag behind Anchor features. Suitable for learning and prototyping.",
     "category": "dev-tools",
     "related": ["anchor", "program"]
@@ -217,7 +217,7 @@
     "term": "Multisig",
     "definition": "An account controlled by multiple parties requiring M-of-N signatures to authorize actions. On Solana, multisig is implemented by programs like Squads rather than at the protocol level. Use cases: program upgrade authority (require 3-of-5 team members), treasury management, and DAO governance execution.",
     "category": "dev-tools",
-    "related": ["squads", "authority"]
+    "related": ["squads", "authority", "circuit-breaker"]
   },
   {
     "id": "magicblock",

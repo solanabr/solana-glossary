@@ -4,21 +4,21 @@
     "term": "Missing Signer Check",
     "definition": "A vulnerability where a program accepts an account in a privileged role (e.g., admin, authority, payer) without verifying that the account actually signed the transaction, allowing any caller to impersonate that authority by simply passing the target pubkey as an instruction account. In native Solana programs, the check requires asserting account.is_signer == true; in Anchor, the Signer<'info> type enforces this automatically. Exploitation lets an attacker bypass all access control gated on authority equality checks, making it one of the most critical and commonly audited vulnerabilities in Solana programs.",
     "category": "security",
-    "related": ["signer", "authority"]
+    "related": ["signer", "authority", "account-validation-pattern"]
   },
   {
     "id": "missing-owner-check",
     "term": "Missing Owner Check",
     "definition": "A vulnerability where a program deserializes and trusts account data without first confirming that the account is owned by the expected program, allowing an attacker to substitute a maliciously crafted account owned by a different program whose byte layout happens to satisfy the deserialization. On Solana, every account stores a 32-byte owner field set to the program that created it; native programs must assert account.owner == &expected_program_id, while Anchor's Account<'info, T> wrapper performs this check automatically. Failure to validate ownership can lead to complete auth bypass if an attacker can construct a fake account whose data parses into a struct with elevated privileges.",
     "category": "security",
-    "related": ["owner", "account"]
+    "related": ["owner", "account", "account-validation-pattern"]
   },
   {
     "id": "arbitrary-cpi",
     "term": "Arbitrary CPI",
     "definition": "A vulnerability where a program accepts an arbitrary program account from the caller and invokes it via Cross-Program Invocation (CPI) without verifying it matches a known, trusted program ID, effectively letting an attacker substitute a malicious program that executes under the victim program's authority or manipulates accounts the victim program passes to it. A common pattern is accepting a token_program account without checking it equals spl_token::ID, so the attacker passes a lookalike program that records or drains account data. Prevention requires hard-coding or explicitly checking the program ID before every CPI call.",
     "category": "security",
-    "related": ["cpi", "program"]
+    "related": ["cpi", "program", "program-id-verification"]
   },
   {
     "id": "pda-substitution",
@@ -39,12 +39,12 @@
     "term": "Type Cosplay",
     "definition": "A vulnerability, also called account confusion, where a program deserializes an account as type A when it actually contains data for type B because both structs happen to share a compatible byte layout at the fields the program checks, enabling an attacker to substitute one account type for another to satisfy access control or arithmetic that assumes a specific type. Anchor prevents this by prepending an 8-byte discriminator (the first 8 bytes of the SHA-256 hash of the fully-qualified type name) to every account during initialization and asserting it on every subsequent access; native programs must implement equivalent discriminator logic manually.",
     "category": "security",
-    "related": ["discriminator", "account-data"]
+    "related": ["discriminator", "account-data", "account-discriminator-check"]
   },
   {
     "id": "reinitialization",
     "term": "Reinitialization Attack",
-    "definition": "A vulnerability where a program allows an already-initialized account to be initialized a second time, overwriting its state \u2014 including authority or ownership fields \u2014 with attacker-supplied data, effectively letting the attacker seize control of an existing account without going through normal privilege checks. The canonical defense is storing an is_initialized boolean or an Anchor discriminator in the account and asserting it is false (or that the discriminator is unset) at the start of every initialization instruction; Anchor's init constraint enforces this by failing if the account's discriminator is already non-zero.",
+    "definition": "A vulnerability where a program allows an already-initialized account to be initialized a second time, overwriting its state — including authority or ownership fields — with attacker-supplied data, effectively letting the attacker seize control of an existing account without going through normal privilege checks. The canonical defense is storing an is_initialized boolean or an Anchor discriminator in the account and asserting it is false (or that the discriminator is unset) at the start of every initialization instruction; Anchor's init constraint enforces this by failing if the account's discriminator is already non-zero.",
     "category": "security",
     "related": ["account", "discriminator"]
   },
@@ -58,21 +58,21 @@
   {
     "id": "revival-attack",
     "term": "Account Revival Attack",
-    "definition": "An exploit that resurrects an account that a program has logically closed within the same transaction by sending lamports back to it before the transaction finalizes, causing its on-chain data \u2014 which was never securely wiped \u2014 to re-appear as a funded, seemingly valid account in future transactions. Because the Solana runtime keeps an account alive as long as it holds any lamports, transferring even 1 lamport back to a closed-but-not-wiped account prevents its deletion and allows an attacker to reuse its stale state. The defense is to explicitly overwrite account data with a closed discriminator and to use force-defund patterns so any lamports transferred in during the same transaction are immediately drained.",
+    "definition": "An exploit that resurrects an account that a program has logically closed within the same transaction by sending lamports back to it before the transaction finalizes, causing its on-chain data — which was never securely wiped — to re-appear as a funded, seemingly valid account in future transactions. Because the Solana runtime keeps an account alive as long as it holds any lamports, transferring even 1 lamport back to a closed-but-not-wiped account prevents its deletion and allows an attacker to reuse its stale state. The defense is to explicitly overwrite account data with a closed discriminator and to use force-defund patterns so any lamports transferred in during the same transaction are immediately drained.",
     "category": "security",
     "related": ["closing-accounts", "close-account"]
   },
   {
     "id": "integer-overflow",
     "term": "Integer Overflow / Underflow",
-    "definition": "A class of arithmetic vulnerabilities where an integer computation produces a result outside the bounds of its fixed-width type, wrapping around silently in Rust's release builds (since Rust panics on overflow only in debug mode), yielding an incorrect value that can corrupt token balances, borrow limits, or access control counters. For example, subtracting a larger u64 from a smaller one wraps to near u64::MAX (~1.8 \u00d7 10^19), which could be interpreted as an enormous balance. Solana programs must use Rust's checked_add, checked_sub, checked_mul, and checked_div methods (or the saturating_* / wrapping_* variants with deliberate intent) on all financial arithmetic to eliminate this class of bugs.",
+    "definition": "A class of arithmetic vulnerabilities where an integer computation produces a result outside the bounds of its fixed-width type, wrapping around silently in Rust's release builds (since Rust panics on overflow only in debug mode), yielding an incorrect value that can corrupt token balances, borrow limits, or access control counters. For example, subtracting a larger u64 from a smaller one wraps to near u64::MAX (~1.8 × 10^19), which could be interpreted as an enormous balance. Solana programs must use Rust's checked_add, checked_sub, checked_mul, and checked_div methods (or the saturating_* / wrapping_* variants with deliberate intent) on all financial arithmetic to eliminate this class of bugs.",
     "category": "security",
     "related": ["checked-math"]
   },
   {
     "id": "checked-math",
     "term": "Checked Math",
-    "definition": "A family of Rust arithmetic methods \u2014 including checked_add, checked_sub, checked_mul, checked_div, and their saturating_* counterparts \u2014 that return an Option<T> (None on overflow/underflow) instead of silently wrapping, allowing Solana programs to propagate an error rather than continue with corrupted values. Because Rust's default integer arithmetic panics on overflow only in debug builds and wraps silently in release builds (the mode used for on-chain deployments), all financial and security-sensitive arithmetic in Solana programs should use these methods. Anchor's declare_program! macro and many audit checklists explicitly require checked math on all token amount calculations.",
+    "definition": "A family of Rust arithmetic methods — including checked_add, checked_sub, checked_mul, checked_div, and their saturating_* counterparts — that return an Option<T> (None on overflow/underflow) instead of silently wrapping, allowing Solana programs to propagate an error rather than continue with corrupted values. Because Rust's default integer arithmetic panics on overflow only in debug builds and wraps silently in release builds (the mode used for on-chain deployments), all financial and security-sensitive arithmetic in Solana programs should use these methods. Anchor's declare_program! macro and many audit checklists explicitly require checked math on all token amount calculations.",
     "category": "security",
     "related": ["integer-overflow"]
   },
@@ -93,63 +93,63 @@
   {
     "id": "bump-seed-canonicalization",
     "term": "Bump Seed Canonicalization",
-    "definition": "The requirement that, when deriving a Program Derived Address (PDA), a program always use the canonical bump \u2014 the highest bump value (starting from 255 and decrementing) for which find_program_address returns a valid off-curve point \u2014 rather than accepting an arbitrary bump supplied by the caller. If a program stores and re-uses a non-canonical bump, an attacker can create a different PDA (with a different canonical bump) that happens to match a seed set the program trusts, or can derive valid PDAs outside the expected namespace. Anchor's seeds and bump constraints enforce canonicalization by calling find_program_address internally and asserting the provided bump matches; storing the canonical bump in the account at init time (instead of rediscovering it) is the recommended gas-efficient pattern.",
+    "definition": "The requirement that, when deriving a Program Derived Address (PDA), a program always use the canonical bump — the highest bump value (starting from 255 and decrementing) for which find_program_address returns a valid off-curve point — rather than accepting an arbitrary bump supplied by the caller. If a program stores and re-uses a non-canonical bump, an attacker can create a different PDA (with a different canonical bump) that happens to match a seed set the program trusts, or can derive valid PDAs outside the expected namespace. Anchor's seeds and bump constraints enforce canonicalization by calling find_program_address internally and asserting the provided bump matches; storing the canonical bump in the account at init time (instead of rediscovering it) is the recommended gas-efficient pattern.",
     "category": "security",
     "related": ["bump", "pda"]
   },
   {
     "id": "sysvar-spoofing",
     "term": "Sysvar Spoofing",
-    "definition": "A vulnerability where a program retrieves a sysvar (such as Clock, Rent, or SlotHashes) by deserializing an account passed in the instruction's account list rather than using the runtime's native sysvar access API, allowing an attacker to substitute a fake account at the well-known sysvar address with crafted data \u2014 for example, a manipulated clock timestamp to bypass time locks. The safe pattern in modern Solana programs is to use Clock::get(), Rent::get(), and equivalent intrinsics that read from the runtime directly without trusting any account; Anchor's Sysvar<'info, Clock> account type validates the address but native programs should prefer the get() API.",
+    "definition": "A vulnerability where a program retrieves a sysvar (such as Clock, Rent, or SlotHashes) by deserializing an account passed in the instruction's account list rather than using the runtime's native sysvar access API, allowing an attacker to substitute a fake account at the well-known sysvar address with crafted data — for example, a manipulated clock timestamp to bypass time locks. The safe pattern in modern Solana programs is to use Clock::get(), Rent::get(), and equivalent intrinsics that read from the runtime directly without trusting any account; Anchor's Sysvar<'info, Clock> account type validates the address but native programs should prefer the get() API.",
     "category": "security",
     "related": ["sysvar", "clock"]
   },
   {
     "id": "remaining-accounts",
     "term": "Remaining Accounts Misuse",
-    "definition": "A vulnerability arising from the use of ctx.remaining_accounts in Anchor (or unchecked trailing accounts in native programs), where accounts passed beyond the explicitly declared account struct are not subject to any automatic owner, signer, or constraint checks, leaving it entirely to the program to validate them. Attackers can exploit this by injecting unexpected accounts \u2014 fake mints, unauthorized signers, or accounts owned by a malicious program \u2014 that the program then treats as trusted inputs. Programs using remaining_accounts must manually verify every account's key, owner, is_signer, and is_writable properties before use, making this pattern a frequent audit finding.",
+    "definition": "A vulnerability arising from the use of ctx.remaining_accounts in Anchor (or unchecked trailing accounts in native programs), where accounts passed beyond the explicitly declared account struct are not subject to any automatic owner, signer, or constraint checks, leaving it entirely to the program to validate them. Attackers can exploit this by injecting unexpected accounts — fake mints, unauthorized signers, or accounts owned by a malicious program — that the program then treats as trusted inputs. Programs using remaining_accounts must manually verify every account's key, owner, is_signer, and is_writable properties before use, making this pattern a frequent audit finding.",
     "category": "security",
     "related": ["instruction", "account"]
   },
   {
     "id": "front-running",
     "term": "Front-Running",
-    "definition": "An attack where an adversary observes a pending or not-yet-finalized transaction (e.g., a large swap or NFT mint) and submits a competing transaction with higher priority fees or via validator relationships to execute before the victim's transaction, profiting from predictable price impact. On Solana, transactions are not held in a public mempool the same way as in Ethereum \u2014 leaders receive transactions privately \u2014 but front-running is still possible through Jito's block engine bundle mechanism, validator collusion, or by monitoring gossip. Slippage tolerance parameters and commit-reveal schemes are the primary application-level defenses.",
+    "definition": "An attack where an adversary observes a pending or not-yet-finalized transaction (e.g., a large swap or NFT mint) and submits a competing transaction with higher priority fees or via validator relationships to execute before the victim's transaction, profiting from predictable price impact. On Solana, transactions are not held in a public mempool the same way as in Ethereum — leaders receive transactions privately — but front-running is still possible through Jito's block engine bundle mechanism, validator collusion, or by monitoring gossip. Slippage tolerance parameters and commit-reveal schemes are the primary application-level defenses.",
     "category": "security",
     "related": ["mev", "sandwich-attack"]
   },
   {
     "id": "sandwich-attack",
     "term": "Sandwich Attack",
-    "definition": "A form of MEV where an attacker places one transaction immediately before (front-run) and one immediately after (back-run) a victim's large AMM swap: the front-run buys the asset first, driving up the price the victim pays, and the back-run sells the asset immediately after the victim's transaction at the inflated price, extracting the difference as profit. On Solana, sandwich attacks are facilitated through Jito bundles, which allow searchers to atomically guarantee ordering of multiple transactions within a block. Victims can mitigate exposure by setting tight slippage tolerances (e.g., 0.1\u20130.5%) and using DEX aggregators that route across multiple pools to reduce single-pool price impact.",
+    "definition": "A form of MEV where an attacker places one transaction immediately before (front-run) and one immediately after (back-run) a victim's large AMM swap: the front-run buys the asset first, driving up the price the victim pays, and the back-run sells the asset immediately after the victim's transaction at the inflated price, extracting the difference as profit. On Solana, sandwich attacks are facilitated through Jito bundles, which allow searchers to atomically guarantee ordering of multiple transactions within a block. Victims can mitigate exposure by setting tight slippage tolerances (e.g., 0.1–0.5%) and using DEX aggregators that route across multiple pools to reduce single-pool price impact.",
     "category": "security",
     "related": ["front-running", "mev", "slippage"]
   },
   {
     "id": "reentrancy",
     "term": "Reentrancy (Solana)",
-    "definition": "In Solana's context, reentrancy refers to a scenario during a CPI call where the called program invokes back into the calling program (direct reentrancy) or into a shared mutable account via a third program (indirect reentrancy), potentially causing the calling program to re-execute logic with state that has been partially modified by the intervening CPI. The Solana runtime prevents direct same-program reentrancy at the VM level \u2014 a program cannot CPI into itself \u2014 but indirect reentrancy through mutable shared accounts is possible and can cause account-reloading vulnerabilities where a program's cached account data becomes stale. Programs should reload account state after every CPI that may have modified shared accounts and avoid assuming pre-CPI state invariants hold afterward.",
+    "definition": "In Solana's context, reentrancy refers to a scenario during a CPI call where the called program invokes back into the calling program (direct reentrancy) or into a shared mutable account via a third program (indirect reentrancy), potentially causing the calling program to re-execute logic with state that has been partially modified by the intervening CPI. The Solana runtime prevents direct same-program reentrancy at the VM level — a program cannot CPI into itself — but indirect reentrancy through mutable shared accounts is possible and can cause account-reloading vulnerabilities where a program's cached account data becomes stale. Programs should reload account state after every CPI that may have modified shared accounts and avoid assuming pre-CPI state invariants hold afterward.",
     "category": "security",
-    "related": ["cpi", "account-reloading"]
+    "related": ["cpi", "account-reloading", "checks-effects-interactions"]
   },
   {
     "id": "oracle-manipulation",
     "term": "Oracle Manipulation",
-    "definition": "An attack in which an adversary artificially distorts the price or data reported by an on-chain oracle \u2014 most commonly by executing large trades to move a spot-price oracle (such as one based on a single AMM's instantaneous price) \u2014 and then exploits protocols that consume that price for lending, liquidation, or derivatives settlement before the oracle corrects. Flash-loan-amplified oracle manipulation is particularly dangerous: an attacker borrows a large sum atomically, moves the price, exploits the manipulated price, and repays the loan in one transaction. Defenses include using time-weighted average prices (TWAPs), aggregating multiple independent oracle sources (e.g., Pyth's aggregate confidence interval, Switchboard's weighted median), and enforcing staleness and confidence-band checks on every consumed price feed.",
+    "definition": "An attack in which an adversary artificially distorts the price or data reported by an on-chain oracle — most commonly by executing large trades to move a spot-price oracle (such as one based on a single AMM's instantaneous price) — and then exploits protocols that consume that price for lending, liquidation, or derivatives settlement before the oracle corrects. Flash-loan-amplified oracle manipulation is particularly dangerous: an attacker borrows a large sum atomically, moves the price, exploits the manipulated price, and repays the loan in one transaction. Defenses include using time-weighted average prices (TWAPs), aggregating multiple independent oracle sources (e.g., Pyth's aggregate confidence interval, Switchboard's weighted median), and enforcing staleness and confidence-band checks on every consumed price feed.",
     "category": "security",
     "related": ["oracle", "price-feed", "flash-loan"]
   },
   {
     "id": "privilege-escalation",
     "term": "Privilege Escalation",
-    "definition": "A class of vulnerabilities where an attacker gains a higher level of authority than legitimately granted \u2014 for example, forging admin access, hijacking a program's upgrade authority, or obtaining a PDA signer without possessing the seeds that should gate it. On Solana, common vectors include missing signer checks (an account is treated as an authority without asserting is_signer), misconfigured multisig authority accounts, and upgrade authority mismanagement (leaving a program upgradeable by a hot wallet instead of a governance multisig or burning the upgrade authority entirely). Programs should enforce the principle of least privilege by using immutable upgrade authorities or time-locked governance for high-value programs.",
+    "definition": "A class of vulnerabilities where an attacker gains a higher level of authority than legitimately granted — for example, forging admin access, hijacking a program's upgrade authority, or obtaining a PDA signer without possessing the seeds that should gate it. On Solana, common vectors include missing signer checks (an account is treated as an authority without asserting is_signer), misconfigured multisig authority accounts, and upgrade authority mismanagement (leaving a program upgradeable by a hot wallet instead of a governance multisig or burning the upgrade authority entirely). Programs should enforce the principle of least privilege by using immutable upgrade authorities or time-locked governance for high-value programs.",
     "category": "security",
     "related": ["authority", "upgrade-authority"]
   },
   {
     "id": "insufficient-constraints",
     "term": "Insufficient Account Constraints",
-    "definition": "A broad vulnerability category in Anchor programs where the account struct's constraint annotations \u2014 such as has_one, constraint = expr, seeds, bump, mint, authority, and token::mint \u2014 are missing or incomplete, allowing callers to supply accounts that pass deserialization and ownership checks but violate the program's intended relationships. For example, omitting has_one = authority on a vault account means any account can be passed as the authority; omitting mint = token_account.mint on an SPL token account means a different mint's token account could be substituted. Thorough Anchor account structs should declare every meaningful relationship between accounts as a typed constraint.",
+    "definition": "A broad vulnerability category in Anchor programs where the account struct's constraint annotations — such as has_one, constraint = expr, seeds, bump, mint, authority, and token::mint — are missing or incomplete, allowing callers to supply accounts that pass deserialization and ownership checks but violate the program's intended relationships. For example, omitting has_one = authority on a vault account means any account can be passed as the authority; omitting mint = token_account.mint on an SPL token account means a different mint's token account could be substituted. Thorough Anchor account structs should declare every meaningful relationship between accounts as a typed constraint.",
     "category": "security",
     "related": ["anchor", "account"]
   },
@@ -170,7 +170,7 @@
   {
     "id": "audit",
     "term": "Security Audit",
-    "definition": "A formal, structured review of a Solana program's source code, architecture, and deployment configuration by experienced security researchers, aimed at identifying vulnerabilities \u2014 including but not limited to the OWASP-equivalent Solana Top 10 (missing signer checks, owner checks, arithmetic errors, etc.) \u2014 before mainnet deployment. Reputable Solana-focused audit firms include OtterSec, Ackee Blockchain, sec3 (formerly Soteria), Neodyme, Trail of Bits, and Halborn; most audits produce a severity-rated finding report (critical, high, medium, low, informational) that programs are expected to remediate and publish. A single audit is considered minimum due diligence for programs holding significant user funds; continuous auditing and bug bounties on platforms like Immunefi are considered best practice.",
+    "definition": "A formal, structured review of a Solana program's source code, architecture, and deployment configuration by experienced security researchers, aimed at identifying vulnerabilities — including but not limited to the OWASP-equivalent Solana Top 10 (missing signer checks, owner checks, arithmetic errors, etc.) — before mainnet deployment. Reputable Solana-focused audit firms include OtterSec, Ackee Blockchain, sec3 (formerly Soteria), Neodyme, Trail of Bits, and Halborn; most audits produce a severity-rated finding report (critical, high, medium, low, informational) that programs are expected to remediate and publish. A single audit is considered minimum due diligence for programs holding significant user funds; continuous auditing and bug bounties on platforms like Immunefi are considered best practice.",
     "category": "security",
     "related": ["ottersec", "sec3", "neodyme"]
   },
@@ -386,5 +386,31 @@
     "category": "security",
     "aliases": ["solana-security-txt"],
     "related": ["bpf", "upgradeable-loader"]
+  },
+  {
+    "id": "program-id-verification",
+    "term": "Program ID Verification (CPI)",
+    "definition": "A mandatory security check where a program verifies that a program account passed for a Cross-Program Invocation matches the expected hard-coded program ID before executing the CPI. Without this check, an attacker can substitute a malicious program that mimics the expected interface (e.g., a fake Token Program that silently approves all transfers). In native Solana programs, this requires asserting program_account.key() == &expected_program::ID; in Anchor, the Program<'info, T> type wrapper enforces this automatically by comparing the account's key against T's declared program ID.",
+    "category": "security",
+    "related": ["arbitrary-cpi", "cpi", "missing-owner-check"]
+  },
+  {
+    "id": "account-discriminator-check",
+    "term": "Account Discriminator Check",
+    "definition": "The security practice of validating an account's discriminator bytes before deserialization to prevent type cosplay attacks. Every Anchor account is prepended with an 8-byte discriminator (first 8 bytes of SHA-256 of 'account:<TypeName>'). Native programs must implement equivalent logic by writing a magic number or type tag at account creation and asserting it matches on every read. Skipping this check allows an attacker to pass an account of a different type whose raw bytes happen to deserialize into a struct with elevated privileges or manipulated values.",
+    "category": "security",
+    "related": [
+      "type-cosplay",
+      "discriminator",
+      "reinitialization",
+      "account-validation-pattern"
+    ]
+  },
+  {
+    "id": "cpi-depth-attack",
+    "term": "CPI Depth Attack",
+    "definition": "An exploit vector that abuses Solana's maximum CPI depth limit of 4 nested invocations to cause unexpected behavior in programs that do not account for call depth exhaustion. An attacker constructs a chain of CPI calls (A -> B -> C -> D) such that the target program at depth 3 or 4 cannot make its own expected CPI call (e.g., to the Token Program), causing it to fail in a state where partial mutations have already occurred. Defense requires either checking the remaining CPI depth before critical operations or designing instruction logic to be atomic regardless of CPI failure at any point.",
+    "category": "security",
+    "related": ["cpi", "invoke", "state-inconsistency"]
   }
 ]

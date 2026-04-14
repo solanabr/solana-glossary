@@ -10,7 +10,7 @@
   {
     "id": "clmm",
     "term": "CLMM (Concentrated Liquidity Market Maker)",
-    "definition": "An AMM design where liquidity providers concentrate their capital within specific price ranges instead of across the full 0-to-infinity range. CLMMs dramatically improve capital efficiency\u2014LPs earn more fees per dollar deposited within their active range. If the price moves outside the range, the position becomes inactive. Orca Whirlpools and Raydium CLMM are leading implementations on Solana.",
+    "definition": "An AMM design where liquidity providers concentrate their capital within specific price ranges instead of across the full 0-to-infinity range. CLMMs dramatically improve capital efficiency—LPs earn more fees per dollar deposited within their active range. If the price moves outside the range, the position becomes inactive. Orca Whirlpools and Raydium CLMM are leading implementations on Solana.",
     "category": "defi",
     "aliases": ["CLMM", "Concentrated Liquidity"],
     "related": ["amm", "tick", "liquidity-pool"]
@@ -40,7 +40,7 @@
   {
     "id": "dex",
     "term": "DEX (Decentralized Exchange)",
-    "definition": "A protocol for trading tokens directly on-chain without a centralized intermediary. Solana DEXs use either AMM pools (Raydium, Orca, Meteora) or on-chain order books (Phoenix, OpenBook). DEXs are composable\u2014aggregators like Jupiter route through multiple DEXs for optimal pricing.",
+    "definition": "A protocol for trading tokens directly on-chain without a centralized intermediary. Solana DEXs use either AMM pools (Raydium, Orca, Meteora) or on-chain order books (Phoenix, OpenBook). DEXs are composable—aggregators like Jupiter route through multiple DEXs for optimal pricing.",
     "category": "defi",
     "aliases": ["DEX"],
     "related": ["amm", "order-book", "swap"]
@@ -64,7 +64,7 @@
   {
     "id": "phoenix",
     "term": "Phoenix",
-    "definition": "A high-performance on-chain order book DEX on Solana with a fully on-chain FIFO matching engine. Phoenix is designed for low-latency trading without cranks\u2014orders are matched atomically within the same transaction. It supports limit orders, market orders, and provides a maker rebate structure to incentivize liquidity.",
+    "definition": "A high-performance on-chain order book DEX on Solana with a fully on-chain FIFO matching engine. Phoenix is designed for low-latency trading without cranks—orders are matched atomically within the same transaction. It supports limit orders, market orders, and provides a maker rebate structure to incentivize liquidity.",
     "category": "defi",
     "related": ["order-book", "dex"]
   },
@@ -95,19 +95,25 @@
     "definition": "The dominant DEX aggregator on Solana, routing trades across 20+ DEX protocols to find optimal pricing. Jupiter splits orders across multiple routes and pools to minimize price impact. It also offers limit orders, DCA, perpetuals (via Jupiter Perps), and a token launchpad (LFG). The JUP governance token was airdropped in January 2024.",
     "category": "defi",
     "aliases": ["Jup"],
-    "related": ["dex-aggregator", "swap", "limit-order"]
+    "related": [
+      "dex-aggregator",
+      "swap",
+      "limit-order",
+      "jlp-pool",
+      "jupiter-limit-order"
+    ]
   },
   {
     "id": "dex-aggregator",
     "term": "DEX Aggregator",
-    "definition": "A protocol that splits and routes token swaps across multiple DEXs to find the best execution price. The aggregator's routing algorithm considers pool depths, fees, and multi-hop paths (e.g., SOL\u2192USDC\u2192TARGET). Jupiter is the primary aggregator on Solana; others include Prism and DFlow. Aggregators are critical for large trades to minimize price impact.",
+    "definition": "A protocol that splits and routes token swaps across multiple DEXs to find the best execution price. The aggregator's routing algorithm considers pool depths, fees, and multi-hop paths (e.g., SOL→USDC→TARGET). Jupiter is the primary aggregator on Solana; others include Prism and DFlow. Aggregators are critical for large trades to minimize price impact.",
     "category": "defi",
     "related": ["jupiter", "swap", "routing"]
   },
   {
     "id": "routing",
     "term": "Routing (Swap)",
-    "definition": "The process of finding the optimal path for a swap across multiple DEX pools and intermediate tokens. A router may split a single swap into multiple routes (e.g., 60% through Orca, 40% through Raydium) or use multi-hop paths (e.g., SOL\u2192USDC\u2192mSOL) to achieve better pricing. Jupiter's Metis algorithm computes routes in real-time.",
+    "definition": "The process of finding the optimal path for a swap across multiple DEX pools and intermediate tokens. A router may split a single swap into multiple routes (e.g., 60% through Orca, 40% through Raydium) or use multi-hop paths (e.g., SOL→USDC→mSOL) to achieve better pricing. Jupiter's Metis algorithm computes routes in real-time.",
     "category": "defi",
     "related": ["dex-aggregator", "jupiter"]
   },
@@ -171,7 +177,7 @@
   {
     "id": "vrf",
     "term": "VRF (Verifiable Random Function)",
-    "definition": "Verifiable Random Function\u2014a cryptographic primitive that generates provably random outputs with a proof of correctness. On Solana, Switchboard VRF provides on-chain randomness for gaming, lotteries, and NFT reveals. The oracle computes a random value and proof off-chain; the program verifies the proof on-chain before using the result.",
+    "definition": "Verifiable Random Function—a cryptographic primitive that generates provably random outputs with a proof of correctness. On Solana, Switchboard VRF provides on-chain randomness for gaming, lotteries, and NFT reveals. The oracle computes a random value and proof off-chain; the program verifies the proof on-chain before using the result.",
     "category": "defi",
     "aliases": ["VRF"],
     "related": ["switchboard", "oracle"]
@@ -207,7 +213,7 @@
   {
     "id": "ltv",
     "term": "LTV (Loan-to-Value)",
-    "definition": "Loan-to-Value ratio\u2014the percentage of collateral value that can be borrowed. Each lending protocol sets max LTV per asset (e.g., 75% for SOL means $100 SOL collateral = max $75 borrow). If debt/collateral exceeds the liquidation LTV (e.g., 85%), the position is liquidatable. Conservative LTV settings protect against rapid price drops.",
+    "definition": "Loan-to-Value ratio—the percentage of collateral value that can be borrowed. Each lending protocol sets max LTV per asset (e.g., 75% for SOL means $100 SOL collateral = max $75 borrow). If debt/collateral exceeds the liquidation LTV (e.g., 85%), the position is liquidatable. Conservative LTV settings protect against rapid price drops.",
     "category": "defi",
     "aliases": ["LTV"],
     "related": ["collateral", "liquidation"]
@@ -232,7 +238,7 @@
     "definition": "A mechanism where staked SOL is represented by a transferable token (LST) that accrues staking rewards while remaining usable in DeFi. Instead of locking SOL with a validator, users deposit into a liquid staking pool and receive tokens like mSOL (Marinade), jitoSOL (Jito), or bSOL (BlazeStake). LSTs typically appreciate against SOL at the staking APY.",
     "category": "defi",
     "aliases": ["LST"],
-    "related": ["stake", "marinade", "jito-sol"]
+    "related": ["stake", "marinade", "jito-sol", "sanctum-router"]
   },
   {
     "id": "marinade",
@@ -303,7 +309,7 @@
   {
     "id": "twap",
     "term": "TWAP (Time-Weighted Average Price)",
-    "definition": "Time-Weighted Average Price\u2014an average price calculated over a specific time period, weighting each price equally by time. TWAP oracles reduce manipulation risk vs. spot prices. Some DEXs (e.g., Jupiter) offer TWAP execution that splits large orders over time. Pyth provides EMA (exponential moving average) prices as a similar anti-manipulation measure.",
+    "definition": "Time-Weighted Average Price—an average price calculated over a specific time period, weighting each price equally by time. TWAP oracles reduce manipulation risk vs. spot prices. Some DEXs (e.g., Jupiter) offer TWAP execution that splits large orders over time. Pyth provides EMA (exponential moving average) prices as a similar anti-manipulation measure.",
     "category": "defi",
     "aliases": ["TWAP"],
     "related": ["oracle", "price-feed"]
@@ -336,7 +342,7 @@
     "definition": "A liquidity protocol on Solana (rebranded from Mercurial Finance) that introduced the Dynamic Liquidity Market Maker (DLMM) and Dynamic AMM, which automatically adjust fees and liquidity distribution based on real-time market activity. Meteora became a top-3 DEX by volume in 2025 driven by high-profile token launches using its concentrated liquidity pools.",
     "category": "defi",
     "aliases": ["Meteora DLMM"],
-    "related": ["clmm", "liquidity-pool", "dex"]
+    "related": ["clmm", "liquidity-pool", "dex", "liquidity-bootstrapping-pool"]
   },
   {
     "id": "pump-fun",
@@ -352,7 +358,7 @@
     "definition": "A DeFi protocol on Solana offering automated lending/borrowing, liquidity vaults, and an intents-based swap platform. Kamino reached over $2B TVL in 2024 and led Solana DeFi with 24% market share. Its Lend V2 introduced 'The Vault Layer' for aggregated liquidity and 'Scam Wick Protection' against unnecessary liquidations from price manipulation.",
     "category": "defi",
     "aliases": ["Kamino"],
-    "related": ["lending", "vault", "liquidity-pool"]
+    "related": ["lending", "vault", "liquidity-pool", "kamino-vault"]
   },
   {
     "id": "sanctum",
@@ -360,7 +366,7 @@
     "definition": "A protocol that unifies fragmented liquidity across Solana's liquid staking token (LST) ecosystem by enabling instant swaps between any LSTs and providing the INF token as a unified liquid staking position. Sanctum solves the cold-start liquidity problem for new LST providers and allows validators to launch their own LSTs.",
     "category": "defi",
     "aliases": ["Sanctum LST"],
-    "related": ["liquid-staking", "marinade", "jito-sol"]
+    "related": ["liquid-staking", "marinade", "jito-sol", "sanctum-router"]
   },
   {
     "id": "tensor",
@@ -376,7 +382,7 @@
     "definition": "A transaction paradigm where users declare their desired outcome (e.g., 'swap 100 USDC for best SOL price') rather than specifying exact execution steps. Solvers compete to find the optimal execution path across protocols, chains, and liquidity sources. Intent-based architectures abstract away routing complexity, enable cross-chain execution, and shift MEV from adversarial extraction to competitive fulfillment.",
     "category": "defi",
     "aliases": ["Intent-Based Architecture"],
-    "related": ["chain-abstraction", "dex-aggregator"]
+    "related": ["chain-abstraction", "dex-aggregator", "intent-solver"]
   },
   {
     "id": "chain-abstraction",
@@ -605,7 +611,7 @@
     "term": "Bonding Curve",
     "definition": "A mathematical formula that determines a token's price as a function of its supply. As more tokens are purchased, the price rises along the curve; selling decreases supply and lowers the price. Pump.fun popularized bonding curves on Solana for token launches, using them for initial price discovery before a token graduates to a DEX. The curve shape determines how quickly price accelerates with demand.",
     "category": "defi",
-    "related": ["pump-fun", "graduation", "amm"]
+    "related": ["pump-fun", "graduation", "amm", "liquidity-bootstrapping-pool"]
   },
   {
     "id": "graduation",
@@ -631,7 +637,7 @@
   {
     "id": "tge",
     "term": "TGE (Token Generation Event)",
-    "definition": "Token Generation Event\u2014the moment when a project's token is first created and distributed on-chain. TGE typically involves deploying the token mint, distributing initial allocations (community, team, investors, treasury), and listing on DEXs. On Solana, TGE often coincides with an airdrop or launchpad sale. Vesting schedules begin at TGE for locked allocations.",
+    "definition": "Token Generation Event—the moment when a project's token is first created and distributed on-chain. TGE typically involves deploying the token mint, distributing initial allocations (community, team, investors, treasury), and listing on DEXs. On Solana, TGE often coincides with an airdrop or launchpad sale. Vesting schedules begin at TGE for locked allocations.",
     "category": "defi",
     "aliases": ["TGE", "Token Launch"],
     "related": ["vesting", "airdrop-crypto", "launchpad"]
@@ -653,7 +659,7 @@
   {
     "id": "fdv",
     "term": "FDV (Fully Diluted Valuation)",
-    "definition": "Fully Diluted Valuation\u2014the theoretical market capitalization if all tokens (including locked, vesting, and unminted) were in circulation, calculated as current token price multiplied by maximum supply. FDV provides a forward-looking valuation metric. A large gap between market cap and FDV indicates significant future token emissions that could create sell pressure as locked tokens unlock.",
+    "definition": "Fully Diluted Valuation—the theoretical market capitalization if all tokens (including locked, vesting, and unminted) were in circulation, calculated as current token price multiplied by maximum supply. FDV provides a forward-looking valuation metric. A large gap between market cap and FDV indicates significant future token emissions that could create sell pressure as locked tokens unlock.",
     "category": "defi",
     "aliases": ["FDV"],
     "related": ["market-cap", "max-supply", "circulating-supply"]
@@ -689,7 +695,7 @@
   {
     "id": "fair-launch",
     "term": "Fair Launch",
-    "definition": "A token distribution method where there is no pre-mine, private sale, or insider allocation\u2014all participants have equal opportunity to acquire tokens from the start. Fair launches aim to prevent concentrated ownership and VC dumping on retail buyers. On Solana, Pump.fun's bonding curve model approximates a fair launch, though early buyers still have a price advantage.",
+    "definition": "A token distribution method where there is no pre-mine, private sale, or insider allocation—all participants have equal opportunity to acquire tokens from the start. Fair launches aim to prevent concentrated ownership and VC dumping on retail buyers. On Solana, Pump.fun's bonding curve model approximates a fair launch, though early buyers still have a price advantage.",
     "category": "defi",
     "related": ["launchpad", "bonding-curve", "tge"]
   },
@@ -763,7 +769,7 @@
   {
     "id": "switchboard-functions",
     "term": "Switchboard Functions",
-    "definition": "A serverless compute feature of the Switchboard oracle network that allows developers to run custom off-chain code (written in Rust or TypeScript) inside secure enclaves (SGX/TDX) and post verified results on-chain. Functions enable arbitrary data feeds beyond standard price oracles\u2014sports scores, weather data, complex computations\u2014while providing cryptographic attestation that the code executed correctly in a trusted environment.",
+    "definition": "A serverless compute feature of the Switchboard oracle network that allows developers to run custom off-chain code (written in Rust or TypeScript) inside secure enclaves (SGX/TDX) and post verified results on-chain. Functions enable arbitrary data feeds beyond standard price oracles—sports scores, weather data, complex computations—while providing cryptographic attestation that the code executed correctly in a trusted environment.",
     "category": "defi",
     "related": ["switchboard", "oracle"]
   },
@@ -1055,5 +1061,56 @@
     "category": "defi",
     "aliases": ["DAMM"],
     "related": ["amm", "clmm", "impermanent-loss", "meteora"]
+  },
+  {
+    "id": "intent-solver",
+    "term": "Intent Solver",
+    "definition": "An off-chain agent that competes to fulfill user intents by finding optimal execution paths across liquidity sources, chains, and protocols. On Solana, solvers listen for intent orders, simulate execution strategies, and submit transactions that satisfy the user's stated constraints (minimum output, deadline). Solvers earn a spread between their execution cost and the user's stated limit, creating a competitive market that replaces traditional AMM routing with auction-based execution.",
+    "category": "defi",
+    "related": ["intents", "dex-aggregator", "mev"]
+  },
+  {
+    "id": "jlp-pool",
+    "term": "JLP (Jupiter Liquidity Provider Pool)",
+    "definition": "The counterparty liquidity pool backing Jupiter Perpetuals, composed of SOL, ETH, WBTC, USDC, and USDT in target-weighted allocations. JLP holders mint JLP tokens by depositing any of these assets, earning 75% of all perps trading fees (open/close fees, borrowing fees, and liquidation proceeds). The JLP token's value fluctuates based on accrued fees and trader PnL — when traders lose, JLP appreciates, and vice versa. JLP has consistently ranked among the highest real-yield opportunities on Solana.",
+    "category": "defi",
+    "aliases": ["JLP"],
+    "related": ["jupiter-perpetuals", "liquidity-pool", "perpetuals"]
+  },
+  {
+    "id": "kamino-vault",
+    "term": "Kamino Vault",
+    "definition": "An automated DeFi strategy product from Kamino Finance that manages concentrated liquidity positions on behalf of depositors. Kamino vaults accept single-asset or dual-asset deposits, deploy them into CLMM positions on Orca Whirlpools or Raydium, and automatically rebalance when the price moves outside the active tick range. The vault's strategy parameters (range width, rebalance trigger, drift tolerance) are configurable per vault. Depositors receive kTokens representing their vault share.",
+    "category": "defi",
+    "aliases": ["kToken"],
+    "related": ["kamino", "vault", "clmm", "auto-compounding"]
+  },
+  {
+    "id": "liquidity-bootstrapping-pool",
+    "term": "Liquidity Bootstrapping Pool (LBP)",
+    "definition": "A token launch mechanism that uses a time-weighted shifting price curve to enable fair price discovery. The pool starts with a high weight for the project token (e.g., 95/5 project/USDC) and gradually shifts toward equal weights over a set period, creating natural downward price pressure that discourages front-running and whale accumulation. On Solana, Meteora DLMM Alpha Vaults and Jupiter LFG use LBP-inspired mechanics to distribute tokens with better participation from smaller buyers compared to fixed-price or pure bonding-curve launches.",
+    "category": "defi",
+    "aliases": ["LBP"],
+    "related": ["bonding-curve", "graduation", "meteora", "jupiter-lfg"]
+  },
+  {
+    "id": "sanctum-router",
+    "term": "Sanctum Router",
+    "definition": "Sanctum's on-chain program that enables instant, zero-slippage swaps between any Solana liquid staking tokens by routing through the protocol's unified stake pool reserve. The Router holds an SOL reserve and exploits the property that all LSTs are redeemable for SOL at a known exchange rate, eliminating the need for traditional AMM liquidity and price impact. When swapping mSOL to bSOL, the Router unstakes one LST and stakes the SOL into the other, settling atomically in a single transaction.",
+    "category": "defi",
+    "related": [
+      "sanctum",
+      "sanctum-infinity",
+      "liquid-staking",
+      "marinade",
+      "blazestake"
+    ]
+  },
+  {
+    "id": "jupiter-limit-order",
+    "term": "Jupiter Limit Order",
+    "definition": "Jupiter's on-chain limit order system that allows users to place orders at a specified price and have them executed by a keeper network when the market price crosses the trigger. Unlike AMM swaps that execute immediately at the current price, limit orders sit in an on-chain order account until a keeper bot detects the price condition is met and fills the order by routing through Jupiter's aggregator for best execution. Orders can be partially filled, have optional expiry timestamps, and charge no fees beyond the standard swap fees at execution time.",
+    "category": "defi",
+    "related": ["jupiter", "limit-order", "dex-aggregator"]
   }
 ]
