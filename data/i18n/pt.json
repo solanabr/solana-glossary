@@ -4050,5 +4050,64 @@
   "core-collection": {
     "term": "Coleção Core (Metaplex)",
     "definition": "A first-class collection entity in the Metaplex Core standard that acts as a parent for Core Assets. Unlike the legacy Token Metadata approach where collections were regular NFTs with a flag, Core Collections are purpose-built accounts that track size, enforce royalties, and manage plugins (freeze, burn, transfer delegates) at the collection level. Collection-wide operations like updating royalties propagate to all member assets automatically."
+  "authority-separation": {
+    "term": "Separação de Autoridades",
+    "definition": "A program-design pattern that splits privileged operations across distinct signer keys, each with minimum power for its role, instead of concentrating authority in a single admin keypair. In a token system this means one key authorized to mint, a separate key to transfer or burn, and a third key custodying the treasury — so that compromise of any single key has bounded blast radius. Enforced on-chain by storing each authority pubkey in state and validating per-instruction."
+  },
+  "checks-effects-interactions": {
+    "term": "Checks-Effects-Interactions (CEI)",
+    "definition": "A defensive ordering pattern for on-chain programs: validate all preconditions (Checks), mutate program state (Effects), then execute Cross-Program Invocations (Interactions). By committing state changes before calling external programs, the pattern prevents reentrancy-style bugs and state inconsistencies if the CPI fails or behaves unexpectedly. In Solana, where CPI panics roll back the entire transaction, CEI still matters for guarding against logic bugs in multi-CPI flows. A rate-limited mint instruction applies CEI by verifying signer and limits, updating the minted-amount counter, then executing the MintTo CPI."
+  },
+  "circuit-breaker": {
+    "term": "Circuit Breaker (Pausable)",
+    "definition": "An on-chain emergency mechanism that lets an authorized operator halt sensitive instructions (mint, transfer, withdraw) by flipping a single boolean flag stored in program state, without redeploying the program. Every protected instruction reads the flag at the start of its guard sequence and returns an error if paused. Critical for incident response but introduces centralization risk, so the pause authority is often a multisig or time-locked governance key."
+  },
+  "defense-in-depth": {
+    "term": "Defesa em Profundidade",
+    "definition": "A security design philosophy that stacks multiple independent validation layers so that a failure in any single control does not compromise the system. Applied to Solana programs, this means combining signer checks, owner checks, PDA re-derivation, discriminator validation, authority equality checks, rate limits, and pause guards — each redundant with the others. An attacker who finds one flaw still faces the remaining layers."
+  },
+  "fixed-supply": {
+    "term": "Supply Fixo (Mint Authority Revogada)",
+    "definition": "A token state in which the mint authority has been permanently set to None via SetAuthority, mathematically guaranteeing that no additional tokens can ever be minted. Fixed supply is a trust primitive — holders verify on-chain that their holdings cannot be diluted — standard for meme tokens, capped-supply utility tokens, and post-genesis stable distributions. Once revoked, the decision is irreversible, so projects typically revoke only after an initial distribution phase."
+  },
+  "on-chain-rate-limiting": {
+    "term": "Rate Limiting On-Chain",
+    "definition": "A technique where a Solana program enforces transaction-frequency or cumulative-amount caps directly in instruction logic, storing counters and reset timestamps in a PDA account and validating each call against the Clock sysvar. Unlike off-chain rate limits, on-chain limits remain enforced even if the authorized signer key is compromised — an attacker still cannot exceed the hard-coded per-transaction or per-day ceilings. Daily reset uses clock.unix_timestamp / 86400 day comparison."
+  },
+  "program-as-authority": {
+    "term": "Padrão Program-as-Authority",
+    "definition": "An architectural pattern where a Program-Derived Address owned by the program is set as the authority over a resource (mint, vault, token account) instead of a user keypair, making the program itself the gatekeeper. Human signers only authorize calls into the program; the actual CPI that mutates the resource is signed by the PDA via invoke_signed. Program-level invariants (rate limits, pauses, access control) become cryptographically mandatory since no external key can bypass the program."
+  },
+  "compressed-burn": {
+    "term": "Queima Comprimida (Compressed Burn)",
+    "definition": "Permanently destroying tokens held in a compressed account (Merkle tree leaf) via Light Protocol's cToken program. Unlike standard SPL burn which reduces an ATA balance, compressed burn nullifies the leaf and decrements the on-chain mint supply atomically. Requires a validity proof demonstrating the account exists in the state tree. Uses discriminator byte 8 on cToken V2."
+  },
+  "cpi-passthrough": {
+    "term": "CPI Passthrough (Retransmissão de CPI)",
+    "definition": "A design pattern where a Solana program receives pre-built instruction data from the client, validates security constraints (authority, PDA, discriminator prefix), and forwards the raw bytes to another program via invoke_signed. Unlike standard CPI where the caller constructs the instruction, passthrough delegates serialization to the client while the on-chain program acts as a validated relay. Used when the target program's format is complex or version-dependent."
+  },
+  "instruction-fallback": {
+    "term": "Instruction Fallback (Anchor)",
+    "definition": "Anchor's default error handler that triggers when incoming instruction data doesn't match any registered 8-byte discriminator. Returns error code 0x65 (101) with message 'InstructionFallbackNotFound'. Most commonly seen when a client sends a discriminator format the program doesn't understand — e.g., a V2 single-byte disc to an Anchor V1 program expecting 8-byte SHA256 discriminators. Native Solana programs handle unknown discriminators with their own match logic."
+  },
+  "nullifier-queue": {
+    "term": "Fila de Nulificadores",
+    "definition": "A FIFO queue in Light Protocol holding hashes of spent compressed accounts. When a compressed account is transferred or burned, its nullifier is added to prevent double-spending. The Forester service asynchronously drains the queue, zeroing old Merkle tree leaves. If the queue fills before processing, a temporary liveness issue occurs — spend transactions fail until space is freed. This is a protocol-level, not application-level concern."
+  },
+  "program-upgrade": {
+    "term": "Atualização de Programa",
+    "definition": "Deploying new bytecode to an existing Solana program address via the Upgradeable BPF Loader. The program's public key and all derived PDAs remain unchanged — only the executable binary is replaced. Requires the upgrade authority (a designated signer) to approve. This enables shipping fixes without breaking integrations, but a compromised authority can silently replace program logic. Programs can be made immutable by setting the upgrade authority to None."
+  },
+  "security-txt": {
+    "term": "Security.txt (On-Chain)",
+    "definition": "An on-chain metadata standard for Solana programs that embeds security contact information directly in the deployed binary. Uses the solana-security-txt crate to store fields like project URL, security email, preferred languages, auditor information, and policy links. Explorers and security researchers can read this data from any deployed program without external lookups. The standard follows the spirit of RFC 9116 (web security.txt) adapted for on-chain programs."
+  },
+  "state-tree": {
+    "term": "Árvore de Estado",
+    "definition": "A protocol-managed concurrent Merkle tree in Light Protocol that stores compressed account state as hashed leaves. Each leaf represents a compressed account (token balance, NFT, etc.). State trees are shared across all programs — developers don't create or manage them. When a tree fills (~67M leaves), the Forester service auto-rolls to a new tree. Unlike Bubblegum trees for cNFTs, state trees are infrastructure maintained by the protocol."
+  },
+  "vanity-address": {
+    "term": "Endereço Personalizado (Vanity Address)",
+    "definition": "A Solana public key with a human-readable prefix or pattern, generated by brute-forcing keypairs until one matches (e.g., 'ZUPYzr87...'). Vanity addresses improve UX (recognizable) and reduce phishing risk (harder to fake). Generation uses GPU-accelerated tools like solana-keygen grind. Each additional character multiplies search time by ~58x (base58 alphabet). Common for program IDs and mint addresses of branded tokens."
   }
 }

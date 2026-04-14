@@ -342,5 +342,49 @@
     "definition": "Security program offering financial rewards to researchers who find and responsibly report vulnerabilities. The Solana Foundation maintains a bug bounty program on Immunefi with rewards up to $1M for critical validator/runtime bugs. Major protocols like Jupiter, Marinade, and Jito also run independent bounty programs.",
     "category": "security",
     "related": ["audit", "vulnerability-disclosure"]
+  },
+  {
+    "id": "authority-separation",
+    "term": "Authority Separation",
+    "definition": "A program-design pattern that splits privileged operations across distinct signer keys, each with minimum power for its role, instead of concentrating authority in a single admin keypair. In a token system this means one key authorized to mint, a separate key to transfer or burn, and a third key custodying the treasury — so that compromise of any single key has bounded blast radius. Enforced on-chain by storing each authority pubkey in state and validating per-instruction.",
+    "category": "security",
+    "aliases": ["Separation of Duties", "Multi-Authority", "Role Separation"],
+    "related": [
+      "mint-authority",
+      "access-control-bypass",
+      "privilege-escalation"
+    ]
+  },
+  {
+    "id": "checks-effects-interactions",
+    "term": "Checks-Effects-Interactions (CEI)",
+    "definition": "A defensive ordering pattern for on-chain programs: validate all preconditions (Checks), mutate program state (Effects), then execute Cross-Program Invocations (Interactions). By committing state changes before calling external programs, the pattern prevents reentrancy-style bugs and state inconsistencies if the CPI fails or behaves unexpectedly. In Solana, where CPI panics roll back the entire transaction, CEI still matters for guarding against logic bugs in multi-CPI flows. A rate-limited mint instruction applies CEI by verifying signer and limits, updating the minted-amount counter, then executing the MintTo CPI.",
+    "category": "security",
+    "aliases": ["CEI", "CEI Pattern", "Checks Effects Interactions"],
+    "related": ["reentrancy", "cpi", "state-inconsistency"]
+  },
+  {
+    "id": "circuit-breaker",
+    "term": "Circuit Breaker (Pausable)",
+    "definition": "An on-chain emergency mechanism that lets an authorized operator halt sensitive instructions (mint, transfer, withdraw) by flipping a single boolean flag stored in program state, without redeploying the program. Every protected instruction reads the flag at the start of its guard sequence and returns an error if paused. Critical for incident response but introduces centralization risk, so the pause authority is often a multisig or time-locked governance key.",
+    "category": "security",
+    "aliases": ["Pausable", "Emergency Pause", "Kill Switch"],
+    "related": ["multisig", "time-lock-security", "denial-of-service"]
+  },
+  {
+    "id": "defense-in-depth",
+    "term": "Defense-in-Depth",
+    "definition": "A security design philosophy that stacks multiple independent validation layers so that a failure in any single control does not compromise the system. Applied to Solana programs, this means combining signer checks, owner checks, PDA re-derivation, discriminator validation, authority equality checks, rate limits, and pause guards — each redundant with the others. An attacker who finds one flaw still faces the remaining layers.",
+    "category": "security",
+    "aliases": ["Layered Security", "Defense in Depth"],
+    "related": ["audit", "authority-separation", "circuit-breaker"]
+  },
+  {
+    "id": "security-txt",
+    "term": "Security.txt (On-Chain)",
+    "definition": "An on-chain metadata standard for Solana programs that embeds security contact information directly in the deployed binary. Uses the solana-security-txt crate to store fields like project URL, security email, preferred languages, auditor information, and policy links. Explorers and security researchers can read this data from any deployed program without external lookups. The standard follows the spirit of RFC 9116 (web security.txt) adapted for on-chain programs.",
+    "category": "security",
+    "aliases": ["solana-security-txt"],
+    "related": ["bpf", "upgradeable-loader"]
   }
 ]
