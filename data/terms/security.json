@@ -349,12 +349,16 @@
     "definition": "A program-design pattern that splits privileged operations across distinct signer keys, each with minimum power for its role, instead of concentrating authority in a single admin keypair. In a token system this means one key authorized to mint, a separate key to transfer or burn, and a third key custodying the treasury — so that compromise of any single key has bounded blast radius. Enforced on-chain by storing each authority pubkey in state and validating per-instruction.",
     "category": "security",
     "aliases": ["Separation of Duties", "Multi-Authority", "Role Separation"],
-    "related": ["mint-authority", "access-control-bypass", "privilege-escalation"]
+    "related": [
+      "mint-authority",
+      "access-control-bypass",
+      "privilege-escalation"
+    ]
   },
   {
     "id": "checks-effects-interactions",
     "term": "Checks-Effects-Interactions (CEI)",
-    "definition": "A defensive ordering pattern for on-chain programs: validate all preconditions (Checks), execute Cross-Program Invocations (Interactions), and only afterward mutate program state (Effects). In Solana, this protects against partial-failure inconsistencies and state corruption when a CPI panics mid-flow. A rate-limited mint instruction applies CEI by verifying signer and limits first, executing MintTo CPI, then recording the minted amount into state only after the CPI succeeds.",
+    "definition": "A defensive ordering pattern for on-chain programs: validate all preconditions (Checks), mutate program state (Effects), then execute Cross-Program Invocations (Interactions). By committing state changes before calling external programs, the pattern prevents reentrancy-style bugs and state inconsistencies if the CPI fails or behaves unexpectedly. In Solana, where CPI panics roll back the entire transaction, CEI still matters for guarding against logic bugs in multi-CPI flows. A rate-limited mint instruction applies CEI by verifying signer and limits, updating the minted-amount counter, then executing the MintTo CPI.",
     "category": "security",
     "aliases": ["CEI", "CEI Pattern", "Checks Effects Interactions"],
     "related": ["reentrancy", "cpi", "state-inconsistency"]

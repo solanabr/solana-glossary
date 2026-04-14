@@ -4009,7 +4009,7 @@
   },
   "checks-effects-interactions": {
     "term": "Checks-Effects-Interactions (CEI)",
-    "definition": "A defensive ordering pattern for on-chain programs: validate all preconditions (Checks), execute Cross-Program Invocations (Interactions), and only afterward mutate program state (Effects). In Solana, this protects against partial-failure inconsistencies and state corruption when a CPI panics mid-flow. A rate-limited mint instruction applies CEI by verifying signer and limits first, executing MintTo CPI, then recording the minted amount into state only after the CPI succeeds."
+    "definition": "A defensive ordering pattern for on-chain programs: validate all preconditions (Checks), mutate program state (Effects), then execute Cross-Program Invocations (Interactions). By committing state changes before calling external programs, the pattern prevents reentrancy-style bugs and state inconsistencies if the CPI fails or behaves unexpectedly. In Solana, where CPI panics roll back the entire transaction, CEI still matters for guarding against logic bugs in multi-CPI flows. A rate-limited mint instruction applies CEI by verifying signer and limits, updating the minted-amount counter, then executing the MintTo CPI."
   },
   "circuit-breaker": {
     "term": "Circuit Breaker (Pausable)",
