@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Glossary Glance — Options</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Glossary Glance</h1>
+      <p class="lead">
+        Highlights terms from
+        <a href="https://github.com/solanabr/solana-glossary" target="_blank" rel="noreferrer">@stbr/solana-glossary</a>
+        on any website. Hover a highlighted phrase to read the definition.
+      </p>
+
+      <section class="card">
+        <h2>Performance</h2>
+        <label>
+          Max text nodes processed per page pass
+          <input type="number" id="maxNodes" min="1000" max="100000" step="1000" />
+        </label>
+        <p class="hint">Lower if you notice slow pages; higher for long docs.</p>
+      </section>
+
+      <section class="card">
+        <h2>Credits</h2>
+        <p class="hint">Built for the Superteam Brazil Solana Glossary bounty. MIT License.</p>
+      </section>
+
+      <p class="status" id="status"></p>
+    </div>
+    <script src="options.js"></script>
+  </body>
+</html>

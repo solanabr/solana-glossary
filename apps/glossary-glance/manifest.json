@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Glossary Glance — Solana",
+  "version": "1.0.0",
+  "description": "Highlights Solana glossary terms on any page and shows definitions on hover. Powered by @stbr/solana-glossary.",
+  "permissions": ["storage"],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Glossary Glance",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "options_page": "options/options.html",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/highlight.js"],
+      "css": ["content/highlight.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["dist/glossary-bundle.json"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "glossary-glance@superteam.br",
+      "strict_min_version": "109.0"
+    }
+  }
+}

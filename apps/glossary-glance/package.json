@@ -1,0 +1,14 @@
+{
+  "name": "glossary-glance",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chrome/Firefox extension — Solana glossary highlights + tooltips (uses @stbr/solana-glossary)",
+  "scripts": {
+    "build": "node scripts/build-bundle.mjs",
+    "icons": "node scripts/generate-icons.mjs"
+  },
+  "dependencies": {
+    "@stbr/solana-glossary": "file:../../"
+  },
+  "license": "MIT"
+}
