@@ -15,6 +15,12 @@
 
 ---
 
+## Web UI
+
+Next.js app (search, graph, flashcards, match, learn): [`apps/web/README.md`](apps/web/README.md).
+
+---
+
 ## Why This Exists
 
 The original Solana Glossary was one of the most loved resources in the ecosystem — a single place where any developer could look up unfamiliar Solana concepts and immediately get context.

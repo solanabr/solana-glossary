@@ -3,6 +3,10 @@ node_modules/
 
 # Build output
 dist/
+.next/
+
+# Generated from repo CONTRIBUTING.md (see apps/web/scripts/copy-data.js)
+apps/web/public/contributing.md
 
 # Environment variables
 .env

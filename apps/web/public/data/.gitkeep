@@ -1,0 +1,3 @@
+# Esta pasta é populada automaticamente pelo script scripts/copy-data.js
+# durante npm run dev / npm run build.
+# Os arquivos JSON aqui são cópias de ../../data/ e não devem ser commitados.
