@@ -1,0 +1,16 @@
+{
+  "name": "solana-glossary-dns-cli",
+  "version": "1.0.0",
+  "description": "Query 1001 Solana glossary terms via DNS — no installation needed, just dig.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dns-packet": "^5.6.1"
+  }
+}
