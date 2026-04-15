@@ -2,6 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@stbr/solana-glossary)](https://www.npmjs.com/package/@stbr/solana-glossary)
 [![npm downloads](https://img.shields.io/npm/dm/@stbr/solana-glossary)](https://www.npmjs.com/package/@stbr/solana-glossary)
+[![CI](https://github.com/solanabr/solana-glossary/actions/workflows/ci.yml/badge.svg)](https://github.com/solanabr/solana-glossary/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 ![Terms](https://img.shields.io/badge/terms-1059-brightgreen)
 ![Categories](https://img.shields.io/badge/categories-14-blue)
@@ -42,6 +43,46 @@ pnpm add @stbr/solana-glossary
 ```bash
 yarn add @stbr/solana-glossary
 ```
+
+---
+
+## MCP Server
+
+The glossary ships with a built-in MCP server — 10 AI tools accessible from Claude, Cursor, or any MCP client.
+
+### Setup (Claude Code / Claude Desktop)
+
+```json
+{
+  "mcpServers": {
+    "solana-glossary": {
+      "command": "npx",
+      "args": ["@stbr/solana-glossary"]
+    }
+  }
+}
+```
+
+### Available Tools
+
+| Tool | Description |
+|------|-------------|
+| `lookup_term` | Look up a term by ID or alias |
+| `search_glossary` | Full-text search across terms |
+| `browse_category` | List all terms in a category |
+| `filter_by_depth` | Filter by knowledge depth (1-5) |
+| `filter_by_tag` | Filter by tag (e.g., "token-2022", "jito") |
+| `get_related` | Traverse the knowledge graph |
+| `inject_context` | Token-optimized context block for LLM prompts |
+| `glossary_stats` | Glossary metadata and statistics |
+| `list_categories` | All 14 categories with counts |
+| `list_tags` | All 16 tags with counts |
+
+All tools support optional `locale` parameter (`"pt"` or `"es"`) for localized results.
+
+### AI Skill
+
+The package includes [`skills/SKILL.md`](skills/SKILL.md) — instructions for AI agents on when and how to use the glossary tools. Copy it into your project's `.claude/skills/` directory or reference it directly.
 
 ---
 

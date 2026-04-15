@@ -1,34 +1,42 @@
 {
   "name": "@stbr/solana-glossary",
-  "version": "1.0.0",
-  "description": "The most comprehensive Solana ecosystem glossary with i18n support",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "version": "1.1.0",
+  "description": "The most comprehensive Solana ecosystem glossary — SDK, MCP server, and AI skill. 1059 terms, 14 categories, depth ratings, tags, and i18n.",
+  "main": "dist/src/index.js",
+  "module": "dist/src/index.mjs",
+  "types": "dist/src/index.d.ts",
+  "bin": {
+    "solana-glossary": "./dist/mcp/bin.js"
+  },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.mjs",
+      "require": "./dist/src/index.js"
     },
     "./i18n": {
-      "types": "./dist/i18n.d.ts",
-      "import": "./dist/i18n.mjs",
-      "require": "./dist/i18n.js"
+      "types": "./dist/src/i18n.d.ts",
+      "import": "./dist/src/i18n.mjs",
+      "require": "./dist/src/i18n.js"
     },
     "./data/*": "./data/*"
   },
   "files": [
     "dist",
     "data",
+    "skills",
     "README.md"
   ],
   "scripts": {
-    "build": "tsup src/index.ts src/i18n.ts --format cjs,esm --dts --clean",
+    "build": "tsup src/index.ts src/i18n.ts mcp/server.ts mcp/bin.ts --format cjs,esm --dts --clean",
     "test": "vitest run",
     "lint": "tsc --noEmit",
     "validate": "node scripts/validate.js",
-    "stats": "node -e \"const g = require('./dist/index.js'); console.log('Total terms:', g.allTerms.length); console.log('With definitions:', g.allTerms.filter(t => t.definition).length); console.log('Categories:', [...new Set(g.allTerms.map(t => t.category))].length)\""
+    "stats": "node -e \"const g = require('./dist/index.js'); console.log('Total terms:', g.allTerms.length); console.log('Categories:', [...new Set(g.allTerms.map(t => t.category))].length); console.log('Tags:', g.getAllTags().length)\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
@@ -39,16 +47,17 @@
   "keywords": [
     "solana",
     "glossary",
+    "mcp",
     "web3",
     "blockchain",
     "terminology",
     "dictionary",
-    "i18n"
+    "i18n",
+    "ai-tools"
   ],
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/solanabr/solana-dev-kb",
-    "directory": "solana-glossary"
+    "url": "https://github.com/solanabr/solana-glossary"
   }
 }

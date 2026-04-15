@@ -7,9 +7,9 @@
     "strict": true,
     "esModuleInterop": true,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "resolveJsonModule": true,
     "skipLibCheck": true
   },
-  "include": ["src"]
+  "include": ["src", "mcp"]
 }
