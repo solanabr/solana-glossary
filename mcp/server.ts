@@ -5,7 +5,7 @@ import { registerTools } from "./tools.js";
 export function createServer(): McpServer {
   const server = new McpServer({
     name: "solana-glossary",
-    version: "1.0.0",
+    version: "1.1.0",
   });
 
   registerTools(server);
