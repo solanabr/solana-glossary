@@ -1,0 +1,31 @@
+{
+  "name": "@stbr/solana-glossary-mcp",
+  "version": "1.0.0",
+  "description": "MCP Server for the Solana Glossary — Streamable HTTP transport",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs --target node20 --clean",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "keywords": [
+    "solana",
+    "glossary",
+    "mcp",
+    "ai"
+  ],
+  "author": "ArthurRamoss",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "express": "^4.21.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.4.0"
+  }
+}

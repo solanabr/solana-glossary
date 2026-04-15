@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>solexicon Widget Demo</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.7;
+      color: #e2e2e2;
+      background: #0a0a0f;
+      min-height: 100vh;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 4rem 1.5rem 2rem;
+      background: linear-gradient(135deg, rgba(153,69,255,0.12), rgba(20,241,149,0.08), transparent);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .hero h1 {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #9945FF, #14F195);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      color: rgba(255,255,255,0.55);
+      font-size: 1.05rem;
+      margin-top: 0.5rem;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 1rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 4px 14px;
+      border-radius: 999px;
+      background: rgba(20,241,149,0.12);
+      color: #14F195;
+      border: 1px solid rgba(20,241,149,0.2);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .controls button {
+      font-family: 'SF Mono', monospace;
+      font-size: 0.82rem;
+      padding: 8px 20px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      color: #e2e2e2;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .controls button:hover {
+      background: rgba(153,69,255,0.15);
+      border-color: rgba(153,69,255,0.3);
+    }
+
+    .controls button.active {
+      background: rgba(153,69,255,0.2);
+      border-color: #9945FF;
+      color: #fff;
+    }
+
+    main {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    article {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    article h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #fff;
+    }
+
+    article h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin: 1.5rem 0 0.5rem;
+      color: rgba(255,255,255,0.9);
+    }
+
+    article p {
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 0.75rem;
+    }
+
+    .code-block {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin: 1rem 0;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.82rem;
+      color: #14F195;
+      overflow-x: auto;
+      white-space: pre;
+      line-height: 1.6;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .stat-card .value {
+      font-family: 'SF Mono', monospace;
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #9945FF, #14F195);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stat-card .label {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.4);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: rgba(255,255,255,0.3);
+      font-size: 0.8rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    footer a {
+      color: #9945FF;
+      text-decoration: none;
+    }
+
+    #log {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      background: rgba(0,0,0,0.9);
+      border: 1px solid rgba(20,241,149,0.2);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-family: 'SF Mono', monospace;
+      font-size: 0.75rem;
+      color: #14F195;
+      max-width: 300px;
+      z-index: 1000000;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    #log.visible { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <h1>solexicon widget</h1>
+    <p>Drop one &lt;script&gt; tag to get Solana term tooltips on any page. Hover the highlighted terms below.</p>
+    <span class="badge">&lt; 30KB gzipped &middot; zero dependencies</span>
+  </div>
+
+  <div class="controls">
+    <button class="active" onclick="switchTheme('dark')">Dark Theme</button>
+    <button onclick="switchTheme('light')">Light Theme</button>
+    <button onclick="destroyWidget()">Destroy</button>
+    <button onclick="reinitWidget()">Re-init</button>
+  </div>
+
+  <main>
+    <article>
+      <h2>What is Solana?</h2>
+      <p>
+        Solana is a high-performance blockchain that uses Proof of History to achieve
+        sub-second finality. Each Validator runs a full copy of the ledger and participates
+        in consensus by processing Transactions in parallel via the Sealevel runtime.
+      </p>
+      <p>
+        Developers write Programs (smart contracts) using the Anchor Framework or native Rust.
+        Each Program stores its state in Accounts, and can derive deterministic addresses through
+        Program Derived Address (PDA) patterns. Programs communicate via Cross-Program Invocation (CPI).
+      </p>
+
+      <h3>Token Ecosystem</h3>
+      <p>
+        SPL Token is the standard for fungible tokens, while Token-2022 adds extensions like
+        transfer fees and confidential transfers. Non-Fungible Tokens (NFTs) follow the Metaplex
+        standard, and Compressed NFTs reduce minting costs by 99.9%.
+      </p>
+
+      <h3>DeFi on Solana</h3>
+      <p>
+        Decentralized Finance thrives on Solana with protocols like Jupiter (the leading DEX
+        aggregator), Automated Market Makers, and Liquid Staking solutions. Jito provides MEV
+        infrastructure, distributing rewards to stakers. Users interact through their Wallet
+        (Phantom, Solflare) and connect to the network via RPC endpoints.
+      </p>
+
+      <h3>Emerging Frontiers</h3>
+      <p>
+        AI Agents are beginning to interact autonomously with Solana protocols, while DePIN
+        projects incentivize real-world infrastructure. Each Epoch (~2-3 days) resets the leader
+        schedule, and Staking secures the network. Every Slot (~400ms) produces a block, and
+        the smallest unit of SOL is a Lamport. Instructions are bundled into Transactions with
+        Rent requirements for data storage.
+      </p>
+    </article>
+
+    <article>
+      <h2>Integration</h2>
+      <p>Add the widget to any page with a single script tag:</p>
+      <div class="code-block">&lt;script src="https://cdn.example.com/solexicon-widget.js"
+  data-auto
+  data-theme="dark"&gt;
+&lt;/script&gt;</div>
+
+      <p>Or initialize manually with full control:</p>
+      <div class="code-block">&lt;script src="solexicon-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  SolanaGlossary.init({
+    theme: 'dark',
+    locale: 'en',
+    highlight: true,
+    position: 'bottom',
+    maxTerms: 100,
+    exclude: ['.no-glossary'],
+    onTermClick: (term) =&gt; {
+      console.log('Clicked:', term.id);
+    }
+  });
+&lt;/script&gt;</div>
+
+      <div class="stats">
+        <div class="stat-card">
+          <div class="value">30+</div>
+          <div class="label">Embedded Terms</div>
+        </div>
+        <div class="stat-card">
+          <div class="value">&lt;30KB</div>
+          <div class="label">Gzipped</div>
+        </div>
+        <div class="stat-card">
+          <div class="value">0</div>
+          <div class="label">Dependencies</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="highlighted-count">—</div>
+          <div class="label">Highlighted</div>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <footer>
+    Built for the <a href="https://github.com/solanabr/solana-glossary">Solana Glossary</a>
+    by <a href="https://github.com/solanabr">@SuperteamBR</a>
+  </footer>
+
+  <div id="log"></div>
+
+  <script src="../dist/widget.js"></script>
+  <script>
+    let currentTheme = 'dark';
+
+    async function initWidget(theme) {
+      const count = await SolanaGlossary.init({
+        theme: theme || 'dark',
+        highlight: true,
+        position: 'bottom',
+        onTermClick: (term) => {
+          showLog(`Clicked: ${term.term} (${term.category})`);
+        }
+      });
+      document.getElementById('highlighted-count').textContent = count;
+      showLog(`Widget initialized — ${count} terms highlighted`);
+    }
+
+    function switchTheme(theme) {
+      currentTheme = theme;
+      document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      if (theme === 'light') {
+        document.body.style.background = '#f5f5f7';
+        document.body.style.color = '#1a1a2e';
+      } else {
+        document.body.style.background = '#0a0a0f';
+        document.body.style.color = '#e2e2e2';
+      }
+
+      SolanaGlossary.destroy();
+      initWidget(theme);
+    }
+
+    function destroyWidget() {
+      SolanaGlossary.destroy();
+      document.getElementById('highlighted-count').textContent = '0';
+      showLog('Widget destroyed');
+    }
+
+    function reinitWidget() {
+      SolanaGlossary.destroy();
+      initWidget(currentTheme);
+    }
+
+    function showLog(msg) {
+      const log = document.getElementById('log');
+      log.textContent = msg;
+      log.classList.add('visible');
+      setTimeout(() => log.classList.remove('visible'), 2500);
+    }
+
+    // Initialize on load
+    initWidget('dark');
+  </script>
+</body>
+</html>

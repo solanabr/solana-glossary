@@ -1,0 +1,27 @@
+{
+  "name": "@stbr/solana-glossary-widget",
+  "version": "1.0.0",
+  "description": "Embeddable glossary widget — drop one <script> tag to get Solana term tooltips on any page",
+  "main": "dist/widget.js",
+  "module": "dist/widget.esm.js",
+  "types": "dist/widget.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --watch"
+  },
+  "keywords": [
+    "solana",
+    "glossary",
+    "widget",
+    "tooltip",
+    "embed"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "typescript": "^5.4.0"
+  }
+}
