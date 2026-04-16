@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import type { GlossaryTerm } from "@stbr/solana-glossary";
 import { useGlossary } from "@/hooks/useGlossary";
 import { useI18n } from "@/lib/i18n";
+import { isAIAvailable } from "@/lib/ai-config";
 import { motion } from "framer-motion";
 import {
   Code2,
@@ -14,7 +15,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const APPLY_URL = `${import.meta.env.VITE_AI_API_URL}/apply-code`;
+const APPLY_URL = "/api/apply-code";
 
 interface CodeResult {
   title: string;
@@ -84,6 +85,8 @@ export function ApplyCode({
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [result]);
+
+  if (!isAIAvailable()) return null;
 
   // Initial state -- show generate button
   if (!loading && !result) {

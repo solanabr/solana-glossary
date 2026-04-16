@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import type { GlossaryTerm } from "@stbr/solana-glossary";
 import { useGlossary } from "@/hooks/useGlossary";
 import { useI18n } from "@/lib/i18n";
+import { isAIAvailable } from "@/lib/ai-config";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain,
@@ -20,7 +21,7 @@ import { Progress } from "@/components/ui/progress";
 import { TermHighlightedMarkdown } from "@/components/TermHighlightedMarkdown";
 import { ApplyCode } from "@/components/ApplyCode";
 
-const QUIZ_URL = `${import.meta.env.VITE_AI_API_URL}/quiz`;
+const QUIZ_URL = "/api/quiz";
 
 type Difficulty = "beginner" | "intermediate" | "advanced";
 type Mode = "concept" | "connections" | "real-world";
@@ -176,6 +177,22 @@ export function SmartQuiz({
 
   // CONFIG PHASE
   if (phase === "config") {
+    if (!isAIAvailable()) {
+      return (
+        <div className="bg-gradient-to-br from-violet-500/5 to-primary/5 border border-violet-500/20 rounded-lg p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <Brain className="h-4 w-4 text-violet-400" />
+            <span className="text-xs font-bold text-foreground">
+              {t("quiz.title" as any)}
+            </span>
+          </div>
+          <p className="text-[11px] text-muted-foreground">
+            {t("ai.unavailable" as any)} {t("ai.glossary_works" as any)}
+          </p>
+        </div>
+      );
+    }
+
     return (
       <div className="bg-gradient-to-br from-violet-500/5 to-primary/5 border border-violet-500/20 rounded-lg p-4 space-y-3">
         <div className="flex items-center gap-2">
@@ -384,7 +401,7 @@ export function SmartQuiz({
           className="h-1.5 flex-1 mx-3"
         />
         <span className="text-[10px] font-medium text-primary">
-          {score} correct
+          {score} {t("quiz.score_correct" as any)}
         </span>
       </div>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { GlossaryTerm } from "@stbr/solana-glossary";
 import { streamChat, buildGlossaryContext } from "@/lib/ai-chat";
+import { isAIAvailable } from "@/lib/ai-config";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TermHighlightedMarkdown } from "@/components/TermHighlightedMarkdown";
@@ -23,6 +24,11 @@ export function UsageExample({ term, onTermClick }: UsageExampleProps) {
 
   useEffect(() => {
     abortRef.current = false;
+
+    if (!isAIAvailable()) {
+      setIsLoading(false);
+      return;
+    }
 
     // Check cache first
     const cached = exampleCache.get(term.id);

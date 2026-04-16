@@ -22,3 +22,7 @@
 [submodule ".claude/skills/ext/solana-mobile"]
 	path = .claude/skills/ext/solana-mobile
 	url = https://github.com/solana-mobile/solana-mobile-dev-skill.git
+
+[submodule ".claude/skills/ext/safe-solana-builder"]
+	path = .claude/skills/ext/safe-solana-builder
+	url = https://github.com/frankcastleauditor/safe-solana-builder.git

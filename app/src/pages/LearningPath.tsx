@@ -6,6 +6,7 @@ import { generateTopicPath, type LearningStep } from "@/lib/learning-path";
 import type { GlossaryTerm } from "@stbr/solana-glossary";
 import { TermHighlightedMarkdown } from "@/components/TermHighlightedMarkdown";
 import { streamChat, buildGlossaryContext } from "@/lib/ai-chat";
+import { isAIAvailable } from "@/lib/ai-config";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -47,6 +48,10 @@ const LearningPath = () => {
   // Auto-generate explanation for current step
   useEffect(() => {
     if (!step) return;
+    if (!isAIAvailable()) {
+      setLoading(false);
+      return;
+    }
     setExplanation("");
     setLoading(true);
     let content = "";
@@ -195,7 +200,7 @@ const LearningPath = () => {
                   )}
                   <div className="min-w-0">
                     <span className="text-[10px] text-muted-foreground">
-                      Step {i + 1}
+                      {t("learn.step")} {i + 1}
                     </span>
                     <p
                       className={`font-medium truncate ${active ? "text-foreground" : ""}`}
@@ -233,8 +238,8 @@ const LearningPath = () => {
                 {/* Step header */}
                 <div className="bg-card border border-border rounded-xl p-6 mb-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                      STEP {step.number}
+                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full uppercase">
+                      {t("learn.step")} {step.number}
                     </span>
                     <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                       {step.term.category}
@@ -259,7 +264,11 @@ const LearningPath = () => {
                     </span>
                   </div>
 
-                  {loading && !explanation ? (
+                  {!isAIAvailable() && !explanation ? (
+                    <p className="text-sm text-muted-foreground">
+                      {t("ai.unavailable")} {t("ai.glossary_works")}
+                    </p>
+                  ) : loading && !explanation ? (
                     <div className="space-y-2">
                       <Skeleton className="h-4 w-full" />
                       <Skeleton className="h-4 w-4/5" />

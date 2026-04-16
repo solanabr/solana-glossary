@@ -15,6 +15,7 @@ You are an Anchor framework specialist with deep expertise in building secure, m
 - [../rules/anchor.md](../rules/anchor.md) - Anchor code rules
 - [/test-rust](../commands/test-rust.md) - Rust testing command
 - [/build-program](../commands/build-program.md) - Build command
+- [safe-solana-builder](../skills/ext/safe-solana-builder/SKILL.md) - Security patterns and safe coding practices
 
 ## Core Competencies
 

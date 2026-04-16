@@ -2,6 +2,7 @@ import { useState, useCallback, useRef } from "react";
 import type { GlossaryTerm } from "@stbr/solana-glossary";
 import { useGlossary } from "@/hooks/useGlossary";
 import { streamChat, buildGlossaryContext } from "@/lib/ai-chat";
+import { isAIAvailable } from "@/lib/ai-config";
 import {
   FileCode2,
   Loader2,
@@ -119,6 +120,10 @@ export function ExplainFilePanel({ onTermClick }: ExplainFilePanelProps) {
     async (inputCode?: string) => {
       const codeToAnalyze = inputCode || code;
       if (!codeToAnalyze.trim() || isAnalyzing) return;
+      if (!isAIAvailable()) {
+        setError(t("ai.unavailable"));
+        return;
+      }
 
       setError(null);
       setResult("");

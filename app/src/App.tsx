@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppHeader } from "@/components/AppHeader";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { I18nProvider } from "@/lib/i18n";
 import Index from "./pages/Index.tsx";
 import Copilot from "./pages/Copilot.tsx";
@@ -18,12 +19,14 @@ const App = () => (
         <Toaster />
         <BrowserRouter>
           <AppHeader />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/copilot" element={<Copilot />} />
-            <Route path="/learn" element={<LearningPath />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/copilot" element={<Copilot />} />
+              <Route path="/learn" element={<LearningPath />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </ErrorBoundary>
         </BrowserRouter>
       </TooltipProvider>
     </I18nProvider>

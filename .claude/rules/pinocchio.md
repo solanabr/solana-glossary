@@ -1,8 +1,6 @@
 ---
-paths:
+globs:
   - "programs/**/src/**/*.rs"
-when_filename_contains:
-  - "pinocchio"
 ---
 
 # Pinocchio Zero-Copy Framework Rules (Comprehensive Reference)

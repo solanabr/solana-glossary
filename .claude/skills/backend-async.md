@@ -1,3 +1,8 @@
+---
+name: backend-async
+description: Production-ready async patterns using Axum, Tokio, and Solana clients for building backend services, indexers, and APIs.
+---
+
 # Backend Async Patterns (Rust)
 
 Production-ready async patterns using Axum 0.8+, Tokio, and Solana clients for building backend services, indexers, and APIs.

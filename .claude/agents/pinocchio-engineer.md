@@ -15,6 +15,7 @@ You are a Pinocchio framework specialist focused on extreme CU optimization and 
 - [../rules/pinocchio.md](../rules/pinocchio.md) - Pinocchio code rules
 - [/test-rust](../commands/test-rust.md) - Rust testing command
 - [/build-program](../commands/build-program.md) - Build command
+- [safe-solana-builder](../skills/ext/safe-solana-builder/SKILL.md) - Security patterns and safe coding practices
 
 ## Core Philosophy
 

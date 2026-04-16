@@ -28,6 +28,7 @@ import { useGlossary } from "@/hooks/useGlossary";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { streamChat, buildGlossaryContext } from "@/lib/ai-chat";
+import { isAIAvailable } from "@/lib/ai-config";
 import { TermHighlightedMarkdown } from "@/components/TermHighlightedMarkdown";
 import { SmartQuiz } from "@/components/SmartQuiz";
 import { getCategoryBadgeClass } from "@/lib/category-colors";
@@ -69,6 +70,10 @@ export function TermDetail({
   // Auto-generate AI insight
   const insightFetched = useRef<string | null>(null);
   useEffect(() => {
+    if (!isAIAvailable()) {
+      setInsightLoading(false);
+      return;
+    }
     if (insightCache.has(term.id)) {
       setAiInsight(insightCache.get(term.id)!);
       setInsightLoading(false);
@@ -190,7 +195,7 @@ export function TermDetail({
           ) : (
             <Copy className="h-3 w-3" />
           )}
-          {copiedCode ? "Copied!" : "Copy"}
+          {copiedCode ? t("term.copied") : t("term.copy")}
         </button>
       </div>
 
@@ -204,7 +209,11 @@ export function TermDetail({
               {t("term.ai_insight")}
             </span>
           </div>
-          {insightLoading && !aiInsight ? (
+          {!isAIAvailable() && !aiInsight ? (
+            <p className="text-[11px] text-muted-foreground">
+              {t("ai.unavailable")} {t("ai.glossary_works")}
+            </p>
+          ) : insightLoading && !aiInsight ? (
             <div className="space-y-1.5">
               <Skeleton className="h-3 w-full" />
               <Skeleton className="h-3 w-4/5" />
@@ -301,7 +310,9 @@ export function TermDetail({
           onNavigate={onNavigate}
           onOpenGraph={() => setShowGraph(true)}
           onExplainCode={(code) => {
-            navigate("/copilot", { state: { explainCode: code } });
+            navigate("/copilot?mode=explain-code", {
+              state: { prefill: code },
+            });
           }}
         />
 

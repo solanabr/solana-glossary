@@ -17,7 +17,7 @@ You are a mobile dApp engineer specializing in React Native and Expo for Solana.
 - [frontend-framework-kit.md](../skills/ext/solana-dev/skill/references/frontend-framework-kit.md) - Frontend framework kit
 - [payments.md](../skills/ext/solana-dev/skill/references/payments.md) - Payment patterns
 - [/build-app](../commands/build-app.md) - Build app command
-- [/test-typescript](../commands/test-typescript.md) - TypeScript testing
+- [/test-ts](../commands/test-ts.md) - TypeScript testing
 
 ## Core Competencies
 

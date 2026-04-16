@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { CategoryGrid } from "@/components/CategoryGrid";
 import { TermCard } from "@/components/TermCard";
 import { TermDetail } from "@/components/TermDetail";
@@ -18,12 +19,20 @@ const Index = () => {
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const { t } = useI18n();
   const glossary = useGlossary();
+  const navigate = useNavigate();
 
   const terms = useMemo(() => {
     return activeCategory
       ? glossary.getTermsByCategory(activeCategory)
       : glossary.getAllTerms();
   }, [activeCategory, glossary]);
+
+  const handleCodeDetected = useCallback(
+    (code: string) => {
+      navigate("/copilot?mode=explain-code", { state: { prefill: code } });
+    },
+    [navigate],
+  );
 
   const handleSelectTerm = useCallback((term: GlossaryTerm | null) => {
     setSelectedTerm(term);
@@ -71,7 +80,10 @@ const Index = () => {
             </p>
           </div>
 
-          <SmartHeroInput onSelectTerm={handleSelectTerm} />
+          <SmartHeroInput
+            onSelectTerm={handleSelectTerm}
+            onCodeDetected={handleCodeDetected}
+          />
         </div>
       </section>
 

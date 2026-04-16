@@ -1,8 +1,7 @@
-import { allTerms, searchTerms } from "@stbr/solana-glossary";
 import { getLocalizedTerms } from "@stbr/solana-glossary/i18n";
 import type { GlossaryTerm } from "@stbr/solana-glossary";
 
-const CHAT_URL = `${import.meta.env.VITE_AI_API_URL}`;
+const CHAT_URL = "/api/chat";
 
 type Msg = { role: "user" | "assistant"; content: string };
 type GlossaryLocale = "en" | "pt" | "es";

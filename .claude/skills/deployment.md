@@ -1,3 +1,8 @@
+---
+name: deployment
+description: Deployment workflows for Solana programs — devnet, mainnet, multisig upgrades, CI/CD pipelines, and rollback procedures.
+---
+
 # Deployment Workflows
 
 ## Deployment Strategy Overview

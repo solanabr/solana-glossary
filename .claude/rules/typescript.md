@@ -1,5 +1,5 @@
 ---
-paths:
+globs:
   - "app/**/*.{ts,tsx}"
   - "src/**/*.{ts,tsx}"
   - "tests/**/*.ts"

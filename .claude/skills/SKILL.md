@@ -71,6 +71,10 @@ From [Trail of Bits](ext/trailofbits/plugins/building-secure-contracts/skills/):
 - [token-integration-analyzer/](ext/trailofbits/plugins/building-secure-contracts/skills/token-integration-analyzer/) — Token integration analysis
 - [guidelines-advisor/](ext/trailofbits/plugins/building-secure-contracts/skills/guidelines-advisor/) — Security guidelines
 
+From [safe-solana-builder](ext/safe-solana-builder/):
+
+- [ext/safe-solana-builder/SKILL.md](ext/safe-solana-builder/SKILL.md) — Security-first Solana program scaffolding: 5-step workflow enforcing vulnerability prevention during code generation. Covers Anchor, native Rust, and Pinocchio. 70+ audit-derived security rules.
+
 ## Formal Verification
 
 From [QEDGen](ext/qedgen/):
@@ -146,3 +150,4 @@ From [Colosseum](ext/colosseum/skills/colosseum-copilot/):
 | Vulnerability scanning | ext/trailofbits → solana-vulnerability-scanner/ |
 | Formal verification, proofs | ext/qedgen → SKILL.md |
 | Idea validation, competitive research, hackathon projects | ext/colosseum → colosseum-copilot/SKILL.md |
+| Security-first scaffolding, safe code generation | ext/safe-solana-builder → SKILL.md |

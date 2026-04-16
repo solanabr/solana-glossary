@@ -1,5 +1,5 @@
 ---
-paths:
+globs:
   - "**/*.rs"
 exclude:
   - "**/target/**"
