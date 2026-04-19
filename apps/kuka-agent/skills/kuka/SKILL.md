@@ -69,6 +69,9 @@ If glossary data is not found in any of the 3 locations, proceed without it — 
 - If sidecar doesn't exist, load `./references/init.md` for first-run onboarding
 - If sidecar files are corrupt or unreadable, start fresh as if first-run
 
+**Upstream sync check (only when glossary source is option 1 above):**
+If the glossary was loaded from the solana-glossary repo clone (option 1), run `npx tsx apps/kuka-agent/skills/kuka/scripts/sync-glossary.ts --dry-run` once per activation to detect new upstream terms merged since the last local pull. Skip this step entirely when the glossary came from options 2 or 3 — those read-only sources cannot be synced from the agent. If the dry-run reports `new_from_upstream.length > 0`, mention the count briefly in the greeting and offer to apply (`--apply`); if it reports zero, stay silent. If the dry-run fails (no network, no gh CLI, detached HEAD), skip silently — it's a nice-to-have, never a blocker.
+
 **Route:**
 - If `--headless` or `-H` is passed, load `./references/autonomous-wake.md` and complete the task without interaction
 - If a term or topic was passed as argument, go directly to term lookup for that input
