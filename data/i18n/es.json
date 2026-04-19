@@ -4234,5 +4234,33 @@
   "archive-node": {
     "term": "Nodo de Archivo",
     "definition": "Un nodo de Solana que retiene el libro mayor histórico completo desde genesis, incluyendo todos los datos de transacciones y estados historicos de cuentas, en lugar de podar datos antiguos después de una ventana de retencion. Los nodos RPC estandar tipicamente almacenan sólo 2-3 dias de historial de transacciones y el snapshot actual del estado de cuentas. Los nodos de archivo servidos por proveedores como Triton, Helius y Google BigQuery permiten consultas historicas como getTransaction para firmas de meses de antiguedad y recuperacion completa de getBlock para epocas pasadas. Ejecutar un nodo de archivo requiere almacenamiento de multiples terabytes (50+ TB y creciendo) debido al alto rendimiento de Solana."
+  },
+  "batched-validity-proof": {
+    "term": "Prueba de Validez en Lote",
+    "definition": "A single Groth16 SNARK that proves the validity of multiple compressed-account state transitions at once, introduced by Light Protocol V2 to amortize proving and on-chain verification cost across many operations in a single Solana transaction. Contrasts with V1, where each state transition required its own proof. Enables use cases like bulk airdrops of compressed tokens to hundreds of recipients with a single aggregated proof, reducing per-operation compute units and transaction size."
+  },
+  "compressed-token-v2": {
+    "term": "Token Comprimido V2",
+    "definition": "Second-generation upgrade of Light Protocol's Compressed Token Program, deployed to Solana mainnet in 2026, that ships batched validity proofs, rolling tree maintenance, sharded nullifier queues, and lower alt_bn128 verification costs. V2 lets a single transaction cover many compressed-token state transitions with one aggregated Groth16 proof, eliminates the batched-epoch stalls of V1, and allows Foresters to process nullifier queues in parallel per tree."
+  },
+  "identity-derived-pda": {
+    "term": "PDA Derivada de Identidad",
+    "definition": "A Program-Derived Address whose seed is a deterministic hash (typically SHA-256 truncated to u64 little-endian) of an off-chain identity like a KSUID or UUID, letting backend services compute the on-chain account for any user or tenant without a mapping table. Idempotent and one-way: the same identity always resolves to the same PDA, but the identity cannot be recovered from the address. Bridges Django or Rails identity models to Solana accounts with no registry."
+  },
+  "mint-loop-attack": {
+    "term": "Ataque de Bucle de Mint",
+    "definition": "A token-economy exploit where a strategic reserve pool that automatically receives a percentage of every mint is also programmatically drainable, letting an attacker mint, pull the auto-deposited share, and remint to create unbounded supply. Mitigation: make such reserve pools one-way (no transfer path out) and fund drainable pools exclusively via manual transfers from a separate treasury, never as a side-effect of minting. A known instance of the feedback-loop exploit family."
+  },
+  "optimistic-chain-settlement": {
+    "term": "Liquidación On-Chain Optimista",
+    "definition": "A hybrid pattern where state changes are committed to an off-chain database immediately and the on-chain reflection is deferred to a fire-and-forget worker, with a nightly reconciliation that polls transaction finality (confirmed/failed/not-found) to advance or terminally fail the row. Trades ledger purity for customer UX: the frontend never blocks on finality, terminal failures page ops without rolling back the user action. Common in loyalty, gaming, and merchant flows."
+  },
+  "rolling-tree-maintenance": {
+    "term": "Mantenimiento Continuo del Árbol",
+    "definition": "Light Protocol V2's continuous-update model for Concurrent Merkle Tree maintenance, where Foresters process nullifier and address queues in small incremental batches sharded per tree instead of V1's epoch-wide batched updates that stalled state transitions during maintenance windows. Keeps the tree in a consistent and always-spendable state, allowing multiple Foresters to operate in parallel without contention, and reduces the effective finality lag of compressed-token operations."
+  },
+  "vault-transit-signing": {
+    "term": "Firma vía Vault Transit",
+    "definition": "An HSM-style pattern where Solana signing keys live inside HashiCorp Vault's Transit engine and never leave it: the client serializes the message, Vault signs, the client gets back only the signature bytes. A compromised worker cannot exfiltrate the keypair because the keypair is never in its memory. Standard for hot-wallet services handling treasury, distribution-pool, or mint-authority keys that need programmatic access without exposing private keys."
   }
 }

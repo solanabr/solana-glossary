@@ -369,5 +369,32 @@
       "concurrent-merkle-tree"
     ],
     "tags": ["zk"]
+  },
+  {
+    "id": "batched-validity-proof",
+    "term": "Batched Validity Proof",
+    "definition": "A single Groth16 SNARK that proves the validity of multiple compressed-account state transitions at once, introduced by Light Protocol V2 to amortize proving and on-chain verification cost across many operations in a single Solana transaction. Contrasts with V1, where each state transition required its own proof. Enables use cases like bulk airdrops of compressed tokens to hundreds of recipients with a single aggregated proof, reducing per-operation compute units and transaction size.",
+    "category": "zk-compression",
+    "depth": 4,
+    "aliases": ["Batched Groth16 Proof", "Aggregated Validity Proof"],
+    "related": ["validity-proof", "proof-aggregation", "compressed-token-v2", "light-protocol", "groth16", "alt-bn128-syscall"]
+  },
+  {
+    "id": "compressed-token-v2",
+    "term": "Compressed Token V2",
+    "definition": "Second-generation upgrade of Light Protocol's Compressed Token Program, deployed to Solana mainnet in 2026, that ships batched validity proofs, rolling tree maintenance, sharded nullifier queues, and lower alt_bn128 verification costs. V2 lets a single transaction cover many compressed-token state transitions with one aggregated Groth16 proof, eliminates the batched-epoch stalls of V1, and allows Foresters to process nullifier queues in parallel per tree.",
+    "category": "zk-compression",
+    "depth": 4,
+    "aliases": ["cToken V2", "Compressed Token V2 Upgrade"],
+    "related": ["compressed-token", "light-token-program", "light-protocol", "batched-validity-proof", "rolling-tree-maintenance", "forester", "nullifier"]
+  },
+  {
+    "id": "rolling-tree-maintenance",
+    "term": "Rolling Tree Maintenance",
+    "definition": "Light Protocol V2's continuous-update model for Concurrent Merkle Tree maintenance, where Foresters process nullifier and address queues in small incremental batches sharded per tree instead of V1's epoch-wide batched updates that stalled state transitions during maintenance windows. Keeps the tree in a consistent and always-spendable state, allowing multiple Foresters to operate in parallel without contention, and reduces the effective finality lag of compressed-token operations.",
+    "category": "zk-compression",
+    "depth": 4,
+    "aliases": ["Rolling Epoch Updates", "Continuous Tree Maintenance"],
+    "related": ["forester", "concurrent-merkle-tree", "nullifier", "compressed-token-v2", "light-protocol"]
   }
 ]

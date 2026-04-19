@@ -762,5 +762,23 @@
     "category": "programming-model",
     "depth": 4,
     "related": ["sysvar", "instruction-introspection", "ed25519", "cpi"]
+  },
+  {
+    "id": "identity-derived-pda",
+    "term": "Identity-Derived PDA",
+    "definition": "A Program-Derived Address whose seed is a deterministic hash (typically SHA-256 truncated to u64 little-endian) of an off-chain identity like a KSUID or UUID, letting backend services compute the on-chain account for any user or tenant without a mapping table. Idempotent and one-way: the same identity always resolves to the same PDA, but the identity cannot be recovered from the address. Bridges Django or Rails identity models to Solana accounts with no registry.",
+    "category": "programming-model",
+    "depth": 4,
+    "aliases": ["KSUID-Derived PDA", "Deterministic Identity PDA"],
+    "related": ["pda", "seeds", "compressed-pda"]
+  },
+  {
+    "id": "optimistic-chain-settlement",
+    "term": "Optimistic Chain Settlement",
+    "definition": "A hybrid pattern where state changes are committed to an off-chain database immediately and the on-chain reflection is deferred to a fire-and-forget worker, with a nightly reconciliation that polls transaction finality (confirmed/failed/not-found) to advance or terminally fail the row. Trades ledger purity for customer UX: the frontend never blocks on finality, terminal failures page ops without rolling back the user action. Common in loyalty, gaming, and merchant flows.",
+    "category": "programming-model",
+    "depth": 3,
+    "aliases": ["Fire-and-Forget Settlement", "Deferred On-Chain Settlement"],
+    "related": ["finality", "idempotency", "eventual-consistency", "transaction-mortality"]
   }
 ]
