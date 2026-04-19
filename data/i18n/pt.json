@@ -4234,5 +4234,25 @@
   "archive-node": {
     "term": "Nó de Arquivo",
     "definition": "Um nó Solana que retém o ledger histórico completo desde o genesis, incluindo todos os dados de transações e estados históricos de contas, em vez de podar dados antigos após uma janela de retenção. Nós RPC padrão tipicamente armazenam apenas 2-3 dias de histórico de transações e o snapshot atual de estado de contas. Nós de arquivo servidos por provedores como Triton, Helius e Google BigQuery permitem consultas históricas como getTransaction para assinaturas de meses atrás e recuperação completa de getBlock para epochs passadas. Operar um nó de arquivo requer armazenamento de multi-terabytes (50+ TB e crescendo) devido ao alto throughput da Solana."
+  },
+  "bubblegum-asset-pda": {
+    "term": "PDA do Asset Bubblegum",
+    "definition": "The deterministic on-chain address of a compressed NFT, derived as a PDA with seeds [\"asset\", tree_address, leaf_index_u64_LE] under the Bubblegum program. This is the only valid asset_id for DAS queries and for future decompression / transfer instructions. Common pitfall: persisting the mint tx signature (88 chars) as the asset_id — it identifies the tx, not the asset. Correct capture reads the sequence counter from the tree header, then derives the 32-byte PDA (~44 chars)."
+  },
+  "cnft-tree-pool": {
+    "term": "Pool de Árvores cNFT",
+    "definition": "A shared pool of Bubblegum Merkle trees that a minting service routes new cNFTs into via a picker policy (usually least-used first), instead of creating one tree per tenant. Amortizes the upfront tree-rent cost across many mints and removes per-tenant scaling logic. When pool utilization crosses a threshold, an operator adds a new tree and the picker balances future mints across it. The DAS query layer doesn't care which tree holds a given asset, so the pool is transparent to consumers."
+  },
+  "mint-kill-switch": {
+    "term": "Kill-Switch de Mint",
+    "definition": "A default-on feature flag that makes minting paths raise an error instead of executing, blocking destructive automated actions until an operator disables it. Used for operations that burn SOL or create on-chain state that cannot be undone (tree creation, NFT airdrops, token mints with rent). Pattern: 'fail closed' — missing or ambiguous flag refuses to mint. Protects against bugs and retry storms where a queue would otherwise replay expensive operations."
+  },
+  "non-retryable-error": {
+    "term": "Erro Não-Retentável",
+    "definition": "An error raised by a worker that explicitly signals 'do not reenqueue — retrying will not succeed'. The classifier inspects the exception and returns a terminal state (dead-letter, or a framework sentinel like Celery's Reject requeue=False) when the failure is persistent. Canonical Solana signals: 'insufficient lamports', program errors that only change with a redeploy, rent violations, kill-switch set. Without it, every on-chain failure becomes a retry storm."
+  },
+  "retry-storm": {
+    "term": "Tempestade de Retries",
+    "definition": "A failure mode where a job queue (Celery, SQS) keeps re-executing a failing on-chain operation, burning SOL on each attempt because the failure is persistent rather than transient. Common triggers: insufficient payer balance, missing account, or a program error code that won't change without a redeploy. The queue treats every exception as retry-worthy, so thousands of retries run over minutes and drain the fee payer. Mitigation: classify errors, return non-retryable, pair with a kill-switch."
   }
 }
