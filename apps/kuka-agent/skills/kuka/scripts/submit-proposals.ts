@@ -32,7 +32,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { allTerms, getCategories, type Category, type GlossaryTerm } from "../../../../../src/index";
+import { getCategories, type Category, type GlossaryTerm } from "../../../../../src/index";
 
 // ── Types ───────────────────────────────────────────────────────────────
 
@@ -83,6 +83,7 @@ interface Args {
   dryRun: boolean;
   pr: boolean;
   prRepo: string;
+  ignoreStale: boolean;
   verbose: boolean;
 }
 
@@ -94,6 +95,7 @@ function parseArgs(): Args {
     dryRun: true,
     pr: false,
     prRepo: "solanabr/solana-glossary",
+    ignoreStale: false,
     verbose: false,
   };
 
@@ -109,6 +111,7 @@ Options:
   --apply                  Modify glossary files and move proposals to .done/
   --pr                     After apply, open a PR via gh CLI
   --pr-repo <owner/repo>   Target repo for PR (default: solanabr/solana-glossary)
+  --ignore-stale           Skip the pre-flight stale-tree check (DANGEROUS)
   --verbose                Print diagnostics to stderr
   --help, -h               Show this help
 
@@ -142,6 +145,9 @@ Output: JSON to stdout with injection plan, validation, and PR URL.
       case "--pr-repo":
         i++;
         args.prRepo = argv[i];
+        break;
+      case "--ignore-stale":
+        args.ignoreStale = true;
         break;
       case "--verbose":
         args.verbose = true;
@@ -179,6 +185,7 @@ function validateProposal(
   proposal: Proposal,
   existingIds: Set<string>,
   existingAliases: Map<string, string>,
+  knownRefs: Set<string>,
 ): { status: ValidationStatus; issues: string[] } {
   const issues: string[] = [];
   const validCategories = getCategories();
@@ -188,7 +195,12 @@ function validateProposal(
     issues.push(`Invalid kebab-case ID: ${proposal.id}`);
   }
 
-  // Duplicate ID
+  // Duplicate ID — checks ONLY against the real glossary on disk, not
+  // against batch siblings (an ID matching another proposal in the same
+  // batch is a real bug, but an ID matching another proposal that's also
+  // about to be added is... impossible, since .kuka/proposals is keyed by
+  // filename). Batch siblings go into knownRefs, not existingIds, so they
+  // don't trigger this check.
   if (existingIds.has(proposal.id)) {
     issues.push(`ID '${proposal.id}' already exists in glossary`);
   }
@@ -206,19 +218,25 @@ function validateProposal(
     issues.push(`Definition too long: ${proposal.definition.length} chars`);
   }
 
-  // Alias collisions
+  // Alias collisions (checked against both existing glossary AND batch
+  // siblings — two proposals in the same batch claiming the same alias is
+  // a real collision we want to catch).
   for (const alias of proposal.aliases ?? []) {
     const collision = existingAliases.get(alias.toLowerCase());
-    if (collision) {
+    if (collision && collision !== proposal.id) {
       issues.push(
         `Alias '${alias}' collides with existing term '${collision}'`,
       );
     }
   }
 
-  // Related terms
+  // Related terms — checked against knownRefs (existing glossary UNION
+  // batch siblings), so cross-references within the same proposal batch
+  // are considered valid. Bug fix B5 (2026-04-15): before, this check used
+  // only existingIds, so compressed-token-v2 ⇄ batched-validity-proof
+  // emitted spurious "not in glossary" warnings.
   for (const rel of proposal.related ?? []) {
-    if (!existingIds.has(rel)) {
+    if (!knownRefs.has(rel)) {
       issues.push(`Related term '${rel}' not in glossary`);
     }
   }
@@ -379,6 +397,70 @@ function injectTerm(
   return { file: filename, insertAfter: afterId };
 }
 
+// ── Pre-flight stale-tree check ─────────────────────────────────────────
+
+/**
+ * Bug fix B6 (2026-04-15): ensure the local working tree is not behind
+ * ``origin/<defaultBranch>`` before touching the glossary files. If we
+ * proceed with a stale tree, subsequent operations may silently drop
+ * upstream work (see bug B1). The caller can bypass with --ignore-stale.
+ *
+ * Returns:
+ *   { stale: false, behind: 0 } if the tree is up to date
+ *   { stale: true, behind: N } if N upstream commits are missing locally
+ *   null if the check could not be run (no git, no network, detached HEAD)
+ */
+function checkStaleTree(
+  repo: string,
+  verbose: boolean,
+): { stale: boolean; behind: number; defaultBranch: string } | null {
+  try {
+    const defaultBranch = execSync(
+      `gh repo view ${repo} --json defaultBranchRef --jq .defaultBranchRef.name`,
+      { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] },
+    ).trim();
+
+    // Fetch the default branch into a throwaway ref so we don't touch the
+    // user's origin/main tracking ref or stash state.
+    execSync(
+      `git fetch https://github.com/${repo}.git ${defaultBranch}:refs/remotes/_kuka_stale_check`,
+      { stdio: "pipe" },
+    );
+
+    const behindCount = execSync(
+      "git rev-list --count HEAD..refs/remotes/_kuka_stale_check",
+      { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] },
+    ).trim();
+
+    // Clean up the throwaway ref so repeated runs don't leave refs lying
+    // around. Failure here is non-fatal (the ref is harmless).
+    try {
+      execSync("git update-ref -d refs/remotes/_kuka_stale_check", {
+        stdio: "pipe",
+      });
+    } catch {
+      // ignore
+    }
+
+    const behind = Number.parseInt(behindCount, 10);
+    const stale = behind > 0;
+
+    if (verbose) {
+      console.error(
+        `Stale-tree check: HEAD is ${behind} commit(s) behind ${repo}:${defaultBranch}`,
+      );
+    }
+
+    return { stale, behind, defaultBranch };
+  } catch (err: unknown) {
+    if (verbose) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`Stale-tree check failed (non-fatal): ${message}`);
+    }
+    return null;
+  }
+}
+
 // ── PR creation ─────────────────────────────────────────────────────────
 
 function isGhCliAvailable(): boolean {
@@ -390,20 +472,32 @@ function isGhCliAvailable(): boolean {
   }
 }
 
-function cacheModifiedFiles(filesModified: string[]): Record<string, string> {
-  const cached: Record<string, string> = {};
-  for (const f of filesModified) {
-    cached[f] = readFileSync(f, "utf-8");
-  }
-  return cached;
-}
-
-function prepareBranch(
+/**
+ * Bug fix B1 (2026-04-15): prepare a clean branch rooted at upstream's
+ * default branch and REINJECT the proposals on top of it, rather than
+ * caching the working-tree files and blindly writing them over the clean
+ * base. The previous implementation would silently clobber upstream work
+ * whenever the user's working tree was stale relative to upstream
+ * (because the cache contained ``stale_base + my_proposals`` and got
+ * written over ``upstream_real + other_merged_PRs``, dropping everything
+ * that was added upstream since the stale base).
+ *
+ * This new version is safe regardless of what branch the user is on:
+ *   1. Stash any uncommitted working-tree state (to unblock checkout)
+ *   2. Checkout a fresh branch from upstream's default branch
+ *   3. Run injectTerm() on the fresh files — append-only text manipulation
+ *      against the real upstream state, so no term is ever deleted
+ *   4. git add + commit
+ *
+ * The stashed state is left on the stack; callers should pop it after
+ * the PR flow is done (or restore it manually if something fails).
+ */
+function prepareBranchFresh(
   repo: string,
   branchName: string,
-  cached: Record<string, string>,
-  filesModified: string[],
-): void {
+  proposals: Proposal[],
+  glossaryDir: string,
+): { filesModified: string[] } {
   const defaultBranch = execSync(
     `gh repo view ${repo} --json defaultBranchRef --jq .defaultBranchRef.name`,
     { encoding: "utf-8", stdio: ["pipe", "pipe", "pipe"] },
@@ -413,6 +507,9 @@ function prepareBranch(
     { stdio: "pipe" },
   );
 
+  // Stash any uncommitted state (including untracked) so the checkout is
+  // clean. This is NOT a cache of files to write back — we rely on the
+  // upstream snapshot exclusively. The stash just unblocks the checkout.
   execSync("git stash push --include-untracked -m kuka-pr-stash", {
     stdio: "pipe",
   });
@@ -421,11 +518,35 @@ function prepareBranch(
     stdio: "pipe",
   });
 
-  for (const [f, content] of Object.entries(cached)) {
-    writeFileSync(f, content, "utf-8");
+  // Reinject each proposal on top of the fresh upstream state. ``injectTerm``
+  // uses append-only text manipulation, so it preserves the existing file
+  // formatting and never touches terms that are already there.
+  const touched = new Set<string>();
+  for (const proposal of proposals) {
+    injectTerm(glossaryDir, proposal);
+
+    const filename = CATEGORY_FILE_MAP[proposal.category];
+    if (filename) {
+      touched.add(join(glossaryDir, filename));
+    }
+    // Track i18n files that exist (injectTerm already writes them).
+    if (proposal.i18n) {
+      const i18nDir = join(glossaryDir, "..", "i18n");
+      for (const locale of Object.keys(proposal.i18n)) {
+        const i18nPath = join(i18nDir, `${locale}.json`);
+        if (existsSync(i18nPath)) {
+          touched.add(i18nPath);
+        }
+      }
+    }
   }
 
-  execSync(`git add ${filesModified.join(" ")}`, { stdio: "pipe" });
+  const filesModified = [...touched];
+  if (filesModified.length > 0) {
+    execSync(`git add ${filesModified.join(" ")}`, { stdio: "pipe" });
+  }
+
+  return { filesModified };
 }
 
 function commitProposals(
@@ -478,9 +599,21 @@ function submitPr(repo: string, proposals: Proposal[], termList: string): string
 function createPR(
   repo: string,
   proposals: Proposal[],
-  filesModified: string[],
+  glossaryDir: string,
 ): string | null {
-  const branchName = `proposal/kuka-batch-${new Date().toISOString().slice(0, 10)}`;
+  // Bug fix B9 (2026-04-15): include a short slug of the first proposal IDs
+  // in the branch name so multiple batches on the same day don't collide.
+  const dateSlug = new Date().toISOString().slice(0, 10);
+  const contentSlug = proposals
+    .slice(0, 2)
+    .map((p) => p.id.split("-").slice(0, 2).join("-"))
+    .join("-")
+    .replaceAll(/[^a-z0-9-]/g, "")
+    .slice(0, 40);
+  const branchName = contentSlug
+    ? `proposal/kuka-batch-${dateSlug}-${contentSlug}`
+    : `proposal/kuka-batch-${dateSlug}`;
+
   const termList = proposals
     .map((p) => `- \`${p.id}\` (${p.category}): ${p.term}`)
     .join("\n");
@@ -491,8 +624,8 @@ function createPR(
   }
 
   try {
-    const cached = cacheModifiedFiles(filesModified);
-    prepareBranch(repo, branchName, cached, filesModified);
+    // Bug fix B1 (2026-04-15): reinject on fresh upstream base, no cache.
+    prepareBranchFresh(repo, branchName, proposals, glossaryDir);
     commitProposals(proposals, termList);
     return submitPr(repo, proposals, termList);
   } catch (err: unknown) {
@@ -504,17 +637,46 @@ function createPR(
 
 // ── Helpers for main ───────────────────────────────────────────────────
 
-function loadExistingGlossaryData(): {
+/**
+ * Load existing glossary IDs and aliases by reading the JSON files directly
+ * from ``glossaryDir`` on disk (NOT via the ``src/index`` TypeScript module).
+ *
+ * Bug fix B3 (2026-04-15): the previous implementation imported ``allTerms``
+ * from ``src/index``, which relies on the compiled TS bundle. When a caller
+ * had just run ``sync-glossary --apply`` (which rewrites the JSON files on
+ * disk) but hadn't run ``npm run build``, ``allTerms`` still held the stale
+ * pre-sync snapshot, so the validator passed duplicates or rejected valid
+ * cross-refs. Reading from disk is the ground truth: if the files are
+ * correct, the validator sees them correct.
+ */
+function loadExistingGlossaryData(glossaryDir: string): {
   existingIds: Set<string>;
   existingAliases: Map<string, string>;
 } {
-  const existingIds = new Set(allTerms.map((t) => t.id));
+  const existingIds = new Set<string>();
   const existingAliases = new Map<string, string>();
-  for (const t of allTerms) {
-    for (const alias of t.aliases ?? []) {
-      existingAliases.set(alias.toLowerCase(), t.id);
+
+  if (!existsSync(glossaryDir)) {
+    return { existingIds, existingAliases };
+  }
+
+  for (const file of readdirSync(glossaryDir)) {
+    if (!file.endsWith(".json")) continue;
+    try {
+      const raw = readFileSync(join(glossaryDir, file), "utf-8");
+      const terms: GlossaryTerm[] = JSON.parse(raw);
+      for (const t of terms) {
+        existingIds.add(t.id);
+        for (const alias of t.aliases ?? []) {
+          existingAliases.set(alias.toLowerCase(), t.id);
+        }
+      }
+    } catch {
+      // Skip malformed files — the validator will catch structural issues
+      // through other means. We don't want one bad file to crash the loader.
     }
   }
+
   return { existingIds, existingAliases };
 }
 
@@ -528,8 +690,35 @@ function buildInjectionPlan(
   const validProposals: Proposal[] = [];
   const filesModified = new Set<string>();
 
+  // Bug fix B5 (2026-04-15): build a ``knownRefs`` set that includes both
+  // the existing glossary AND all batch siblings BEFORE running validation.
+  // This is the superset the ``related`` field is allowed to reference, so
+  // cross-references within the same proposal batch (e.g. compressed-token-v2
+  // ⇄ batched-validity-proof) don't emit spurious warnings. The ``existingIds``
+  // set is passed separately and used only for the duplicate-ID check, which
+  // should NOT include batch siblings (you can't "duplicate" a proposal that
+  // doesn't yet exist in the glossary). Aliases work similarly — we register
+  // batch siblings so two proposals claiming the same alias collide.
+  const knownRefs = new Set(existingIds);
+  const knownAliases = new Map(existingAliases);
   for (const proposal of proposals) {
-    const { status, issues } = validateProposal(proposal, existingIds, existingAliases);
+    knownRefs.add(proposal.id);
+    for (const alias of proposal.aliases ?? []) {
+      // Only register the alias if it's not already claimed by the glossary
+      // — collision checks will flag it separately below.
+      if (!knownAliases.has(alias.toLowerCase())) {
+        knownAliases.set(alias.toLowerCase(), proposal.id);
+      }
+    }
+  }
+
+  for (const proposal of proposals) {
+    const { status, issues } = validateProposal(
+      proposal,
+      existingIds,
+      knownAliases,
+      knownRefs,
+    );
     const filename = CATEGORY_FILE_MAP[proposal.category] ?? "unknown";
 
     plan.push({
@@ -620,7 +809,41 @@ function resolveMode(args: Args): SubmitMode {
 
 function main() {
   const args = parseArgs();
-  const { existingIds, existingAliases } = loadExistingGlossaryData();
+
+  // Bug fix B6 (2026-04-15): refuse to apply or open a PR when the local
+  // working tree is behind the upstream default branch. A stale tree
+  // combined with the --pr flow (bug B1, now also fixed) would silently
+  // clobber upstream work. Only runs when we are about to modify files —
+  // --dry-run is still allowed without the check so users can inspect
+  // proposals without network access.
+  if (!args.dryRun && !args.ignoreStale) {
+    const staleStatus = checkStaleTree(args.prRepo, args.verbose);
+    if (staleStatus?.stale) {
+      console.error(
+        `ERROR: local HEAD is ${staleStatus.behind} commit(s) behind ` +
+          `${args.prRepo}:${staleStatus.defaultBranch}. Running --apply ` +
+          `or --pr on a stale tree risks silently dropping upstream work.`,
+      );
+      console.error(
+        "       Run: npx tsx apps/kuka-agent/skills/kuka/scripts/sync-glossary.ts --apply",
+      );
+      console.error(
+        "       Or bypass: --ignore-stale (only if you know why you're stale).",
+      );
+      const stalePayload = {
+        script: "submit-proposals",
+        version: "1.0.0",
+        status: "aborted",
+        reason: "stale-tree",
+        behind: staleStatus.behind,
+        upstream: `${args.prRepo}:${staleStatus.defaultBranch}`,
+      };
+      console.log(JSON.stringify(stalePayload, null, 2));
+      process.exit(2);
+    }
+  }
+
+  const { existingIds, existingAliases } = loadExistingGlossaryData(args.glossaryDir);
 
   const proposals = loadProposals(args.proposalsDir);
   if (args.verbose) {
@@ -642,7 +865,13 @@ function main() {
     moveProposalsToDone(args.proposalsDir, validProposals);
 
     if (args.pr) {
-      prUrl = createPR(args.prRepo, validProposals, [...filesModified]);
+      // Bug fix B1 (2026-04-15): pass ``glossaryDir`` so the PR branch can
+      // reinject the proposals on top of a fresh upstream base. The old
+      // signature passed the list of locally-modified files, which the
+      // previous implementation would then cache and write over the
+      // upstream base — clobbering any upstream work the local tree was
+      // missing. See the ``prepareBranchFresh`` docstring for details.
+      prUrl = createPR(args.prRepo, validProposals, args.glossaryDir);
     }
   }
 
@@ -660,7 +889,23 @@ function main() {
   };
 
   console.log(JSON.stringify(result, null, 2));
-  process.exit(result.invalid > 0 ? 1 : 0);
+
+  // Bug fix B4 (2026-04-15): exit codes must reflect actual outcome.
+  //   1 = at least one invalid proposal
+  //   3 = --pr was requested but PR creation failed (silent-fail class)
+  //   0 = success
+  // Previously, a --pr run with a failed ``gh pr create`` still returned
+  // exit 0, making it look like success in CI / callers.
+  if (result.invalid > 0) {
+    process.exit(1);
+  }
+  if (args.pr && prUrl === null && validProposals.length > 0) {
+    console.error(
+      "ERROR: --pr was requested but PR creation failed. See warnings above.",
+    );
+    process.exit(3);
+  }
+  process.exit(0);
 }
 
 main();
