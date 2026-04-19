@@ -401,6 +401,7 @@
     "term": "Non-Retryable Error",
     "definition": "An error raised by a worker that explicitly signals 'do not reenqueue — retrying will not succeed'. The classifier inspects the exception and returns a terminal state (dead-letter, or a framework sentinel like Celery's Reject requeue=False) when the failure is persistent. Canonical Solana signals: 'insufficient lamports', program errors that only change with a redeploy, rent violations, kill-switch set. Without it, every on-chain failure becomes a retry storm.",
     "category": "infrastructure",
+    "depth": 4,
     "aliases": ["Terminal Error", "Dead-Letter Signal", "Reject Without Requeue"],
     "related": ["circuit-breaker", "retry-storm", "transaction-retry", "idempotency", "mint-kill-switch"]
   },
@@ -409,6 +410,7 @@
     "term": "Retry Storm",
     "definition": "A failure mode where a job queue (Celery, SQS) keeps re-executing a failing on-chain operation, burning SOL on each attempt because the failure is persistent rather than transient. Common triggers: insufficient payer balance, missing account, or a program error code that won't change without a redeploy. The queue treats every exception as retry-worthy, so thousands of retries run over minutes and drain the fee payer. Mitigation: classify errors, return non-retryable, pair with a kill-switch.",
     "category": "infrastructure",
+    "depth": 3,
     "aliases": ["Retry Loop", "Queue Storm"],
     "related": ["circuit-breaker", "transaction-retry", "idempotency", "mint-kill-switch", "non-retryable-error"]
   }
