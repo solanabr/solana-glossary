@@ -513,6 +513,7 @@
     "term": "Mint-Loop Attack",
     "definition": "A token-economy exploit where a strategic reserve pool that automatically receives a percentage of every mint is also programmatically drainable, letting an attacker mint, pull the auto-deposited share, and remint to create unbounded supply. Mitigation: make such reserve pools one-way (no transfer path out) and fund drainable pools exclusively via manual transfers from a separate treasury, never as a side-effect of minting. A known instance of the feedback-loop exploit family.",
     "category": "security",
+    "depth": 4,
     "aliases": ["Mint Drain Loop", "Reserve Drain Exploit"],
     "related": ["mint-authority", "reentrancy", "flash-loan-attack", "sandwich-attack", "authority-separation", "circuit-breaker", "defense-in-depth"]
   },
@@ -521,6 +522,7 @@
     "term": "Vault Transit Signing",
     "definition": "An HSM-style pattern where Solana signing keys live inside HashiCorp Vault's Transit engine and never leave it: the client serializes the message, Vault signs, the client gets back only the signature bytes. A compromised worker cannot exfiltrate the keypair because the keypair is never in its memory. Standard for hot-wallet services handling treasury, distribution-pool, or mint-authority keys that need programmatic access without exposing private keys.",
     "category": "security",
+    "depth": 4,
     "aliases": ["Vault Transit", "HSM-backed Signing"],
     "related": ["mint-authority", "cold-storage", "hot-wallet", "multisig", "authority-separation", "defense-in-depth"]
   }
