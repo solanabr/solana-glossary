@@ -507,5 +507,14 @@
     "depth": 5,
     "related": ["cpi", "invoke", "state-inconsistency"],
     "tags": ["vulnerability"]
+  },
+  {
+    "id": "mint-kill-switch",
+    "term": "Mint Kill-Switch",
+    "definition": "A default-on feature flag that makes minting paths raise an error instead of executing, blocking destructive automated actions until an operator disables it. Used for operations that burn SOL or create on-chain state that cannot be undone (tree creation, NFT airdrops, token mints with rent). Pattern: 'fail closed' — missing or ambiguous flag refuses to mint. Protects against bugs and retry storms where a queue would otherwise replay expensive operations.",
+    "category": "security",
+    "depth": 4,
+    "aliases": ["Minting Kill-Switch", "Mint Feature Flag", "Fail-Closed Mint Flag"],
+    "related": ["circuit-breaker", "defense-in-depth", "authority-separation", "retry-storm", "non-retryable-error", "idempotency"]
   }
 ]
