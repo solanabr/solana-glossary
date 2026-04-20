@@ -1,0 +1,24 @@
+{
+  "name": "@stbr/solana-glossary-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for the Solana Glossary — expose 1001 Solana terms as AI tools",
+  "type": "module",
+  "bin": {
+    "solana-glossary-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.10.1",
+    "@stbr/solana-glossary": "file:../.."
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0",
+    "vitest": "^4.1.2"
+  }
+}
