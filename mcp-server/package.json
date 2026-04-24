@@ -1,0 +1,36 @@
+{
+  "name": "@stbr/solana-glossary-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for the Solana Glossary — search, browse, and learn 1001 Solana terms via Claude, GPT, or any MCP client",
+  "main": "dist/index.js",
+  "bin": {
+    "solana-glossary-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.4.0",
+    "ts-node": "^10.9.0"
+  },
+  "keywords": [
+    "solana",
+    "glossary",
+    "mcp",
+    "claude",
+    "ai",
+    "blockchain",
+    "education"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/solanabr/solana-glossary"
+  }
+}
