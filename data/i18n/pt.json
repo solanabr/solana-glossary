@@ -3435,10 +3435,6 @@
     "term": "SPL Token Swap",
     "definition": "Um programa SPL que implementa um AMM de produto constante (x*y=k) para trocas entre dois tokens SPL. Foi um dos primeiros primitivos DeFi na Solana mas foi amplamente superado por DEXes mais sofisticadas como Raydium, Orca e Meteora. O programa gerencia pools de liquidez e emite tokens LP para provedores de liquidez."
   },
-  "memo-program": {
-    "term": "Memo Program",
-    "definition": "Um programa SPL (MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr) que válida uma string UTF-8 e a registra no log da transação. Memos anexam notas legiveis por humanos a transações — usados para identificacao de depósitos em exchanges, metadados de conformidade e marcacao de transações. O memo deve ser assinado por pelo menos uma conta."
-  },
   "name-service": {
     "term": "Name Service (SNS)",
     "definition": "O Solana Name Service (SNS) da Bonfida que mapeia nomes de dominio .sol legiveis por humanos para endereços Solana. Dominios sao NFTs que resolvem para endereços de carteira, permitindo usuarios a enviar tokens para 'alice.sol' em vez de uma chave pública. O registro suporta subdominios, e registros de dominio podem armazenar dados adicionais (links IPFS, identificadores sociais)."
@@ -4234,5 +4230,21 @@
   "archive-node": {
     "term": "Nó de Arquivo",
     "definition": "Um nó Solana que retém o ledger histórico completo desde o genesis, incluindo todos os dados de transações e estados históricos de contas, em vez de podar dados antigos após uma janela de retenção. Nós RPC padrão tipicamente armazenam apenas 2-3 dias de histórico de transações e o snapshot atual de estado de contas. Nós de arquivo servidos por provedores como Triton, Helius e Google BigQuery permitem consultas históricas como getTransaction para assinaturas de meses atrás e recuperação completa de getBlock para epochs passadas. Operar um nó de arquivo requer armazenamento de multi-terabytes (50+ TB e crescendo) devido ao alto throughput da Solana."
+  },
+  "proof-of-coverage": {
+    "term": "Prova de Cobertura (PoC)",
+    "definition": "Mecanismo de verificação DePIN que confirma criptograficamente se um contribuidor de rede está genuinamente fornecendo cobertura física em um local reivindicado."
+  },
+  "proof-of-physical-work": {
+    "term": "Prova de Trabalho Físico (PPW)",
+    "definition": "Primitivo DePIN que estende o proof-of-work a atividades físicas verificáveis — conduzir, carregar EVs, compartilhar WiFi, mapear estradas — atestadas por sensores de hardware, GPS ou oráculos."
+  },
+  "x-to-earn": {
+    "term": "X-to-Earn",
+    "definition": "Paradigma de incentivo de tokens onde usuários ganham recompensas em criptomoeda por realizar atividades do mundo real, popularizado na Solana pelo STEPN em 2022."
+  },
+  "cloak-sdk": {
+    "term": "Cloak SDK",
+    "definition": "SDK de privacidade para aplicações Solana que habilita operações on-chain confidenciais usando provas de conhecimento zero, sem expor saldos ou valores de resgate na blockchain."
   }
 }
