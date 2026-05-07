@@ -1168,5 +1168,23 @@
     "depth": 2,
     "aliases": ["Vanity Key", "Custom Address"],
     "related": ["keypair", "pubkey", "base58"]
+  },
+  {
+    "id": "kora",
+    "term": "Kora",
+    "definition": "An open-source paymaster service from the Solana Foundation that lets applications sponsor users' transaction fees, so new users don't need to hold SOL. The client signs the transaction body; Kora signs as fee payer (optionally accepting payment in SPL tokens for the sponsored fee) and forwards it to the cluster. Powers gasless UX for onboarding, mobile wallets, and DePIN apps where requiring SOL is friction.",
+    "category": "solana-ecosystem",
+    "depth": 3,
+    "aliases": ["Kora Paymaster"],
+    "related": ["transaction-fee", "gas", "account-abstraction", "session-keys", "solana-foundation"]
+  },
+  {
+    "id": "solana-attestation-service",
+    "term": "Solana Attestation Service",
+    "definition": "An on-chain framework for issuing and verifying attestations on Solana, built on three primitives: Credentials (issuer authorities), Schemas (typed templates for attestation fields), and Attestations (signed claims binding a Schema to a subject). Each lives at a deterministic PDA, so consumers can verify whether a subject holds a valid attestation under a given Credential+Schema. Used for KYC, reputation, and DePIN flows attesting off-chain measurements for on-chain rewards.",
+    "category": "solana-ecosystem",
+    "depth": 3,
+    "aliases": ["SAS", "Attestation Service"],
+    "related": ["verifiable-credentials", "decentralized-identity", "pda", "kyc", "signer"]
   }
 ]
