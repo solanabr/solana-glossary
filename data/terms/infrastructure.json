@@ -395,5 +395,13 @@
     "category": "infrastructure",
     "depth": 3,
     "related": ["rpc-node", "validator", "get-transaction"]
+  },
+  {
+    "id": "kora",
+    "term": "Kora",
+    "definition": "An open-source fee-payer and relayer for Solana, from Anza, that lets applications sponsor users' transaction fees for a gasless experience. The app runs a Kora service that holds SOL and co-signs transactions, so end users can transact without holding any SOL.",
+    "category": "infrastructure",
+    "depth": 3,
+    "related": ["transaction-fee", "priority-fee", "versioned-transaction"]
   }
 ]

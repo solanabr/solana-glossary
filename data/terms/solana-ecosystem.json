@@ -1168,5 +1168,22 @@
     "depth": 2,
     "aliases": ["Vanity Key", "Custom Address"],
     "related": ["keypair", "pubkey", "base58"]
+  },
+  {
+    "id": "solana-attestation-service",
+    "term": "Solana Attestation Service (SAS)",
+    "definition": "An on-chain Solana framework for issuing and verifying attestations — verifiable, schema-based claims about a wallet such as credentials, KYC status, or proof that an off-chain event occurred. Any program can verify an attestation on-chain without trusting a central server, enabling identity, compliance, and anti-fraud use cases.",
+    "category": "solana-ecosystem",
+    "depth": 2,
+    "aliases": ["SAS"],
+    "related": ["decentralized-identity", "pda", "memo-program"]
+  },
+  {
+    "id": "cloak",
+    "term": "Cloak",
+    "definition": "A privacy protocol on Solana that uses a shielded pool and a relayer to perform confidential transfers, severing the on-chain link between sender and receiver. Applications use it to pay users privately — for example shielded SOL payouts — so observers cannot connect the project wallet to the recipient.",
+    "category": "solana-ecosystem",
+    "depth": 4,
+    "related": ["sol", "transaction-fee", "pda"]
   }
 ]

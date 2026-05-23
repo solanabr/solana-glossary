@@ -4234,5 +4234,17 @@
   "archive-node": {
     "term": "Nodo de Archivo",
     "definition": "Un nodo de Solana que retiene el libro mayor histórico completo desde genesis, incluyendo todos los datos de transacciones y estados historicos de cuentas, en lugar de podar datos antiguos después de una ventana de retencion. Los nodos RPC estandar tipicamente almacenan sólo 2-3 dias de historial de transacciones y el snapshot actual del estado de cuentas. Los nodos de archivo servidos por proveedores como Triton, Helius y Google BigQuery permiten consultas historicas como getTransaction para firmas de meses de antiguedad y recuperacion completa de getBlock para epocas pasadas. Ejecutar un nodo de archivo requiere almacenamiento de multiples terabytes (50+ TB y creciendo) debido al alto rendimiento de Solana."
+  },
+  "solana-attestation-service": {
+    "term": "Servicio de Atestación de Solana (SAS)",
+    "definition": "Un framework on-chain de Solana para emitir y verificar atestaciones — afirmaciones verificables y basadas en esquema sobre una billetera, como credenciales, estado de KYC o prueba de que un evento off-chain ocurrió. Cualquier programa puede verificar una atestación on-chain sin confiar en un servidor central, habilitando casos de identidad, cumplimiento y antifraude."
+  },
+  "cloak": {
+    "term": "Cloak",
+    "definition": "Un protocolo de privacidad en Solana que usa un pool shielded y un relayer para realizar transferencias confidenciales, cortando el vínculo on-chain entre emisor y receptor. Las aplicaciones lo usan para pagar a los usuarios de forma privada — por ejemplo, pagos de SOL shielded — para que los observadores no puedan vincular la billetera del proyecto con la del receptor."
+  },
+  "kora": {
+    "term": "Kora",
+    "definition": "Un fee-payer y relayer de código abierto para Solana, de Anza, que permite a las aplicaciones patrocinar las tarifas de transacción de los usuarios para una experiencia gasless. La app ejecuta un servicio Kora que mantiene SOL y co-firma transacciones, de modo que los usuarios finales pueden transaccionar sin necesidad de tener SOL."
   }
 }
