@@ -4234,5 +4234,17 @@
   "archive-node": {
     "term": "Nó de Arquivo",
     "definition": "Um nó Solana que retém o ledger histórico completo desde o genesis, incluindo todos os dados de transações e estados históricos de contas, em vez de podar dados antigos após uma janela de retenção. Nós RPC padrão tipicamente armazenam apenas 2-3 dias de histórico de transações e o snapshot atual de estado de contas. Nós de arquivo servidos por provedores como Triton, Helius e Google BigQuery permitem consultas históricas como getTransaction para assinaturas de meses atrás e recuperação completa de getBlock para epochs passadas. Operar um nó de arquivo requer armazenamento de multi-terabytes (50+ TB e crescendo) devido ao alto throughput da Solana."
+  },
+  "solana-attestation-service": {
+    "term": "Serviço de Atestação da Solana (SAS)",
+    "definition": "Um framework on-chain da Solana para emitir e verificar atestações — afirmações verificáveis e baseadas em schema sobre uma carteira, como credenciais, status de KYC ou prova de que um evento off-chain aconteceu. Qualquer programa pode verificar uma atestação on-chain sem confiar em um servidor central, viabilizando casos de identidade, conformidade e antifraude."
+  },
+  "cloak": {
+    "term": "Cloak",
+    "definition": "Um protocolo de privacidade na Solana que usa um pool shielded e um relayer para realizar transferências confidenciais, cortando o vínculo on-chain entre remetente e destinatário. Aplicativos o usam para pagar usuários de forma privada — por exemplo, pagamentos de SOL shielded — para que observadores não consigam ligar a carteira do projeto à do destinatário."
+  },
+  "kora": {
+    "term": "Kora",
+    "definition": "Um fee-payer e relayer open-source para Solana, da Anza, que permite a aplicativos patrocinarem as taxas de transação dos usuários para uma experiência gasless. O app roda um serviço Kora que mantém SOL e co-assina transações, então os usuários finais conseguem transacionar sem precisar ter SOL."
   }
 }
