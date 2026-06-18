@@ -3,6 +3,10 @@ node_modules/
 
 # Build output
 dist/
+.next/
+
+# TypeScript incremental build info
+*.tsbuildinfo
 
 # Environment variables
 .env
