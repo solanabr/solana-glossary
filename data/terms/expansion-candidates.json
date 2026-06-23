@@ -1,0 +1,42 @@
+[
+  {
+    "id": "agave-client",
+    "term": "Agave Client",
+    "definition": "The primary Solana validator client maintained by Anza, forked from the original Solana Labs client. Agave is written in Rust and serves as the reference implementation for the Solana protocol, handling transaction processing, consensus voting, and block production.",
+    "category": "infrastructure",
+    "aliases": ["Agave"],
+    "related": ["validator", "firedancer", "jito-client"]
+  },
+  {
+    "id": "sbpf",
+    "term": "Solana Bytecode Format (SBF)",
+    "definition": "The bytecode format used to represent compiled Solana programs on-chain. SBF is derived from eBPF and is the target format for Rust programs compiled with the Solana toolchain. The BPF Loader is responsible for deploying and executing SBF bytecode.",
+    "category": "programming-model",
+    "aliases": ["SBF", "eBPF"],
+    "related": ["program", "bpf-loader", "compute-units"]
+  },
+  {
+    "id": "transaction-confirmation",
+    "term": "Transaction Confirmation",
+    "definition": "The process by which a submitted transaction achieves finality on the Solana network. Confirmation levels range from processed (included in a block) to confirmed (voted on by supermajority) to finalized (maximum lockout reached). Applications choose confirmation levels based on their security requirements.",
+    "category": "core-protocol",
+    "aliases": ["confirmation"],
+    "related": ["finality", "slot", "tower-bft"]
+  },
+  {
+    "id": "priority-fee",
+    "term": "Priority Fee",
+    "definition": "An optional additional fee paid per compute unit to increase the likelihood of transaction inclusion during periods of high network congestion. Priority fees are specified using the SetComputeUnitPrice instruction and are distributed to validators as additional revenue beyond the base transaction fee.",
+    "category": "core-protocol",
+    "aliases": ["compute unit price"],
+    "related": ["compute-units", "transaction-fee", "jito-tips"]
+  },
+  {
+    "id": "account-compression",
+    "term": "Account Compression",
+    "definition": "A Solana program that enables storing large amounts of state in a compressed Merkle tree structure on-chain. Account compression dramatically reduces storage costs by representing millions of items (such as NFTs) using cryptographic proofs rather than individual accounts, making large-scale NFT collections economically viable.",
+    "category": "zk-compression",
+    "aliases": ["compressed accounts", "state compression"],
+    "related": ["merkle-tree", "concurrent-merkle-tree", "zk-compression"]
+  }
+]
