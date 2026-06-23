@@ -1,0 +1,104 @@
+{
+  "name": "solana-glossary-vscode",
+  "displayName": "Solana Glossary — 1001 Terms at Your Fingertips",
+  "description": "Hover any Solana term in your code to see its definition. Search 1001 terms via Command Palette. Powered by @stbr/solana-glossary.",
+  "version": "1.0.0",
+  "publisher": "xinaids",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/solanabr/solana-glossary",
+    "directory": "apps/vscode"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Education",
+    "Programming Languages",
+    "Other"
+  ],
+  "keywords": [
+    "solana",
+    "glossary",
+    "web3",
+    "blockchain",
+    "anchor",
+    "rust",
+    "hover",
+    "tooltip"
+  ],
+  "activationEvents": [
+    "onLanguage:rust",
+    "onLanguage:typescript",
+    "onLanguage:javascript",
+    "onLanguage:toml",
+    "onLanguage:json",
+    "onLanguage:markdown",
+    "onLanguage:yaml"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "solanaGlossary.searchTerm",
+        "title": "Solana Glossary: Search Term"
+      },
+      {
+        "command": "solanaGlossary.randomTerm",
+        "title": "Solana Glossary: Random Term"
+      },
+      {
+        "command": "solanaGlossary.browseCategory",
+        "title": "Solana Glossary: Browse by Category"
+      }
+    ],
+    "configuration": {
+      "title": "Solana Glossary",
+      "properties": {
+        "solanaGlossary.language": {
+          "type": "string",
+          "default": "en",
+          "enum": [
+            "en",
+            "pt",
+            "es"
+          ],
+          "enumDescriptions": [
+            "English",
+            "Português (BR)",
+            "Español"
+          ],
+          "description": "Language for glossary definitions"
+        },
+        "solanaGlossary.enableHover": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show glossary definitions on hover"
+        },
+        "solanaGlossary.showCategory": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show category badge in hover tooltip"
+        },
+        "solanaGlossary.showRelated": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show related terms in hover tooltip"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build:bundle": "node scripts/build-glossary-bundle.mjs",
+    "compile": "tsc -p ./",
+    "build": "npm run build:bundle && npm run compile",
+    "watch": "tsc -watch -p ./",
+    "package": "npx @vscode/vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}
