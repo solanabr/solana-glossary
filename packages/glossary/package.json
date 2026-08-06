@@ -1,6 +1,6 @@
 {
   "name": "@stbr/solana-glossary",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "The most comprehensive Solana ecosystem glossary — SDK, MCP server, and AI skill. 1059 terms, 14 categories, depth ratings, tags, and i18n.",
   "main": "dist/src/index.js",
   "module": "dist/src/index.mjs",
