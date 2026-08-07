@@ -39,7 +39,7 @@
     "definition": "Declarative validation rules on Anchor account fields. Key constraints: `#[account(mut)]` (writable), `#[account(init, payer=x, space=n)]` (create), `#[account(seeds=[...], bump)]` (PDA validation), `#[account(has_one=field)]` (field equality), `#[account(constraint = expr)]` (custom boolean), `#[account(close=target)]` (close and reclaim rent).",
     "category": "dev-tools",
     "depth": 3,
-    "aliases": ["has_one", "constraint", "seeds"],
+    "aliases": ["has_one", "constraint"],
     "related": ["anchor", "anchor-derive-accounts"]
   },
   {
