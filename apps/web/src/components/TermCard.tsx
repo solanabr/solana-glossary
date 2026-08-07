@@ -1,11 +1,9 @@
 import { GlossaryTerm } from "@stbr/solana-glossary";
-import { motion } from "framer-motion";
-import { useGlossary } from "@/hooks/useGlossary";
 
 interface TermCardProps {
+  // Already localized by the parent — this component renders it as-is.
   term: GlossaryTerm;
   onClick: (term: GlossaryTerm) => void;
-  index?: number;
 }
 
 const categoryColors: Record<string, string> = {
@@ -26,21 +24,16 @@ const categoryColors: Record<string, string> = {
   "solana-ecosystem": "bg-accent/10 text-accent border-accent/20",
 };
 
-export function TermCard({ term: rawTerm, onClick, index = 0 }: TermCardProps) {
-  const glossary = useGlossary();
-  const term = glossary.localizeTerm(rawTerm);
+export function TermCard({ term, onClick }: TermCardProps) {
   const shortDef =
     term.definition.length > 120
       ? term.definition.slice(0, 120) + "…"
       : term.definition;
 
   return (
-    <motion.button
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.15, delay: Math.min(index * 0.01, 0.3) }}
+    <button
       onClick={() => onClick(term)}
-      className="w-full text-left p-3.5 bg-card border border-border rounded-lg hover:bg-surface-elevated hover:border-primary/20 transition-all group"
+      className="w-full text-left p-3.5 bg-card border border-border rounded-lg hover:bg-surface-elevated hover:border-primary/20 transition-all group animate-slide-up motion-reduce:animate-none"
     >
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <h3 className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
@@ -67,6 +60,6 @@ export function TermCard({ term: rawTerm, onClick, index = 0 }: TermCardProps) {
           ))}
         </div>
       )}
-    </motion.button>
+    </button>
   );
 }

@@ -12,13 +12,15 @@ import {
 } from "@/lib/glossary-i18n";
 
 export function useGlossary() {
-  const { locale } = useI18n();
+  const { locale, localeDataVersion } = useI18n();
 
   const glossaryLocale = locale as GlossaryLocale;
 
+  // localeDataVersion is a dep so the list recomputes when lazily-loaded
+  // translation data arrives for the current locale.
   const localizedAllTerms = useMemo(
     () => getLocalizedTerms(glossaryLocale),
-    [glossaryLocale],
+    [glossaryLocale, localeDataVersion],
   );
 
   const termMap = useMemo(

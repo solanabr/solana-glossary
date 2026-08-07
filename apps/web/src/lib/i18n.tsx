@@ -1,5 +1,13 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+  ReactNode,
+} from "react";
 import { allTerms } from "@stbr/solana-glossary";
+import { preloadLocale, type GlossaryLocale } from "@/lib/glossary-i18n";
 
 export type Locale = "en" | "pt" | "es";
 
@@ -458,6 +466,9 @@ interface I18nContextType {
   locale: Locale;
   setLocale: (l: Locale) => void;
   t: (key: TranslationKey) => string;
+  // Bumps when a locale's translation data finishes loading. Term consumers
+  // depend on it so they recompute once the localized definitions arrive.
+  localeDataVersion: number;
 }
 
 const I18nContext = createContext<I18nContextType | null>(null);
@@ -467,11 +478,34 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem("locale");
     return isLocale(saved) ? saved : "en";
   });
+  const [localeDataVersion, setLocaleDataVersion] = useState(0);
 
-  const handleSetLocale = (l: Locale) => {
-    setLocale(l);
-    localStorage.setItem("locale", l);
-  };
+  const bumpOnLoad = useCallback((l: Locale) => {
+    if (l === "en") return;
+    preloadLocale(l as GlossaryLocale)
+      .then(() => setLocaleDataVersion((v) => v + 1))
+      .catch(() => {
+        // Localized data unavailable — English fallback already renders.
+      });
+  }, []);
+
+  // Load data for a non-English locale restored from localStorage on mount.
+  useEffect(() => {
+    bumpOnLoad(locale);
+    // Mount-only: subsequent switches go through handleSetLocale.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSetLocale = useCallback(
+    (l: Locale) => {
+      // Labels switch instantly (bundled strings); terms catch up once the
+      // localized definitions load.
+      setLocale(l);
+      localStorage.setItem("locale", l);
+      bumpOnLoad(l);
+    },
+    [bumpOnLoad],
+  );
 
   const t = (key: TranslationKey): string => {
     const raw = translations[locale]?.[key] || translations.en[key] || key;
@@ -479,7 +513,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <I18nContext.Provider value={{ locale, setLocale: handleSetLocale, t }}>
+    <I18nContext.Provider
+      value={{ locale, setLocale: handleSetLocale, t, localeDataVersion }}
+    >
       {children}
     </I18nContext.Provider>
   );

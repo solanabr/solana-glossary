@@ -8,6 +8,7 @@ import {
   getLocalizedTerms,
   localizeTerm,
   findLocalizedTermByText,
+  preloadLocale,
 } from "@/lib/glossary-i18n";
 
 // Runtime verification of the SDK rewire: tsc proves the imports resolve,
@@ -19,8 +20,10 @@ describe("glossary-i18n × @stbr/solana-glossary", () => {
     expect(getLocalizedTerms("en")).toHaveLength(allTerms.length);
   });
 
-  it("wires pt & es locale data from the package (definitions actually differ)", () => {
+  it("wires pt & es locale data from the package (definitions actually differ)", async () => {
     for (const locale of ["pt", "es"] as const) {
+      // Locale data is code-split and loaded on demand; preload before asserting.
+      await preloadLocale(locale);
       const localized = getLocalizedTerms(locale);
       expect(localized).toHaveLength(allTerms.length);
       const differing = localized.filter(

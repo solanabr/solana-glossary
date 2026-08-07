@@ -1,14 +1,29 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import {
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+  useEffect,
+  lazy,
+  Suspense,
+} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CategoryGrid } from "@/components/CategoryGrid";
 import { TermCard } from "@/components/TermCard";
-import { TermPageModal } from "@/components/TermPageModal";
 import { SmartHeroInput } from "@/components/SmartHeroInput";
 import { GlossaryTerm, Category, getCategories } from "@stbr/solana-glossary";
 import { AnimatePresence } from "framer-motion";
 import { Zap, Search } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useGlossary } from "@/hooks/useGlossary";
+
+// Split out of the home chunk — pulls in react-markdown + quiz/apply and only
+// renders once a term is opened via /t/:id.
+const TermPageModal = lazy(() =>
+  import("@/components/TermPageModal").then((m) => ({
+    default: m.TermPageModal,
+  })),
+);
 
 const ITEMS_PER_PAGE = 60;
 const CATEGORY_SET = new Set<string>(getCategories());
@@ -134,13 +149,8 @@ const Index = () => {
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {visibleTerms.map((term, i) => (
-                <TermCard
-                  key={term.id}
-                  term={term}
-                  onClick={openTerm}
-                  index={i}
-                />
+              {visibleTerms.map((term) => (
+                <TermCard key={term.id} term={term} onClick={openTerm} />
               ))}
             </div>
             {visibleCount < terms.length && (
@@ -161,11 +171,13 @@ const Index = () => {
             {selectedTerm && (
               <div className="hidden lg:block w-96 shrink-0">
                 <div className="sticky top-[4.5rem] h-[calc(100vh-5rem)]">
-                  <TermPageModal
-                    term={selectedTerm}
-                    onClose={closeTerm}
-                    onNavigate={openTerm}
-                  />
+                  <Suspense fallback={null}>
+                    <TermPageModal
+                      term={selectedTerm}
+                      onClose={closeTerm}
+                      onNavigate={openTerm}
+                    />
+                  </Suspense>
                 </div>
               </div>
             )}
