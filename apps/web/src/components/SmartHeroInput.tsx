@@ -118,8 +118,9 @@ export function SmartHeroInput({ onSelectTerm }: SmartHeroInputProps) {
       e.preventDefault();
       if (isCodeDetected) {
         handleExplainCode();
-      } else if (selectedIndex >= 0) {
-        onSelectTerm(results[selectedIndex]);
+      } else if (results.length > 0) {
+        // No arrow selection yet → open the top-ranked result.
+        onSelectTerm(results[selectedIndex >= 0 ? selectedIndex : 0]);
         setQuery("");
         setIsOpen(false);
       }
@@ -158,6 +159,7 @@ export function SmartHeroInput({ onSelectTerm }: SmartHeroInputProps) {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => results.length > 0 && setIsOpen(true)}
+            aria-label={t("hero.input_placeholder")}
             placeholder={dynamicPlaceholder}
             rows={
               query.split("\n").length > 1

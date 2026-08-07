@@ -204,6 +204,7 @@ export function KnowledgeGraph({
           <div className="flex items-center gap-1">
             <button
               onClick={() => setIsFullscreen((f) => !f)}
+              aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
               className="p-1.5 rounded-md hover:bg-surface-elevated text-muted-foreground hover:text-foreground transition-colors"
             >
               {isFullscreen ? (
@@ -214,6 +215,7 @@ export function KnowledgeGraph({
             </button>
             <button
               onClick={onClose}
+              aria-label="Close knowledge graph"
               className="p-1.5 rounded-md hover:bg-surface-elevated text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="h-3.5 w-3.5" />

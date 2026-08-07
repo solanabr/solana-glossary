@@ -43,18 +43,39 @@ export function useGlossary() {
       .filter(Boolean) as GlossaryTerm[];
   };
 
+  // Ranked search: exact name/id/alias > prefix > name/alias contains >
+  // id contains > definition contains. Without ranking, corpus order wins and
+  // accidental substring hits (e.g. "uPDAtes" matching "pda") bury the exact
+  // match. Stable sort keeps corpus order within a tier.
   const searchTerms = (query: string): GlossaryTerm[] => {
-    if (!query.trim()) return [];
-    const normalizedQuery = query.toLowerCase();
-    return localizedAllTerms.filter(
-      (term) =>
-        term.term.toLowerCase().includes(normalizedQuery) ||
-        term.definition.toLowerCase().includes(normalizedQuery) ||
-        term.id.includes(normalizedQuery) ||
-        term.aliases?.some((alias) =>
-          alias.toLowerCase().includes(normalizedQuery),
-        ),
-    );
+    const q = query.trim().toLowerCase();
+    if (!q) return [];
+    const scored: Array<{ term: GlossaryTerm; score: number }> = [];
+    for (const term of localizedAllTerms) {
+      const name = term.term.toLowerCase();
+      const id = term.id.toLowerCase();
+      const aliases = term.aliases?.map((a) => a.toLowerCase()) ?? [];
+      let score: number;
+      if (name === q || id === q || aliases.includes(q)) {
+        score = 0;
+      } else if (
+        name.startsWith(q) ||
+        id.startsWith(q) ||
+        aliases.some((a) => a.startsWith(q))
+      ) {
+        score = 1;
+      } else if (name.includes(q) || aliases.some((a) => a.includes(q))) {
+        score = 2;
+      } else if (id.includes(q)) {
+        score = 3;
+      } else if (term.definition.toLowerCase().includes(q)) {
+        score = 4;
+      } else {
+        continue;
+      }
+      scored.push({ term, score });
+    }
+    return scored.sort((a, b) => a.score - b.score).map((s) => s.term);
   };
 
   return {

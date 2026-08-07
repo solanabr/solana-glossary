@@ -199,6 +199,7 @@ export function TermPageModal({
           </span>
           <button
             onClick={onClose}
+            aria-label="Close term details"
             className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-surface-elevated"
           >
             <X className="h-4 w-4" />

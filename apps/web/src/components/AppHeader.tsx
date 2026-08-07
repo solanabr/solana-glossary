@@ -50,6 +50,7 @@ export function AppHeader() {
                 <Link
                   key={item.path}
                   to={item.path}
+                  aria-label={item.label}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                     isActive
                       ? "bg-primary/10 text-primary"
@@ -70,6 +71,8 @@ export function AppHeader() {
               <button
                 key={l}
                 onClick={() => setLocale(l)}
+                aria-label={`Switch language to ${LOCALE_LABELS[l]}`}
+                aria-pressed={locale === l}
                 className={`px-1.5 py-0.5 rounded text-[10px] font-medium transition-all ${
                   locale === l
                     ? "bg-primary text-primary-foreground"

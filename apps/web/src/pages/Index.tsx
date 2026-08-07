@@ -65,13 +65,14 @@ const Index = () => {
     setVisibleCount(ITEMS_PER_PAGE);
   }, [categoryParam]);
 
-  // Scroll the glossary into view when a term is opened via the route.
+  // Scroll the glossary into view when a term is opened via the route — but
+  // only when the section is still below the viewport (e.g. arriving from the
+  // hero or a fresh deep-link). If the user is already browsing the grid, the
+  // sticky panel is visible and jumping the page is just disorienting.
   useEffect(() => {
-    if (id && glossarySectionRef.current) {
-      glossarySectionRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
+    const section = glossarySectionRef.current;
+    if (id && section && section.getBoundingClientRect().top > 80) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [id]);
 
@@ -126,6 +127,24 @@ const Index = () => {
         ref={glossarySectionRef}
         className="max-w-7xl mx-auto px-4 sm:px-6 pb-16 scroll-mt-14"
       >
+        {id && !selectedTerm && (
+          <div
+            role="alert"
+            className="mb-5 flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm text-foreground"
+          >
+            <span>
+              {t("term.not_found")}{" "}
+              <code className="text-xs text-muted-foreground">{id}</code>
+            </span>
+            <button
+              onClick={closeTerm}
+              className="shrink-0 text-xs font-medium text-primary hover:underline"
+            >
+              {t("category.all_terms")}
+            </button>
+          </div>
+        )}
+
         <div className="mb-5">
           <h2 className="text-sm font-semibold text-foreground mb-2.5 flex items-center gap-2">
             <Search className="h-3.5 w-3.5 text-primary" />
@@ -166,7 +185,7 @@ const Index = () => {
             )}
           </div>
 
-          {/* Detail panel */}
+          {/* Detail panel — sticky sidebar on desktop */}
           <AnimatePresence>
             {selectedTerm && (
               <div className="hidden lg:block w-96 shrink-0">
@@ -184,6 +203,23 @@ const Index = () => {
           </AnimatePresence>
         </div>
       </section>
+
+      {/* Detail panel — full-screen overlay below lg (the sidebar is hidden
+          there, so without this a tapped term or shared /t/:id link would
+          show nothing on phones/tablets). */}
+      {selectedTerm && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-background/95 backdrop-blur-sm p-3 overscroll-contain">
+          <div className="h-full max-w-lg mx-auto">
+            <Suspense fallback={null}>
+              <TermPageModal
+                term={selectedTerm}
+                onClose={closeTerm}
+                onNavigate={openTerm}
+              />
+            </Suspense>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

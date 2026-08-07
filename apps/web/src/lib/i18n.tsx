@@ -54,6 +54,7 @@ const translations = {
     "category.load_more": "Load more",
     "category.categories": "Categories",
     "category.all_terms": "All Terms",
+    "term.not_found": "Term not found — it may have been renamed or removed.",
     "category.terms_suffix": "Terms",
     "category.terms_count": "terms",
     "category.remaining": "remaining",
@@ -204,6 +205,8 @@ const translations = {
     "category.load_more": "Carregar mais",
     "category.categories": "Categorias",
     "category.all_terms": "Todos os Termos",
+    "term.not_found":
+      "Termo não encontrado — pode ter sido renomeado ou removido.",
     "category.terms_suffix": "Termos",
     "category.terms_count": "termos",
     "category.remaining": "restantes",
@@ -343,6 +346,8 @@ const translations = {
     "category.load_more": "Cargar más",
     "category.categories": "Categorías",
     "category.all_terms": "Todos los Términos",
+    "term.not_found":
+      "Término no encontrado — puede haber sido renombrado o eliminado.",
     "category.terms_suffix": "Términos",
     "category.terms_count": "términos",
     "category.remaining": "restantes",
