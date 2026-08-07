@@ -19,8 +19,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { TermHighlightedMarkdown } from "@/components/TermHighlightedMarkdown";
 import { ApplyCode } from "@/components/ApplyCode";
+import { AiResting } from "@/components/AiResting";
+import { useAiEnabled } from "@/hooks/useAiStatus";
+import { buildAiHeaders, isRestingBody } from "@/lib/ai-session";
 
-// TODO(phase2): served same-origin by the AI backend; gated behind useAiStatus().
+// Structured JSON from the AI backend; gated on useAiEnabled("quiz").
 const QUIZ_URL = "/api/quiz";
 
 type Difficulty = "beginner" | "intermediate" | "advanced";
@@ -50,10 +53,11 @@ export function SmartQuiz({
   const { t, locale } = useI18n();
   const glossary = useGlossary();
   const related = glossary.getRelatedTerms(term.id);
+  const quizEnabled = useAiEnabled("quiz");
 
-  const [phase, setPhase] = useState<"config" | "loading" | "quiz" | "results">(
-    "config",
-  );
+  const [phase, setPhase] = useState<
+    "config" | "loading" | "quiz" | "results" | "resting"
+  >("config");
   const [difficulty, setDifficulty] = useState<Difficulty>("beginner");
   const [mode, setMode] = useState<Mode>("concept");
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -70,9 +74,7 @@ export function SmartQuiz({
     try {
       const resp = await fetch(QUIZ_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: await buildAiHeaders(),
         body: JSON.stringify({
           term: term.term,
           category: term.category,
@@ -84,9 +86,17 @@ export function SmartQuiz({
         }),
       });
 
+      if (resp.status === 429) {
+        setPhase("resting");
+        return;
+      }
       if (!resp.ok) throw new Error("Failed to generate quiz");
-      const data = await resp.json();
-      setQuestions(data.questions || []);
+      const data: unknown = await resp.json();
+      if (isRestingBody(data)) {
+        setPhase("resting");
+        return;
+      }
+      setQuestions((data as { questions?: QuizQuestion[] }).questions ?? []);
       setCurrentQ(0);
       setScore(0);
       setWrongTerms([]);
@@ -175,6 +185,11 @@ export function SmartQuiz({
       icon: <Zap className="h-3 w-3" />,
     },
   ];
+
+  // Gated off or paused → resting placeholder (no calls, no spinner).
+  if (!quizEnabled || phase === "resting") {
+    return <AiResting compact />;
+  }
 
   // CONFIG PHASE
   if (phase === "config") {

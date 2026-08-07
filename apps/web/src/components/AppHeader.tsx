@@ -8,8 +8,9 @@ const LOCALES: Locale[] = ["en", "pt", "es"];
 export function AppHeader() {
   const location = useLocation();
   const { locale, setLocale, t } = useI18n();
-  const aiEnabled = useAiStatus();
+  const { copilot } = useAiStatus();
 
+  // Show AI nav while copilot is on or resting; hide only when fully disabled.
   const navItems = [
     { path: "/", label: t("nav.glossary"), icon: BookOpen, ai: false },
     {
@@ -24,7 +25,7 @@ export function AppHeader() {
       icon: Code2,
       ai: true,
     },
-  ].filter((item) => aiEnabled || !item.ai);
+  ].filter((item) => !item.ai || copilot !== "disabled");
 
   return (
     <header className="h-14 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-40">

@@ -31,7 +31,7 @@ import { streamChat, buildGlossaryContext } from "@/lib/ai-chat";
 import { TermHighlightedMarkdown } from "@/components/TermHighlightedMarkdown";
 import { SmartQuiz } from "@/components/SmartQuiz";
 import { AiResting } from "@/components/AiResting";
-import { useAiStatus } from "@/hooks/useAiStatus";
+import { useAiEnabled } from "@/hooks/useAiStatus";
 
 const KnowledgeGraph = lazy(() =>
   import("@/components/KnowledgeGraph").then((m) => ({
@@ -73,7 +73,8 @@ export function TermPageModal({
   const { t, locale } = useI18n();
   const glossary = useGlossary();
   const navigate = useNavigate();
-  const aiEnabled = useAiStatus();
+  const copilotEnabled = useAiEnabled("copilot");
+  const quizEnabled = useAiEnabled("quiz");
   const term = glossary.localizeTerm(rawTerm);
   const related = glossary.getRelatedTerms(term.id);
   const catColor =
@@ -86,12 +87,13 @@ export function TermPageModal({
   const [insightLoading, setInsightLoading] = useState(
     !insightCache.has(term.id),
   );
+  const [insightResting, setInsightResting] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
 
   // Auto-generate AI insight
   const insightFetched = useRef<string | null>(null);
   useEffect(() => {
-    if (!aiEnabled) {
+    if (!copilotEnabled) {
       setInsightLoading(false);
       return;
     }
@@ -104,6 +106,7 @@ export function TermPageModal({
     insightFetched.current = term.id;
     setAiInsight("");
     setInsightLoading(true);
+    setInsightResting(false);
     let content = "";
     streamChat({
       messages: [
@@ -124,8 +127,12 @@ export function TermPageModal({
         setInsightLoading(false);
       },
       onError: () => setInsightLoading(false),
+      onResting: () => {
+        setInsightResting(true);
+        setInsightLoading(false);
+      },
     });
-  }, [term.id, aiEnabled]);
+  }, [term.id, copilotEnabled]);
 
   const handleCopyDefinition = useCallback(() => {
     navigator.clipboard.writeText(`${term.term}: ${term.definition}`);
@@ -224,9 +231,9 @@ export function TermPageModal({
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto scrollbar-thin p-5 space-y-5">
-        {!aiEnabled && <AiResting />}
+        {!copilotEnabled && !quizEnabled && <AiResting />}
 
-        {aiEnabled && (
+        {copilotEnabled && (
           <>
             {/* AI Insight */}
             <div className="bg-primary/5 border border-primary/10 rounded-lg p-3.5">
@@ -236,7 +243,9 @@ export function TermPageModal({
                   {t("term.ai_insight")}
                 </span>
               </div>
-              {insightLoading && !aiInsight ? (
+              {insightResting ? (
+                <AiResting compact />
+              ) : insightLoading && !aiInsight ? (
                 <div className="space-y-1.5">
                   <Skeleton className="h-3 w-full" />
                   <Skeleton className="h-3 w-4/5" />
@@ -330,7 +339,7 @@ export function TermPageModal({
         </button>
 
         {/* Smart Quiz */}
-        {aiEnabled && (
+        {quizEnabled && (
           <SmartQuiz
             term={term}
             onNavigate={onNavigate}

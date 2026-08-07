@@ -7,7 +7,7 @@ import { GlossaryTerm } from "@stbr/solana-glossary";
 import { TermHighlightedMarkdown } from "@/components/TermHighlightedMarkdown";
 import { AiResting } from "@/components/AiResting";
 import { streamChat, buildGlossaryContext } from "@/lib/ai-chat";
-import { useAiStatus } from "@/hooks/useAiStatus";
+import { useAiEnabled } from "@/hooks/useAiStatus";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -30,7 +30,7 @@ const LearningPath = () => {
   const { t: _t, locale } = useI18n();
   const t = (key: string) => _t(key as any);
   const glossary = useGlossary();
-  const aiEnabled = useAiStatus();
+  const aiEnabled = useAiEnabled("copilot");
 
   const startTermId = searchParams.get("term") || "proof-of-stake";
   const startTerm = glossary.getTerm(startTermId);
@@ -44,6 +44,7 @@ const LearningPath = () => {
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [explanation, setExplanation] = useState("");
   const [loading, setLoading] = useState(true);
+  const [resting, setResting] = useState(false);
 
   const step = pathData?.steps[currentStep];
 
@@ -56,6 +57,7 @@ const LearningPath = () => {
     }
     setExplanation("");
     setLoading(true);
+    setResting(false);
     let content = "";
 
     const relatedNames = (step.term.related || []).slice(0, 3).join(", ");
@@ -80,6 +82,10 @@ const LearningPath = () => {
       },
       onDone: () => setLoading(false),
       onError: () => setLoading(false),
+      onResting: () => {
+        setResting(true);
+        setLoading(false);
+      },
     });
   }, [currentStep, step?.term.id, aiEnabled]);
 
@@ -258,7 +264,7 @@ const LearningPath = () => {
                 </div>
 
                 {/* AI Explanation */}
-                {aiEnabled ? (
+                {aiEnabled && !resting ? (
                   <div className="bg-card border border-border rounded-xl p-6 mb-4">
                     <div className="flex items-center gap-1.5 mb-3">
                       <Brain className="h-4 w-4 text-primary" />

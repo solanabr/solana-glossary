@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TermHighlightedMarkdown } from "@/components/TermHighlightedMarkdown";
 import { AiResting } from "@/components/AiResting";
 import { useI18n } from "@/lib/i18n";
-import { useAiStatus } from "@/hooks/useAiStatus";
+import { useAiEnabled } from "@/hooks/useAiStatus";
 
 // In-memory cache for usage examples
 const exampleCache = new Map<string, string>();
@@ -20,9 +20,10 @@ export function UsageExample({ term, onTermClick }: UsageExampleProps) {
   const [example, setExample] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [resting, setResting] = useState(false);
   const abortRef = useRef(false);
   const { t, locale } = useI18n();
-  const aiEnabled = useAiStatus();
+  const aiEnabled = useAiEnabled("copilot");
 
   useEffect(() => {
     if (!aiEnabled) return;
@@ -40,6 +41,7 @@ export function UsageExample({ term, onTermClick }: UsageExampleProps) {
     setExample("");
     setIsLoading(true);
     setError(false);
+    setResting(false);
 
     const glossaryContext = buildGlossaryContext(term.term, locale);
     let content = "";
@@ -69,6 +71,10 @@ export function UsageExample({ term, onTermClick }: UsageExampleProps) {
         if (!abortRef.current) setError(true);
         setIsLoading(false);
       },
+      onResting: () => {
+        if (!abortRef.current) setResting(true);
+        setIsLoading(false);
+      },
     });
 
     return () => {
@@ -76,7 +82,7 @@ export function UsageExample({ term, onTermClick }: UsageExampleProps) {
     };
   }, [term.id, term.term, term.definition, locale, aiEnabled]);
 
-  if (!aiEnabled) return <AiResting compact className="mt-4" />;
+  if (!aiEnabled || resting) return <AiResting compact className="mt-4" />;
   if (error) return null;
 
   return (

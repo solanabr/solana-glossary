@@ -13,7 +13,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { TermHighlightedMarkdown } from "@/components/TermHighlightedMarkdown";
 import { AiResting } from "@/components/AiResting";
 import { useI18n } from "@/lib/i18n";
-import { useAiStatus } from "@/hooks/useAiStatus";
+import { useAiEnabled } from "@/hooks/useAiStatus";
 
 interface ExplainFilePanelProps {
   onTermClick?: (term: GlossaryTerm) => void;
@@ -60,11 +60,12 @@ export function ExplainFilePanel({ onTermClick }: ExplainFilePanelProps) {
   const [result, setResult] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resting, setResting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { t, locale } = useI18n();
-  const aiEnabled = useAiStatus();
+  const aiEnabled = useAiEnabled("copilot");
 
   const handleFileRead = useCallback((file: File) => {
     const reader = new FileReader();
@@ -122,6 +123,7 @@ export function ExplainFilePanel({ onTermClick }: ExplainFilePanelProps) {
       if (!codeToAnalyze.trim() || isAnalyzing) return;
 
       setError(null);
+      setResting(false);
       setResult("");
       setIsAnalyzing(true);
 
@@ -140,6 +142,10 @@ export function ExplainFilePanel({ onTermClick }: ExplainFilePanelProps) {
         onDone: () => setIsAnalyzing(false),
         onError: (err) => {
           setError(err);
+          setIsAnalyzing(false);
+        },
+        onResting: () => {
+          setResting(true);
           setIsAnalyzing(false);
         },
       });
@@ -279,6 +285,8 @@ export function ExplainFilePanel({ onTermClick }: ExplainFilePanelProps) {
           </div>
         )}
 
+        {resting && <AiResting className="mb-4" />}
+
         {result ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <div className="flex justify-end mb-2">
@@ -295,7 +303,7 @@ export function ExplainFilePanel({ onTermClick }: ExplainFilePanelProps) {
               onTermClick={onTermClick}
             />
           </motion.div>
-        ) : !isAnalyzing ? (
+        ) : !isAnalyzing && !resting ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4 opacity-60">
             <FileCode2 className="h-10 w-10 text-muted-foreground mb-3" />
             <p className="text-xs text-muted-foreground">

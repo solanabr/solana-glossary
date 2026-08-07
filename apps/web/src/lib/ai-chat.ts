@@ -4,8 +4,9 @@ import {
   getLocalizedTerms,
   type GlossaryLocale,
 } from "@/lib/glossary-i18n";
+import { buildAiHeaders, isRestingBody } from "@/lib/ai-session";
 
-// TODO(phase2): served same-origin by the AI backend; gated behind useAiStatus().
+// Streamed same-origin by the AI backend; callers gate on useAiEnabled("copilot").
 const CHAT_URL = "/api/copilot";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -18,6 +19,7 @@ export async function streamChat({
   onDelta,
   onDone,
   onError,
+  onResting,
 }: {
   messages: Msg[];
   glossaryContext: string;
@@ -26,13 +28,13 @@ export async function streamChat({
   onDelta: (text: string) => void;
   onDone: () => void;
   onError: (error: string) => void;
+  /** Copilot tier dropped to resting (HTTP 429 or a `{mode:"resting"}` body). */
+  onResting: () => void;
 }) {
   try {
     const resp = await fetch(CHAT_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: await buildAiHeaders(),
       body: JSON.stringify({
         messages,
         glossaryContext,
@@ -41,11 +43,34 @@ export async function streamChat({
       }),
     });
 
+    // Budget paused / rate-limited → show the resting state, never spin.
+    if (resp.status === 429) {
+      onResting();
+      return;
+    }
+
     if (!resp.ok) {
       const errorData = await resp
         .json()
         .catch(() => ({ error: "Unknown error" }));
       onError(errorData.error || `Error ${resp.status}`);
+      return;
+    }
+
+    // A resting/canned tier may reply with JSON instead of an SSE stream.
+    const contentType = resp.headers.get("content-type") ?? "";
+    if (contentType.includes("application/json")) {
+      const data: unknown = await resp.json().catch(() => null);
+      if (isRestingBody(data)) {
+        onResting();
+        return;
+      }
+      const errorText = (data as { error?: unknown } | null)?.error;
+      if (typeof errorText === "string") {
+        onError(errorText);
+        return;
+      }
+      onDone();
       return;
     }
 

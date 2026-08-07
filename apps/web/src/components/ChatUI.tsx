@@ -15,7 +15,7 @@ import { TermHighlightedMarkdown } from "@/components/TermHighlightedMarkdown";
 import { TermInputHighlighter } from "@/components/TermInputHighlighter";
 import { AiResting } from "@/components/AiResting";
 import { useI18n } from "@/lib/i18n";
-import { useAiStatus } from "@/hooks/useAiStatus";
+import { useAiEnabled } from "@/hooks/useAiStatus";
 
 interface Message {
   id: string;
@@ -55,10 +55,11 @@ export function ChatUI({ onTermClick, mode = "chat" }: ChatUIProps) {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [resting, setResting] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { t, locale } = useI18n();
-  const aiEnabled = useAiStatus();
+  const aiEnabled = useAiEnabled("copilot");
 
   // Auto-send prefilled message from sessionStorage
   const prefillHandled = useRef(false);
@@ -108,6 +109,7 @@ export function ChatUI({ onTermClick, mode = "chat" }: ChatUIProps) {
       if (!msgText || isStreaming) return;
 
       setError(null);
+      setResting(false);
       const userMsg: Message = {
         id: crypto.randomUUID(),
         role: "user",
@@ -154,6 +156,10 @@ export function ChatUI({ onTermClick, mode = "chat" }: ChatUIProps) {
         },
         onError: (err) => {
           setError(err);
+          setIsStreaming(false);
+        },
+        onResting: () => {
+          setResting(true);
           setIsStreaming(false);
         },
       });
@@ -298,6 +304,8 @@ export function ChatUI({ onTermClick, mode = "chat" }: ChatUIProps) {
             </div>
           </motion.div>
         )}
+
+        {resting && <AiResting compact />}
 
         <div ref={messagesEndRef} />
       </div>

@@ -1,10 +1,34 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  /** Phase-1 AI gate. `"true"` enables the Copilot/AI surfaces. Defaults off. */
+  /** Build-time AI fallback. `"true"` enables AI surfaces when the status API is unreachable. */
   readonly VITE_AI_ENABLED?: string;
+  /** Public Cloudflare Turnstile site key. When set, AI calls present a minted session token. */
+  readonly VITE_TURNSTILE_SITE_KEY?: string;
 }
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
+}
+
+// ── Cloudflare Turnstile (injected script; see lib/ai-session.ts) ──
+interface TurnstileRenderOptions {
+  sitekey: string;
+  size?: "normal" | "flexible" | "compact";
+  appearance?: "always" | "execute" | "interaction-only";
+  callback?: (token: string) => void;
+  "error-callback"?: () => void;
+  "timeout-callback"?: () => void;
+  "expired-callback"?: () => void;
+}
+
+interface TurnstileApi {
+  render: (el: HTMLElement | string, opts: TurnstileRenderOptions) => string;
+  execute: (id: string) => void;
+  remove: (id: string) => void;
+  reset: (id?: string) => void;
+}
+
+interface Window {
+  turnstile?: TurnstileApi;
 }

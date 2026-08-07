@@ -13,8 +13,11 @@ import {
   Lightbulb,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AiResting } from "@/components/AiResting";
+import { useAiEnabled } from "@/hooks/useAiStatus";
+import { buildAiHeaders, isRestingBody } from "@/lib/ai-session";
 
-// TODO(phase2): served same-origin by the AI backend; gated behind useAiStatus().
+// Structured JSON from the AI backend; gated on useAiEnabled("applyCode").
 const APPLY_URL = "/api/apply-code";
 
 interface CodeResult {
@@ -47,20 +50,21 @@ export function ApplyCode({
   const { t, locale } = useI18n();
   const glossary = useGlossary();
   const related = glossary.getRelatedTerms(term.id);
+  const applyEnabled = useAiEnabled("applyCode");
 
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CodeResult | null>(null);
+  const [resting, setResting] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const generate = useCallback(async () => {
     setLoading(true);
     setResult(null);
+    setResting(false);
     try {
       const resp = await fetch(APPLY_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: await buildAiHeaders(),
         body: JSON.stringify({
           term: term.term,
           incorrectTerms: wrongTerms,
@@ -70,10 +74,19 @@ export function ApplyCode({
           locale,
         }),
       });
+      if (resp.status === 429) {
+        setResting(true);
+        return;
+      }
       if (!resp.ok) throw new Error("Failed");
-      const data = await resp.json();
-      if (data.error) throw new Error(data.error);
-      setResult(data);
+      const data: unknown = await resp.json();
+      if (isRestingBody(data)) {
+        setResting(true);
+        return;
+      }
+      const err = (data as { error?: unknown }).error;
+      if (typeof err === "string") throw new Error(err);
+      setResult(data as CodeResult);
     } catch (e) {
       console.error("Apply code error:", e);
     } finally {
@@ -87,6 +100,11 @@ export function ApplyCode({
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [result]);
+
+  // Gated off or paused → resting placeholder (no calls, no spinner).
+  if (!applyEnabled || resting) {
+    return <AiResting compact />;
+  }
 
   // Initial state — show generate button
   if (!loading && !result) {
