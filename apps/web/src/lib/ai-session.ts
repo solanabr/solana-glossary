@@ -195,11 +195,13 @@ export async function buildAiHeaders(
   return headers;
 }
 
-/** True when a route returned `{ mode: "resting" }` instead of an answer. */
+/**
+ * True when a route returned a non-answer mode body — resting/canned/disabled —
+ * instead of content. The client renders the resting state for all three, so a
+ * budget-driven `canned`/`disabled` response never falls through to a blank UI.
+ */
 export function isRestingBody(value: unknown): value is RestingBody {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    (value as { mode?: unknown }).mode === "resting"
-  );
+  if (typeof value !== "object" || value === null) return false;
+  const mode = (value as { mode?: unknown }).mode;
+  return mode === "resting" || mode === "canned" || mode === "disabled";
 }

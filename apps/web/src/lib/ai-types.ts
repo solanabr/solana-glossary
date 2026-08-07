@@ -26,10 +26,14 @@ export interface SessionMintResponse {
   expiresAt: number;
 }
 
+/** The non-answer "mode" a billable route can return instead of content. */
+export type AiUnavailableMode = "resting" | "canned" | "disabled";
+
 /**
- * Body a billable route returns when the serving tier has dropped to `resting`.
- * Sent instead of an answer so the client can render the resting state.
+ * Body a billable route returns when it won't spend on an answer — the serving
+ * tier dropped (resting/canned) or the feature is disabled. The client renders
+ * the resting state for all of these.
  */
 export interface RestingBody {
-  mode: "resting";
+  mode: AiUnavailableMode;
 }

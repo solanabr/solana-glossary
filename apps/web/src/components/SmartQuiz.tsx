@@ -387,7 +387,8 @@ export function SmartQuiz({
 
   // QUIZ PHASE
   const q = questions[currentQ];
-  if (!q) return null;
+  // Defensive: a malformed question (missing options) must not crash render.
+  if (!q || !Array.isArray(q.options)) return null;
 
   return (
     <div className="bg-gradient-to-br from-violet-500/5 to-primary/5 border border-violet-500/20 rounded-lg p-4 space-y-3">
