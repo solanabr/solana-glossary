@@ -28,8 +28,7 @@ import {
 const LearningPath = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { t: _t, locale } = useI18n();
-  const t = (key: string) => _t(key as any);
+  const { t, locale } = useI18n();
   const glossary = useGlossary();
   const aiEnabled = useAiEnabled("copilot");
 

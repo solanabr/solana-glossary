@@ -53,7 +53,7 @@ export function TermDetailPanel({
           <span
             className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${catColor}`}
           >
-            {t(`cat.${term.category}` as any) || term.category}
+            {t(`cat.${term.category}`) || term.category}
           </span>
         </div>
         <button

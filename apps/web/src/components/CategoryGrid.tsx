@@ -64,7 +64,7 @@ export function CategoryGrid({
         const Icon = meta.icon;
         const count = getTermsByCategory(cat).length;
         const isActive = activeCategory === cat;
-        const label = t(`cat.${cat}` as any) || cat;
+        const label = t(`cat.${cat}`) || cat;
 
         return (
           <motion.button

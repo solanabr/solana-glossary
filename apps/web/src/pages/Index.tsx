@@ -91,7 +91,7 @@ const Index = () => {
   );
 
   const categoryTitle = activeCategory
-    ? `${t(`cat.${activeCategory}` as any) || activeCategory} ${t("category.terms_suffix")}`
+    ? `${t(`cat.${activeCategory}`) || activeCategory} ${t("category.terms_suffix")}`
     : t("category.all_terms");
 
   return (

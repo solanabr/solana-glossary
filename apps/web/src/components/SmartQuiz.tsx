@@ -159,17 +159,17 @@ export function SmartQuiz({
   }[] = [
     {
       value: "beginner",
-      label: t("quiz.beginner" as any),
+      label: t("quiz.beginner"),
       icon: <BookOpen className="h-3 w-3" />,
     },
     {
       value: "intermediate",
-      label: t("quiz.intermediate" as any),
+      label: t("quiz.intermediate"),
       icon: <Brain className="h-3 w-3" />,
     },
     {
       value: "advanced",
-      label: t("quiz.advanced" as any),
+      label: t("quiz.advanced"),
       icon: <Zap className="h-3 w-3" />,
     },
   ];
@@ -177,17 +177,17 @@ export function SmartQuiz({
   const modeOptions: { value: Mode; label: string; icon: React.ReactNode }[] = [
     {
       value: "concept",
-      label: t("quiz.mode_concept" as any),
+      label: t("quiz.mode_concept"),
       icon: <BookOpen className="h-3 w-3" />,
     },
     {
       value: "connections",
-      label: t("quiz.mode_connections" as any),
+      label: t("quiz.mode_connections"),
       icon: <Globe className="h-3 w-3" />,
     },
     {
       value: "real-world",
-      label: t("quiz.mode_realworld" as any),
+      label: t("quiz.mode_realworld"),
       icon: <Zap className="h-3 w-3" />,
     },
   ];
@@ -204,17 +204,17 @@ export function SmartQuiz({
         <div className="flex items-center gap-2">
           <Brain className="h-4 w-4 text-violet-400" />
           <span className="text-xs font-bold text-foreground">
-            {t("quiz.title" as any)}
+            {t("quiz.title")}
           </span>
         </div>
         <p className="text-[11px] text-muted-foreground">
-          {t("quiz.description" as any)}
+          {t("quiz.description")}
         </p>
 
         {/* Difficulty */}
         <div>
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-            {t("quiz.difficulty" as any)}
+            {t("quiz.difficulty")}
           </p>
           <div className="flex gap-1.5">
             {difficultyOptions.map((d) => (
@@ -236,7 +236,7 @@ export function SmartQuiz({
         {/* Mode */}
         <div>
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-            {t("quiz.mode_label" as any)}
+            {t("quiz.mode_label")}
           </p>
           <div className="flex gap-1.5">
             {modeOptions.map((m) => (
@@ -261,7 +261,7 @@ export function SmartQuiz({
           className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-violet-500/20 to-primary/20 border border-violet-500/30 text-xs font-semibold text-foreground hover:from-violet-500/30 hover:to-primary/30 hover:shadow-[0_0_16px_rgba(139,92,246,0.2)] transition-all group"
         >
           <Brain className="h-4 w-4 text-violet-400" />
-          {t("quiz.start" as any)}
+          {t("quiz.start")}
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
         </button>
       </div>
@@ -275,7 +275,7 @@ export function SmartQuiz({
         <div className="flex items-center gap-2">
           <Brain className="h-4 w-4 text-violet-400 animate-pulse" />
           <span className="text-xs font-bold text-foreground">
-            {t("quiz.generating" as any)}
+            {t("quiz.generating")}
           </span>
         </div>
         <div className="space-y-2">
@@ -311,7 +311,7 @@ export function SmartQuiz({
             className={`h-8 w-8 mx-auto ${percentage >= 70 ? "text-yellow-400" : "text-muted-foreground"}`}
           />
           <h3 className="text-sm font-bold text-foreground">
-            {t("quiz.complete" as any)}
+            {t("quiz.complete")}
           </h3>
           <p className="text-2xl font-bold text-primary">
             {score}/{questions.length}
@@ -324,13 +324,13 @@ export function SmartQuiz({
           <div className="flex items-center gap-1.5">
             <Lightbulb className="h-3.5 w-3.5 text-yellow-400" />
             <span className="text-[11px] font-semibold text-foreground">
-              {t("quiz.insights" as any)}
+              {t("quiz.insights")}
             </span>
           </div>
           <p className="text-[11px] text-muted-foreground">
             {percentage >= 70
-              ? t("quiz.insight_good" as any)
-              : t("quiz.insight_review" as any)}
+              ? t("quiz.insight_good")
+              : t("quiz.insight_review")}
           </p>
         </div>
 
@@ -338,7 +338,7 @@ export function SmartQuiz({
         {reviewTerms.length > 0 && (
           <div>
             <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-              {t("quiz.review_terms" as any)}
+              {t("quiz.review_terms")}
             </p>
             <div className="space-y-1">
               {reviewTerms.slice(0, 4).map((rt) => (
@@ -375,7 +375,7 @@ export function SmartQuiz({
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-secondary border border-border text-[11px] font-medium text-foreground hover:bg-surface-hover transition-all"
           >
             <RotateCcw className="h-3 w-3" />
-            {t("quiz.new_session" as any)}
+            {t("quiz.new_session")}
           </button>
           {onOpenGraph && (
             <button
@@ -383,7 +383,7 @@ export function SmartQuiz({
               className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-[11px] font-medium text-foreground hover:bg-primary/20 transition-all"
             >
               <Globe className="h-3 w-3 text-primary" />
-              {t("quiz.explore_graph" as any)}
+              {t("quiz.explore_graph")}
             </button>
           )}
         </div>
@@ -496,8 +496,8 @@ export function SmartQuiz({
                 )}
                 <span className="text-[11px] font-semibold text-foreground">
                   {selectedOption === q.correct
-                    ? t("quiz.correct" as any)
-                    : t("quiz.incorrect" as any)}
+                    ? t("quiz.correct")
+                    : t("quiz.incorrect")}
                 </span>
               </div>
               <p className="text-[11px] text-foreground/80 leading-relaxed">
@@ -535,13 +535,13 @@ export function SmartQuiz({
             >
               {currentQ < questions.length - 1 ? (
                 <>
-                  {t("quiz.next" as any)}
+                  {t("quiz.next")}
                   <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
                 </>
               ) : (
                 <>
                   <Trophy className="h-3 w-3 text-yellow-400" />
-                  {t("quiz.finish" as any)}
+                  {t("quiz.finish")}
                 </>
               )}
             </button>

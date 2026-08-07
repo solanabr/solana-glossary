@@ -113,18 +113,18 @@ export function ApplyCode({
         <div className="flex items-center gap-2">
           <Code2 className="h-4 w-4 text-emerald-400" />
           <span className="text-xs font-bold text-foreground">
-            {t("apply.title" as any)}
+            {t("apply.title")}
           </span>
         </div>
         <p className="text-[11px] text-muted-foreground">
-          {t("apply.description" as any)}
+          {t("apply.description")}
         </p>
         <button
           onClick={generate}
           className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-emerald-500/20 to-primary/20 border border-emerald-500/30 text-xs font-semibold text-foreground hover:from-emerald-500/30 hover:to-primary/30 hover:shadow-[0_0_16px_rgba(16,185,129,0.2)] transition-all group"
         >
           <Code2 className="h-4 w-4 text-emerald-400" />
-          {t("apply.generate" as any)}
+          {t("apply.generate")}
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
         </button>
       </div>
@@ -138,7 +138,7 @@ export function ApplyCode({
         <div className="flex items-center gap-2">
           <Code2 className="h-4 w-4 text-emerald-400 animate-pulse" />
           <span className="text-xs font-bold text-foreground">
-            {t("apply.generating" as any)}
+            {t("apply.generating")}
           </span>
         </div>
         <div className="space-y-2">
@@ -189,7 +189,7 @@ export function ApplyCode({
       {/* Explanation */}
       <div className="bg-secondary/50 rounded-lg p-3 space-y-1">
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-          {t("apply.explanation" as any)}
+          {t("apply.explanation")}
         </p>
         <p className="text-[11px] text-foreground/80 leading-relaxed">
           {result.explanation}
@@ -200,7 +200,7 @@ export function ApplyCode({
       {result.keyConcepts && result.keyConcepts.length > 0 && (
         <div>
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
-            {t("apply.key_concepts" as any)}
+            {t("apply.key_concepts")}
           </p>
           <div className="flex flex-wrap gap-1">
             {result.keyConcepts.map((concept) => {
@@ -233,7 +233,7 @@ export function ApplyCode({
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-secondary border border-border text-[11px] font-medium text-foreground hover:bg-surface-hover transition-all"
           >
             <MessageSquare className="h-3 w-3" />
-            {t("apply.explain_code" as any)}
+            {t("apply.explain_code")}
           </button>
         )}
         {onOpenGraph && (
@@ -242,7 +242,7 @@ export function ApplyCode({
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-[11px] font-medium text-foreground hover:bg-primary/20 transition-all"
           >
             <Globe className="h-3 w-3 text-primary" />
-            {t("apply.view_graph" as any)}
+            {t("apply.view_graph")}
           </button>
         )}
       </div>
@@ -252,7 +252,7 @@ export function ApplyCode({
         onClick={generate}
         className="w-full text-[10px] text-muted-foreground hover:text-foreground transition-colors py-1"
       >
-        {t("apply.regenerate" as any)}
+        {t("apply.regenerate")}
       </button>
     </motion.div>
   );

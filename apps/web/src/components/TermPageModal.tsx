@@ -195,7 +195,7 @@ export function TermPageModal({
           <span
             className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${catColor}`}
           >
-            {t(`cat.${term.category}` as any) || term.category}
+            {t(`cat.${term.category}`) || term.category}
           </span>
           <button
             onClick={onClose}
@@ -345,7 +345,7 @@ export function TermPageModal({
           className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/20 text-sm font-medium text-foreground hover:from-accent/20 hover:to-primary/20 transition-all group mb-2"
         >
           <GraduationCap className="h-4 w-4 text-accent" />
-          {t("learn.start" as any)}
+          {t("learn.start")}
           <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
         </button>
 
