@@ -18,6 +18,8 @@ const App = () => (
           <AppHeader />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/t/:id" element={<Index />} />
+            <Route path="/c/:category" element={<Index />} />
             <Route path="/copilot" element={<Copilot />} />
             <Route path="/learn" element={<LearningPath />} />
             <Route path="*" element={<NotFound />} />

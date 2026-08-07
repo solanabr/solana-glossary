@@ -1,23 +1,43 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { CategoryGrid } from "@/components/CategoryGrid";
 import { TermCard } from "@/components/TermCard";
 import { TermPageModal } from "@/components/TermPageModal";
 import { SmartHeroInput } from "@/components/SmartHeroInput";
-import { GlossaryTerm, Category } from "@stbr/solana-glossary";
+import { GlossaryTerm, Category, getCategories } from "@stbr/solana-glossary";
 import { AnimatePresence } from "framer-motion";
 import { Zap, Search } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useGlossary } from "@/hooks/useGlossary";
 
 const ITEMS_PER_PAGE = 60;
+const CATEGORY_SET = new Set<string>(getCategories());
 
 const Index = () => {
-  const [selectedTerm, setSelectedTerm] = useState<GlossaryTerm | null>(null);
+  const { id, category: categoryParam } = useParams<{
+    id?: string;
+    category?: string;
+  }>();
+  const navigate = useNavigate();
   const glossarySectionRef = useRef<HTMLDivElement>(null);
-  const [activeCategory, setActiveCategory] = useState<Category | null>(null);
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
   const { t } = useI18n();
   const glossary = useGlossary();
+
+  // Route-driven state: /t/:id opens the term modal, /c/:category filters. The
+  // URL is the single source of truth so canonical links, the back button, and
+  // crawler meta all stay in sync.
+  const selectedTerm = useMemo<GlossaryTerm | null>(
+    () => (id ? (glossary.getTerm(id) ?? null) : null),
+    [id, glossary],
+  );
+  const activeCategory = useMemo<Category | null>(
+    () =>
+      categoryParam && CATEGORY_SET.has(categoryParam)
+        ? (categoryParam as Category)
+        : null,
+    [categoryParam],
+  );
 
   const terms = useMemo(() => {
     return activeCategory
@@ -25,25 +45,35 @@ const Index = () => {
       : glossary.getAllTerms();
   }, [activeCategory, glossary]);
 
-  const handleSelectTerm = useCallback((term: GlossaryTerm | null) => {
-    setSelectedTerm(term);
-    if (term && glossarySectionRef.current) {
+  // Reset paging when the category filter changes.
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE);
+  }, [categoryParam]);
+
+  // Scroll the glossary into view when a term is opened via the route.
+  useEffect(() => {
+    if (id && glossarySectionRef.current) {
       glossarySectionRef.current.scrollIntoView({
         behavior: "smooth",
         block: "start",
       });
     }
-  }, []);
+  }, [id]);
+
+  const openTerm = useCallback(
+    (term: GlossaryTerm) => navigate(`/t/${term.id}`),
+    [navigate],
+  );
+  const closeTerm = useCallback(() => navigate("/"), [navigate]);
+  const handleCategoryChange = useCallback(
+    (cat: Category | null) => navigate(cat ? `/c/${cat}` : "/"),
+    [navigate],
+  );
 
   const visibleTerms = useMemo(
     () => terms.slice(0, visibleCount),
     [terms, visibleCount],
   );
-
-  const handleCategoryChange = (cat: Category | null) => {
-    setActiveCategory(cat);
-    setVisibleCount(ITEMS_PER_PAGE);
-  };
 
   const categoryTitle = activeCategory
     ? `${t(`cat.${activeCategory}` as any) || activeCategory} ${t("category.terms_suffix")}`
@@ -71,7 +101,7 @@ const Index = () => {
             </p>
           </div>
 
-          <SmartHeroInput onSelectTerm={handleSelectTerm} />
+          <SmartHeroInput onSelectTerm={openTerm} />
         </div>
       </section>
 
@@ -108,7 +138,7 @@ const Index = () => {
                 <TermCard
                   key={term.id}
                   term={term}
-                  onClick={handleSelectTerm}
+                  onClick={openTerm}
                   index={i}
                 />
               ))}
@@ -133,8 +163,8 @@ const Index = () => {
                 <div className="sticky top-[4.5rem] h-[calc(100vh-5rem)]">
                   <TermPageModal
                     term={selectedTerm}
-                    onClose={() => setSelectedTerm(null)}
-                    onNavigate={handleSelectTerm}
+                    onClose={closeTerm}
+                    onNavigate={openTerm}
                   />
                 </div>
               </div>

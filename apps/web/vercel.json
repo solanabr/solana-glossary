@@ -2,5 +2,15 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "outputDirectory": "dist",
-  "rewrites": [{ "source": "/((?!api/).*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/", "destination": "/api/meta?path=home" },
+    { "source": "/copilot", "destination": "/api/meta?path=copilot" },
+    { "source": "/learn", "destination": "/api/meta?path=learn" },
+    { "source": "/t/:id", "destination": "/api/meta?path=term&id=:id" },
+    {
+      "source": "/c/:category",
+      "destination": "/api/meta?path=category&category=:category"
+    },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
 }
