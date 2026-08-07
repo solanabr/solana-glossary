@@ -1,5 +1,9 @@
 import { useRef, useCallback, useMemo, useEffect, useState } from "react";
-import ForceGraph2D from "react-force-graph-2d";
+import ForceGraph2D, {
+  type ForceGraphMethods,
+  type NodeObject,
+  type LinkObject,
+} from "react-force-graph-2d";
 import { GlossaryTerm } from "@stbr/solana-glossary";
 import { useGlossary } from "@/hooks/useGlossary";
 import { X, Maximize2, Minimize2 } from "lucide-react";
@@ -50,7 +54,8 @@ export function KnowledgeGraph({
 }: KnowledgeGraphProps) {
   const glossary = useGlossary();
   const { t } = useI18n();
-  const graphRef = useRef<any>(null);
+  const graphRef =
+    useRef<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode>>>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 600, height: 400 });
@@ -132,7 +137,7 @@ export function KnowledgeGraph({
   }, [graphData]);
 
   const handleNodeClick = useCallback(
-    (node: any) => {
+    (node: NodeObject & GraphNode) => {
       onSelectTerm(node.term);
     },
     [onSelectTerm],
