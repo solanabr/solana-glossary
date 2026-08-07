@@ -98,3 +98,35 @@ describe("loadConfig — capability detection", () => {
     expect(loadConfig({ AI_FORCE_TIER: "bogus" }).forceTier).toBeNull();
   });
 });
+
+describe("loadConfig — prod-weakening warnings", () => {
+  it("warns when AI_FORCE_TIER=normal in production", () => {
+    const cfg = loadConfig({
+      VERCEL_ENV: "production",
+      AI_FORCE_TIER: "normal",
+    });
+    expect(cfg.warnings.some((w) => w.includes("AI_FORCE_TIER=normal"))).toBe(
+      true,
+    );
+  });
+
+  it("warns when ALLOW_UNMETERED_AI=1 in production", () => {
+    const cfg = loadConfig({
+      VERCEL_ENV: "production",
+      ALLOW_UNMETERED_AI: "1",
+    });
+    expect(cfg.warnings.some((w) => w.includes("ALLOW_UNMETERED_AI"))).toBe(
+      true,
+    );
+  });
+
+  it("does not emit prod-weakening warnings in dev", () => {
+    const cfg = loadConfig({
+      AI_FORCE_TIER: "normal",
+      ALLOW_UNMETERED_AI: "1",
+    });
+    expect(cfg.warnings.some((w) => w.includes("AI_FORCE_TIER=normal"))).toBe(
+      false,
+    );
+  });
+});

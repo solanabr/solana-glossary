@@ -159,6 +159,18 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     .map((s) => s.trim())
     .filter(Boolean);
 
+  const allowUnmeteredAi = bool(env.ALLOW_UNMETERED_AI, false);
+  if (isProd && forceTier === "normal") {
+    warnings.push(
+      "AI_FORCE_TIER=normal in production pins the generous tier and disables the budget ladder/ceiling.",
+    );
+  }
+  if (isProd && allowUnmeteredAi) {
+    warnings.push(
+      "ALLOW_UNMETERED_AI=1 in production weakens metering, bot-gate, and session protections.",
+    );
+  }
+
   return {
     hasGemini,
     hasUpstash,
@@ -182,7 +194,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     quizEnabled: bool(env.QUIZ_ENABLED, true),
     applyCodeEnabled: bool(env.APPLY_CODE_ENABLED, true),
     forceTier,
-    allowUnmeteredAi: bool(env.ALLOW_UNMETERED_AI, false),
+    allowUnmeteredAi,
 
     dailyBudgetMicros: usdToMicros(num(env.AI_DAILY_BUDGET_USD, 10)),
     monthlyBudgetMicros: usdToMicros(num(env.AI_MONTHLY_BUDGET_USD, 200)),
@@ -219,6 +231,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
 
 /** Default singleton wired from the live process environment. */
 export const config: Config = loadConfig();
+
+// Loud, one-time boot warnings for degraded/insecure configs (quiet in tests).
+if (str(process.env.NODE_ENV) !== "test") {
+  for (const w of config.warnings) console.warn("[ai-config]", w);
+}
 
 /** Map a spend-percentage (0..∞) to a serving tier via the budget ladder. */
 export function tierFromPct(pct: number, cfg: Config = config): Tier {

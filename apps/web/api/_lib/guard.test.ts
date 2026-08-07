@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createGuard, encodeSseDelta, sseFromText } from "./guard";
+import { clientIp, createGuard, encodeSseDelta, sseFromText } from "./guard";
 import { createBudget } from "./budget";
 import { createTurnstile } from "./turnstile";
 import { loadConfig } from "./config";
@@ -134,5 +134,77 @@ describe("SSE helpers — client wire contract", () => {
   it("sseFromText emits only [DONE] for empty text", async () => {
     const text = await sseFromText("").text();
     expect(text).toBe("data: [DONE]\n\n");
+  });
+});
+
+describe("clientIp — anti-spoof (X-Forwarded-For)", () => {
+  it("prefers platform x-vercel-forwarded-for over a client x-forwarded-for", () => {
+    const r = new Request("http://x", {
+      method: "POST",
+      headers: {
+        "x-forwarded-for": "6.6.6.6",
+        "x-vercel-forwarded-for": "1.2.3.4",
+      },
+    });
+    expect(clientIp(r)).toBe("1.2.3.4");
+  });
+
+  it("prefers x-real-ip over x-forwarded-for", () => {
+    const r = new Request("http://x", {
+      method: "POST",
+      headers: { "x-forwarded-for": "6.6.6.6", "x-real-ip": "9.9.9.9" },
+    });
+    expect(clientIp(r)).toBe("9.9.9.9");
+  });
+
+  it("uses the rightmost valid XFF hop, never the spoofable leftmost", () => {
+    const r = new Request("http://x", {
+      method: "POST",
+      headers: { "x-forwarded-for": "6.6.6.6, 10.0.0.1, 203.0.113.7" },
+    });
+    expect(clientIp(r)).toBe("203.0.113.7");
+  });
+
+  it("rejects junk and returns 0.0.0.0", () => {
+    const r = new Request("http://x", {
+      method: "POST",
+      headers: { "x-forwarded-for": "not-an-ip" },
+    });
+    expect(clientIp(r)).toBe("0.0.0.0");
+  });
+});
+
+describe("withGuard — prod fails closed on missing protections", () => {
+  function prodGuard(extra: Record<string, string> = {}) {
+    const cfg = loadConfig({
+      GEMINI_API_KEY: "k",
+      UPSTASH_REDIS_REST_URL: "https://x",
+      UPSTASH_REDIS_REST_TOKEN: "t",
+      VERCEL_ENV: "production",
+      ...extra,
+    });
+    return createGuard({
+      config: cfg,
+      turnstile: createTurnstile({ config: cfg }),
+      rateLimiter: passRL,
+      budget: createBudget({ config: cfg, redis: new FakeRedis() }),
+    });
+  }
+
+  it("disables when prod lacks Turnstile + session secret", async () => {
+    const outcome = await prodGuard().withGuard("copilot", req(), {
+      locale: "en",
+    });
+    expect(outcome.ok).toBe(false);
+    expect(await outcome.response?.json()).toEqual({ mode: "disabled" });
+  });
+
+  it("allows prod when the explicit opt-out is set", async () => {
+    const outcome = await prodGuard({ ALLOW_UNMETERED_AI: "1" }).withGuard(
+      "copilot",
+      req(),
+      { locale: "en" },
+    );
+    expect(outcome.ok).toBe(true);
   });
 });

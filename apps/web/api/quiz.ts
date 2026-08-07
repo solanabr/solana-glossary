@@ -65,7 +65,7 @@ const SYSTEM =
   "You are a Solana expert quiz generator. Produce accurate, practical questions grounded in the provided concept.";
 
 export default async function handler(req: Request): Promise<Response> {
-  if (req.method === "OPTIONS") return corsPreflight();
+  if (req.method === "OPTIONS") return corsPreflight(req);
 
   const parsed = await readJson(req);
   if (!parsed.ok) return parsed.response;
@@ -84,13 +84,14 @@ export default async function handler(req: Request): Promise<Response> {
   };
 
   const term = String(b.term ?? "").trim();
-  if (!term) return jsonResponse({ error: "Missing term", questions: [] }, 400);
+  if (!term)
+    return jsonResponse({ error: "Missing term", questions: [] }, 400, {}, req);
 
   const difficulty = String(b.difficulty ?? "intermediate");
   const quizMode = String(b.mode ?? "concept");
 
   if (tier === "canned" || tier === "resting") {
-    return jsonResponse({ mode: tier, questions: [] });
+    return jsonResponse({ mode: tier, questions: [] }, 200, {}, req);
   }
 
   // Enrich context from the SDK when the client didn't supply it.
@@ -112,13 +113,14 @@ export default async function handler(req: Request): Promise<Response> {
   const hit = await cache.get(key);
   if (hit) {
     try {
-      return jsonResponse(JSON.parse(hit));
+      return jsonResponse(JSON.parse(hit), 200, {}, req);
     } catch {
       /* fall through to regenerate */
     }
   }
 
-  if (!cfg.hasGemini) return jsonResponse({ mode: "disabled", questions: [] });
+  if (!cfg.hasGemini)
+    return jsonResponse({ mode: "disabled", questions: [] }, 200, {}, req);
 
   const prompt = `Generate 3 multiple-choice questions based on the concept: "${term}".
 
@@ -142,12 +144,13 @@ Difficulty: beginner → simple definitions · intermediate → relationships/ho
 
   const model = modelForTier("quiz", tier);
   const maxOut = maxOutForTier("quiz", tier);
-  const reserved = costMicros(
-    model,
-    Math.ceil((SYSTEM.length + prompt.length) / 4) + 32,
-    maxOut,
-  );
-  await budget.reserve(identity, reserved);
+  const approxIn = Math.ceil((SYSTEM.length + prompt.length) / 4) + 32;
+  const reserved = costMicros(model, approxIn, maxOut);
+  const reservedTier = await budget.reserve(identity, reserved);
+  if (reservedTier === "resting") {
+    await budget.settle(identity, reserved, 0);
+    return jsonResponse({ mode: "resting", questions: [] }, 200, {}, req);
+  }
 
   try {
     const { data, usage } = await gemini.generateStructured<QuizResponse>({
@@ -163,10 +166,16 @@ Difficulty: beginner → simple definitions · intermediate → relationships/ho
     if (tier === "normal" && questions.length) {
       await cache.set(key, JSON.stringify({ questions }));
     }
-    return jsonResponse({ questions });
+    return jsonResponse({ questions }, 200, {}, req);
   } catch (err) {
     console.error("[quiz] generation error:", err);
-    await budget.settle(identity, reserved, 0);
-    return jsonResponse({ error: "Failed to generate quiz", questions: [] });
+    // Input-cost floor, never 0 — a failed-after-dispatch call still bills.
+    await budget.settle(identity, reserved, costMicros(model, approxIn, 0));
+    return jsonResponse(
+      { error: "Failed to generate quiz", questions: [] },
+      200,
+      {},
+      req,
+    );
   }
 }

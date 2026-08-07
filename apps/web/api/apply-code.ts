@@ -44,7 +44,7 @@ const SYSTEM =
   "You are a senior Solana developer and educator who writes concise, correct, runnable examples.";
 
 export default async function handler(req: Request): Promise<Response> {
-  if (req.method === "OPTIONS") return corsPreflight();
+  if (req.method === "OPTIONS") return corsPreflight(req);
 
   const parsed = await readJson(req);
   if (!parsed.ok) return parsed.response;
@@ -62,7 +62,7 @@ export default async function handler(req: Request): Promise<Response> {
   };
 
   const term = String(b.term ?? "").trim();
-  if (!term) return jsonResponse({ error: "Missing term" }, 400);
+  if (!term) return jsonResponse({ error: "Missing term" }, 400, {}, req);
 
   const difficulty = String(b.difficulty ?? "intermediate");
   const applyMode = String(b.mode ?? "concept");
@@ -71,7 +71,7 @@ export default async function handler(req: Request): Promise<Response> {
     .sort();
 
   if (tier === "canned" || tier === "resting") {
-    return jsonResponse({ mode: tier });
+    return jsonResponse({ mode: tier }, 200, {}, req);
   }
 
   const related =
@@ -90,13 +90,13 @@ export default async function handler(req: Request): Promise<Response> {
   const hit = await cache.get(key);
   if (hit) {
     try {
-      return jsonResponse(JSON.parse(hit));
+      return jsonResponse(JSON.parse(hit), 200, {}, req);
     } catch {
       /* regenerate */
     }
   }
 
-  if (!cfg.hasGemini) return jsonResponse({ mode: "disabled" });
+  if (!cfg.hasGemini) return jsonResponse({ mode: "disabled" }, 200, {}, req);
 
   const prompt = `The user just completed a learning session about: "${term}"
 
@@ -122,12 +122,13 @@ Requirements:
 
   const model = modelForTier("apply-code", tier);
   const maxOut = maxOutForTier("apply-code", tier);
-  const reserved = costMicros(
-    model,
-    Math.ceil((SYSTEM.length + prompt.length) / 4) + 32,
-    maxOut,
-  );
-  await budget.reserve(identity, reserved);
+  const approxIn = Math.ceil((SYSTEM.length + prompt.length) / 4) + 32;
+  const reserved = costMicros(model, approxIn, maxOut);
+  const reservedTier = await budget.reserve(identity, reserved);
+  if (reservedTier === "resting") {
+    await budget.settle(identity, reserved, 0);
+    return jsonResponse({ mode: "resting" }, 200, {}, req);
+  }
 
   try {
     const { data, usage } = await gemini.generateStructured<ApplyCodeResponse>({
@@ -142,10 +143,11 @@ Requirements:
     if (tier === "normal" && data?.code) {
       await cache.set(key, JSON.stringify(data));
     }
-    return jsonResponse(data);
+    return jsonResponse(data, 200, {}, req);
   } catch (err) {
     console.error("[apply-code] generation error:", err);
-    await budget.settle(identity, reserved, 0);
-    return jsonResponse({ error: "Failed to generate example" });
+    // Input-cost floor, never 0 — a failed-after-dispatch call still bills.
+    await budget.settle(identity, reserved, costMicros(model, approxIn, 0));
+    return jsonResponse({ error: "Failed to generate example" }, 200, {}, req);
   }
 }

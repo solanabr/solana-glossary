@@ -10,13 +10,24 @@ import {
   jsonResponse,
   readJson,
 } from "../_lib/guard";
+import { config as cfg } from "../_lib/config";
 import { turnstile } from "../_lib/turnstile";
 import type { SessionMintRequest, SessionMintResponse } from "../_lib/types";
 
 export const config = { runtime: "nodejs" };
 
 export default async function handler(req: Request): Promise<Response> {
-  if (req.method === "OPTIONS") return corsPreflight();
+  if (req.method === "OPTIONS") return corsPreflight(req);
+
+  // Prod fails closed: refuse to mint if the bot gate or session secret is
+  // missing (an ephemeral per-instance secret would 401 across instances).
+  if (
+    cfg.isProd &&
+    !cfg.allowUnmeteredAi &&
+    (!cfg.hasTurnstile || !cfg.hasSessionSecret)
+  ) {
+    return jsonResponse({ mode: "disabled" }, 503, {}, req);
+  }
 
   const parsed = await readJson(req);
   if (!parsed.ok) return parsed.response;
@@ -25,10 +36,15 @@ export default async function handler(req: Request): Promise<Response> {
   const ip = clientIp(req);
   const verified = await turnstile.verifyToken(body.turnstileToken, ip);
   if (!verified) {
-    return jsonResponse({ error: "Turnstile verification failed" }, 403);
+    return jsonResponse(
+      { error: "Turnstile verification failed" },
+      403,
+      {},
+      req,
+    );
   }
 
   const { token, expiresAt } = turnstile.mintSession(ipIdentity(ip));
   const response: SessionMintResponse = { token, expiresAt };
-  return jsonResponse(response);
+  return jsonResponse(response, 200, {}, req);
 }

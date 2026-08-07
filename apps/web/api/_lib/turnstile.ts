@@ -91,6 +91,9 @@ export function createTurnstile(deps: {
     },
 
     verifySession(token): SessionVerification {
+      // No revocation list: tokens are short-lived (SESSION_TTL_SEC) and can't be
+      // invalidated early. Accepted trade-off — rotate SESSION_HMAC_SECRET to
+      // mass-invalidate. Rate limit + budget still bound a leaked token's blast.
       if (!token) return { valid: false };
       const dot = token.indexOf(".");
       if (dot < 0) return { valid: false };

@@ -11,12 +11,16 @@ import type { AiStatus, FeatureState } from "../_lib/types";
 export const config = { runtime: "nodejs" };
 
 export default async function handler(req: Request): Promise<Response> {
-  if (req.method === "OPTIONS") return corsPreflight();
+  if (req.method === "OPTIONS") return corsPreflight(req);
 
+  // Mirror the guard's prod fail-closed check so the client shows "disabled"
+  // when any prod protection (metering / bot gate / session secret) is missing.
   const globallyDown =
     !cfg.aiEnabled ||
     !cfg.hasGemini ||
-    (cfg.isProd && !cfg.hasUpstash && !cfg.allowUnmeteredAi);
+    (cfg.isProd &&
+      !cfg.allowUnmeteredAi &&
+      (!cfg.hasUpstash || !cfg.hasTurnstile || !cfg.hasSessionSecret));
 
   const tier = await budget.globalTier();
 
@@ -33,7 +37,10 @@ export default async function handler(req: Request): Promise<Response> {
     requiresSession: turnstile.required,
   };
 
-  return jsonResponse(status, 200, {
-    "Cache-Control": "public, max-age=30, s-maxage=30",
-  });
+  return jsonResponse(
+    status,
+    200,
+    { "Cache-Control": "public, max-age=30, s-maxage=30" },
+    req,
+  );
 }

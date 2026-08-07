@@ -25,7 +25,9 @@ export interface Budget {
   evaluate(identity: string): Promise<BudgetEvaluation>;
   /** Global tier only (no per-identity read) — for the cheap status endpoint. */
   globalTier(): Promise<Tier>;
-  reserve(identity: string, micros: number): Promise<void>;
+  /** Reserve worst-case spend; returns the post-INCRBY global tier so callers
+   *  can refuse in-flight once the running total crosses the resting ceiling. */
+  reserve(identity: string, micros: number): Promise<Tier>;
   settle(
     identity: string,
     reservedMicros: number,
@@ -65,11 +67,17 @@ export function createBudget(deps: {
   const cfg = deps.config ?? config;
   const redis = deps.redis ?? null;
 
-  async function incr(key: string, micros: number, ttl: number): Promise<void> {
-    if (!redis || micros === 0) return;
+  // Returns the post-increment running total (0 when unmetered).
+  async function incr(
+    key: string,
+    micros: number,
+    ttl: number,
+  ): Promise<number> {
+    if (!redis || micros === 0) return 0;
     const total = await redis.incrby(key, micros);
     // Set the TTL only on first creation so we don't slide the window forward.
     if (total === micros) await redis.expire(key, ttl);
+    return total;
   }
 
   return {
@@ -119,17 +127,24 @@ export function createBudget(deps: {
       }
     },
 
-    async reserve(identity, micros): Promise<void> {
-      if (micros <= 0) return;
+    async reserve(identity, micros): Promise<Tier> {
+      if (micros <= 0 || !redis) return cfg.forceTier ?? "normal";
       try {
         const now = new Date();
-        await Promise.all([
+        const [gDay, gMonth] = await Promise.all([
           incr(globalDayKey(now), micros, DAY_TTL),
           incr(globalMonthKey(now), micros, MONTH_TTL),
           incr(userDayKey(identity, now), micros, DAY_TTL),
         ]);
+        // A pinned tier deliberately bypasses the ladder (and ceiling); see the
+        // AI_FORCE_TIER=normal boot warning.
+        if (cfg.forceTier) return cfg.forceTier;
+        const dailyPct = (gDay / cfg.dailyBudgetMicros) * 100;
+        const monthlyPct = (gMonth / cfg.monthlyBudgetMicros) * 100;
+        return tierFromPct(Math.max(dailyPct, monthlyPct), cfg);
       } catch (err) {
         console.warn("[budget] reserve failed (best-effort):", err);
+        return cfg.forceTier ?? "normal";
       }
     },
 

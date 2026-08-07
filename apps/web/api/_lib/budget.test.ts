@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createBudget } from "./budget";
-import { loadConfig } from "./config";
+import { costMicros, loadConfig } from "./config";
 import { FakeRedis, throwingRedis } from "./testutil";
 
 // Metered config: $10/day, high per-user cap so global-ladder tests aren't
@@ -88,5 +88,41 @@ describe("budget.evaluate — fail-safe", () => {
     const result = await budget.evaluate(ID);
     expect(result.tier).toBe("normal");
     expect(result.degraded).toBe(true);
+  });
+});
+
+describe("budget — spend-leak fix (error path bills the input floor)", () => {
+  it("settles the input floor, NOT zero, on a failed-after-dispatch call", async () => {
+    const cfg = meteredConfig();
+    const fake = new FakeRedis();
+    const budget = createBudget({ config: cfg, redis: fake });
+    const model = cfg.geminiModel;
+    const approxIn = 800;
+    const reserved = costMicros(model, approxIn, 1200);
+    const floor = costMicros(model, approxIn, 0); // route error path settles this
+    expect(floor).toBeGreaterThan(0);
+
+    await budget.reserve(ID, reserved);
+    await budget.settle(ID, reserved, floor); // simulate the route catch{}
+
+    const day = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    // The global counter reflects the floor — the failed call did NOT escape to $0.
+    expect(Number(fake.store.get(`ai:spend:global:day:${day}`))).toBe(floor);
+  });
+});
+
+describe("budget.reserve — atomic ceiling", () => {
+  it("returns the post-increment global tier", async () => {
+    const cfg = meteredConfig(); // $10/day
+    const budget = createBudget({ config: cfg, redis: new FakeRedis() });
+    expect(await budget.reserve(ID, 6_000_000)).toBe("normal"); // 60%
+    expect(await budget.reserve(ID, 1_500_000)).toBe("economy"); // 75%
+    expect(await budget.reserve(ID, 3_000_000)).toBe("resting"); // 105% → refuse
+  });
+
+  it("returns normal (no ceiling to enforce) when unmetered", async () => {
+    const cfg = loadConfig({ GEMINI_API_KEY: "k" });
+    const budget = createBudget({ config: cfg, redis: null });
+    expect(await budget.reserve(ID, 999_000_000)).toBe("normal");
   });
 });

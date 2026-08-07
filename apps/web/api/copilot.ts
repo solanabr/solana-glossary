@@ -143,7 +143,7 @@ function tokens(text: string): number {
 }
 
 export default async function handler(req: Request): Promise<Response> {
-  if (req.method === "OPTIONS") return corsPreflight();
+  if (req.method === "OPTIONS") return corsPreflight(req);
 
   const parsed = await readJson(req);
   if (!parsed.ok) return parsed.response;
@@ -180,19 +180,19 @@ export default async function handler(req: Request): Promise<Response> {
 
   // Canned / resting → free deterministic answer (zero LLM), streamed as SSE.
   if (tier === "canned" || tier === "resting") {
-    return sseFromText(freeAnswer(query, locale)?.text ?? "");
+    return sseFromText(freeAnswer(query, locale)?.text ?? "", req);
   }
 
   const cacheable = mode === "chat" || mode === "usage-example";
   const key = cache.key(`copilot:${mode}`, locale, norm, rag.ids);
   if (cacheable) {
     const hit = await cache.get(key);
-    if (hit) return sseFromText(hit);
+    if (hit) return sseFromText(hit, req);
   }
 
   // Defensive: guard should have disabled without a key, but never spend blind.
   if (!cfg.hasGemini) {
-    return sseFromText(freeAnswer(query, locale)?.text ?? "");
+    return sseFromText(freeAnswer(query, locale)?.text ?? "", req);
   }
 
   const model = modelForTier("copilot", tier);
@@ -201,7 +201,13 @@ export default async function handler(req: Request): Promise<Response> {
 
   const approxIn = tokens(system) + tokens(query) + 32;
   const reserved = costMicros(model, approxIn, maxOut); // worst-case up front
-  await budget.reserve(identity, reserved);
+  const reservedTier = await budget.reserve(identity, reserved);
+  if (reservedTier === "resting") {
+    // Atomic ceiling crossed (this or a concurrent call). Refuse LLM spend,
+    // release the reservation, serve the free deterministic answer.
+    await budget.settle(identity, reserved, 0);
+    return sseFromText(freeAnswer(query, locale)?.text ?? "", req);
+  }
 
   const enc = new TextEncoder();
   let full = "";
@@ -229,11 +235,12 @@ export default async function handler(req: Request): Promise<Response> {
         }
       } catch (err) {
         console.error("[copilot] stream error:", err);
-        // Release the reservation; if nothing streamed, fall into the free answer.
+        // Settle to the real cost floor (input + whatever streamed) — NEVER 0,
+        // so a billed-but-failed call still counts against the ceiling.
         await budget.settle(
           identity,
           reserved,
-          full ? costMicros(model, approxIn, tokens(full)) : 0,
+          costMicros(model, approxIn, tokens(full)),
         );
         if (!full) {
           const free = freeAnswer(query, locale)?.text;
@@ -246,5 +253,5 @@ export default async function handler(req: Request): Promise<Response> {
     },
   });
 
-  return new Response(stream, { headers: sseHeaders() });
+  return new Response(stream, { headers: sseHeaders(req) });
 }
