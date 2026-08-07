@@ -1,7 +1,4 @@
-import {
-  buildLocalizedGlossaryContext,
-  type GlossaryLocale,
-} from "@/lib/glossary-i18n";
+import type { GlossaryLocale } from "@/lib/glossary-i18n";
 import { buildAiHeaders, isRestingBody } from "@/lib/ai-session";
 
 // Streamed same-origin by the AI backend; callers gate on useAiEnabled("copilot").
@@ -11,18 +8,19 @@ type Msg = { role: "user" | "assistant"; content: string };
 
 export async function streamChat({
   messages,
-  glossaryContext,
   locale = "en",
   mode,
+  signal,
   onDelta,
   onDone,
   onError,
   onResting,
 }: {
   messages: Msg[];
-  glossaryContext: string;
   locale?: GlossaryLocale;
   mode?: "chat" | "explain-code" | "explain-file" | "usage-example";
+  /** Cancels an in-flight stream when the caller navigates away. */
+  signal?: AbortSignal;
   onDelta: (text: string) => void;
   onDone: () => void;
   onError: (error: string) => void;
@@ -33,12 +31,14 @@ export async function streamChat({
     const resp = await fetch(CHAT_URL, {
       method: "POST",
       headers: await buildAiHeaders(),
+      // Backend keeps only the last couple of turns; trim so a long chat can't
+      // exceed the request-body cap (→ 413).
       body: JSON.stringify({
-        messages,
-        glossaryContext,
+        messages: messages.slice(-6),
         locale,
         mode: mode || "chat",
       }),
+      signal,
     });
 
     // Budget paused / rate-limited → show the resting state, never spin.
@@ -135,13 +135,8 @@ export async function streamChat({
 
     onDone();
   } catch (e) {
+    // A caller-triggered abort (stale stream) is expected — stay silent.
+    if (e instanceof DOMException && e.name === "AbortError") return;
     onError(e instanceof Error ? e.message : "Network error");
   }
-}
-
-export function buildGlossaryContext(
-  input: string,
-  locale: GlossaryLocale = "en",
-): string {
-  return buildLocalizedGlossaryContext(input, locale);
 }

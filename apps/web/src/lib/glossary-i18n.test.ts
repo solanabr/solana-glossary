@@ -7,8 +7,6 @@ import {
 import {
   getLocalizedTerms,
   localizeTerm,
-  searchLocalizedTerms,
-  buildLocalizedGlossaryContext,
   findLocalizedTermByText,
 } from "@/lib/glossary-i18n";
 
@@ -43,17 +41,6 @@ describe("glossary-i18n × @stbr/solana-glossary", () => {
     const sample = allTerms[0];
     expect(localizeTerm(sample, "en")).toBe(sample);
     expect(localizeTerm(sample, "pt").id).toBe(sample.id);
-  });
-
-  it("search matches a common query and returns nothing for empty input", () => {
-    expect(searchLocalizedTerms("transaction", "en").length).toBeGreaterThan(0);
-    expect(searchLocalizedTerms("", "en")).toEqual([]);
-  });
-
-  it("buildLocalizedGlossaryContext emits a compact term: definition block", () => {
-    const ctx = buildLocalizedGlossaryContext("transaction", "en", 3);
-    expect(ctx).toContain(":");
-    expect(ctx.split("\n").length).toBeLessThanOrEqual(3);
   });
 
   it("findLocalizedTermByText resolves a known term by its display name", () => {

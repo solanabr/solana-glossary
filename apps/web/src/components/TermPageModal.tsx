@@ -27,10 +27,11 @@ import { useI18n } from "@/lib/i18n";
 import { useGlossary } from "@/hooks/useGlossary";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
-import { streamChat, buildGlossaryContext } from "@/lib/ai-chat";
+import { streamChat } from "@/lib/ai-chat";
 import { TermHighlightedMarkdown } from "@/components/TermHighlightedMarkdown";
 import { SmartQuiz } from "@/components/SmartQuiz";
 import { AiResting } from "@/components/AiResting";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useAiEnabled } from "@/hooks/useAiStatus";
 
 const KnowledgeGraph = lazy(() =>
@@ -107,6 +108,7 @@ export function TermPageModal({
     setAiInsight("");
     setInsightLoading(true);
     setInsightResting(false);
+    const controller = new AbortController();
     let content = "";
     streamChat({
       messages: [
@@ -115,9 +117,9 @@ export function TermPageModal({
           content: `Term: "${term.term}" (${term.category}). Definition: "${term.definition}". Related: ${(term.related || []).join(", ")}. Give a practical insight about how this concept connects to other Solana concepts and when developers typically encounter it. Be specific. Include a short code example (CLI command or Rust/TypeScript snippet) showing real usage. Use markdown with code blocks. Keep it concise (3-5 sentences + code).`,
         },
       ],
-      glossaryContext: buildGlossaryContext(term.term, locale),
       locale,
       mode: "usage-example",
+      signal: controller.signal,
       onDelta: (chunk) => {
         content += chunk;
         setAiInsight(content);
@@ -132,6 +134,13 @@ export function TermPageModal({
         setInsightLoading(false);
       },
     });
+
+    // Fast term navigation cancels the previous stream so it can't clobber
+    // the current term's insight (also lets the ref re-fetch on return).
+    return () => {
+      controller.abort();
+      if (insightFetched.current === term.id) insightFetched.current = null;
+    };
   }, [term.id, copilotEnabled]);
 
   const handleCopyDefinition = useCallback(() => {
@@ -236,30 +245,32 @@ export function TermPageModal({
         {copilotEnabled && (
           <>
             {/* AI Insight */}
-            <div className="bg-primary/5 border border-primary/10 rounded-lg p-3.5">
-              <div className="flex items-center gap-1.5 mb-2">
-                <Brain className="h-3.5 w-3.5 text-primary" />
-                <span className="text-[11px] font-semibold text-primary">
-                  {t("term.ai_insight")}
-                </span>
+            <ErrorBoundary fallback={<AiResting compact />}>
+              <div className="bg-primary/5 border border-primary/10 rounded-lg p-3.5">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Brain className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-[11px] font-semibold text-primary">
+                    {t("term.ai_insight")}
+                  </span>
+                </div>
+                {insightResting ? (
+                  <AiResting compact />
+                ) : insightLoading && !aiInsight ? (
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-4/5" />
+                    <Skeleton className="h-3 w-3/5" />
+                  </div>
+                ) : (
+                  <div className="text-xs text-foreground/80 leading-relaxed [&_pre]:bg-[hsl(150_60%_10%)] [&_pre]:border [&_pre]:border-emerald-500/20 [&_pre]:rounded-lg [&_pre]:p-3 [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre_code]:text-emerald-400 [&_pre_code]:text-[11px] [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_code]:text-primary [&_code]:bg-primary/10 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[11px] [&_strong]:text-foreground [&_p]:mb-2 [&_p:last-child]:mb-0">
+                    <TermHighlightedMarkdown
+                      content={aiInsight}
+                      onTermClick={onNavigate}
+                    />
+                  </div>
+                )}
               </div>
-              {insightResting ? (
-                <AiResting compact />
-              ) : insightLoading && !aiInsight ? (
-                <div className="space-y-1.5">
-                  <Skeleton className="h-3 w-full" />
-                  <Skeleton className="h-3 w-4/5" />
-                  <Skeleton className="h-3 w-3/5" />
-                </div>
-              ) : (
-                <div className="text-xs text-foreground/80 leading-relaxed [&_pre]:bg-[hsl(150_60%_10%)] [&_pre]:border [&_pre]:border-emerald-500/20 [&_pre]:rounded-lg [&_pre]:p-3 [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre_code]:text-emerald-400 [&_pre_code]:text-[11px] [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_code]:text-primary [&_code]:bg-primary/10 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[11px] [&_strong]:text-foreground [&_p]:mb-2 [&_p:last-child]:mb-0">
-                  <TermHighlightedMarkdown
-                    content={aiInsight}
-                    onTermClick={onNavigate}
-                  />
-                </div>
-              )}
-            </div>
+            </ErrorBoundary>
 
             {/* AI Action buttons */}
             <div className="grid grid-cols-2 gap-2">
@@ -345,7 +356,8 @@ export function TermPageModal({
             onNavigate={onNavigate}
             onOpenGraph={() => setShowGraph(true)}
             onExplainCode={(code) => {
-              navigate("/copilot", { state: { explainCode: code } });
+              sessionStorage.setItem("explain-code-input", code);
+              navigate("/copilot?mode=explain-code");
             }}
           />
         )}
@@ -369,11 +381,13 @@ export function TermPageModal({
               </div>
             }
           >
-            <KnowledgeGraph
-              centerTerm={term}
-              onSelectTerm={onNavigate}
-              onClose={() => setShowGraph(false)}
-            />
+            <ErrorBoundary fallback={<AiResting compact />}>
+              <KnowledgeGraph
+                centerTerm={term}
+                onSelectTerm={onNavigate}
+                onClose={() => setShowGraph(false)}
+              />
+            </ErrorBoundary>
           </Suspense>
         )}
       </div>

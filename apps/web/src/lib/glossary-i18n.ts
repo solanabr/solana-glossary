@@ -46,38 +46,6 @@ export function getLocalizedTerms(locale: GlossaryLocale): GlossaryTerm[] {
   return localizedTerms;
 }
 
-export function searchLocalizedTerms(
-  query: string,
-  locale: GlossaryLocale,
-): GlossaryTerm[] {
-  if (!query.trim()) return [];
-
-  const normalizedQuery = normalizeGlossaryText(query);
-  return getLocalizedTerms(locale).filter(
-    (term) =>
-      normalizeGlossaryText(term.term).includes(normalizedQuery) ||
-      normalizeGlossaryText(term.definition).includes(normalizedQuery) ||
-      term.id.includes(normalizedQuery) ||
-      term.aliases?.some((alias) =>
-        normalizeGlossaryText(alias).includes(normalizedQuery),
-      ),
-  );
-}
-
-export function buildLocalizedGlossaryContext(
-  input: string,
-  locale: GlossaryLocale,
-  limit = 10,
-): string {
-  const results = searchLocalizedTerms(input, locale);
-  if (results.length === 0) return "";
-
-  return results
-    .slice(0, limit)
-    .map((term) => `${term.term}: ${term.definition}`)
-    .join("\n");
-}
-
 export function findLocalizedTermByText(
   text: string,
   locale: GlossaryLocale,

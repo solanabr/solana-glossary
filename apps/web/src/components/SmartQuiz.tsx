@@ -96,7 +96,13 @@ export function SmartQuiz({
         setPhase("resting");
         return;
       }
-      setQuestions((data as { questions?: QuizQuestion[] }).questions ?? []);
+      const err = (data as { error?: unknown }).error;
+      if (typeof err === "string") throw new Error(err);
+      const nextQuestions =
+        (data as { questions?: QuizQuestion[] }).questions ?? [];
+      // An error payload or empty set must fall back to config, not a blank quiz.
+      if (nextQuestions.length === 0) throw new Error("No questions returned");
+      setQuestions(nextQuestions);
       setCurrentQ(0);
       setScore(0);
       setWrongTerms([]);

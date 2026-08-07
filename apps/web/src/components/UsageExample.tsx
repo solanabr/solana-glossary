@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { GlossaryTerm } from "@stbr/solana-glossary";
-import { streamChat, buildGlossaryContext } from "@/lib/ai-chat";
+import { streamChat } from "@/lib/ai-chat";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TermHighlightedMarkdown } from "@/components/TermHighlightedMarkdown";
@@ -43,7 +43,6 @@ export function UsageExample({ term, onTermClick }: UsageExampleProps) {
     setError(false);
     setResting(false);
 
-    const glossaryContext = buildGlossaryContext(term.term, locale);
     let content = "";
 
     streamChat({
@@ -53,7 +52,6 @@ export function UsageExample({ term, onTermClick }: UsageExampleProps) {
           content: `Term: ${term.term}\nDefinition: ${term.definition}\n\nProvide a practical real-world usage example of this Solana concept.`,
         },
       ],
-      glossaryContext,
       locale,
       mode: "usage-example",
       onDelta: (chunk) => {

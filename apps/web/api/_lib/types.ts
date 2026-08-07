@@ -25,8 +25,6 @@ export interface CopilotMessage {
 
 export interface CopilotRequest {
   messages: CopilotMessage[];
-  /** Legacy client-built context; the server rebuilds RAG from the SDK and ignores/merges this. */
-  glossaryContext?: string;
   mode: CopilotMode;
   locale?: Locale;
 }

@@ -6,7 +6,8 @@ import { generateTopicPath, type LearningStep } from "@/lib/learning-path";
 import { GlossaryTerm } from "@stbr/solana-glossary";
 import { TermHighlightedMarkdown } from "@/components/TermHighlightedMarkdown";
 import { AiResting } from "@/components/AiResting";
-import { streamChat, buildGlossaryContext } from "@/lib/ai-chat";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { streamChat } from "@/lib/ai-chat";
 import { useAiEnabled } from "@/hooks/useAiStatus";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion, AnimatePresence } from "framer-motion";
@@ -58,6 +59,7 @@ const LearningPath = () => {
     setExplanation("");
     setLoading(true);
     setResting(false);
+    const controller = new AbortController();
     let content = "";
 
     const relatedNames = (step.term.related || []).slice(0, 3).join(", ");
@@ -73,9 +75,9 @@ const LearningPath = () => {
           content: `${stepContext}\n\nTerm: "${step.term.term}" (${step.term.category}).\nDefinition: "${step.term.definition}".\nRelated: ${relatedNames}.\n\nExplain this concept clearly in 3-4 sentences. Then show a short practical code example (Rust, TypeScript, or CLI). Use markdown with code blocks. Be didactic and encouraging.`,
         },
       ],
-      glossaryContext: buildGlossaryContext(step.term.term, locale),
       locale,
       mode: "usage-example",
+      signal: controller.signal,
       onDelta: (chunk) => {
         content += chunk;
         setExplanation(content);
@@ -87,6 +89,9 @@ const LearningPath = () => {
         setLoading(false);
       },
     });
+
+    // Fast step navigation cancels the previous stream before starting a new one.
+    return () => controller.abort();
   }, [currentStep, step?.term.id, aiEnabled]);
 
   const handleNext = useCallback(() => {
@@ -264,34 +269,36 @@ const LearningPath = () => {
                 </div>
 
                 {/* AI Explanation */}
-                {aiEnabled && !resting ? (
-                  <div className="bg-card border border-border rounded-xl p-6 mb-4">
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <Brain className="h-4 w-4 text-primary" />
-                      <span className="text-xs font-semibold text-primary">
-                        {t("learn.explanation")}
-                      </span>
-                    </div>
+                <ErrorBoundary fallback={<AiResting compact />}>
+                  {aiEnabled && !resting ? (
+                    <div className="bg-card border border-border rounded-xl p-6 mb-4">
+                      <div className="flex items-center gap-1.5 mb-3">
+                        <Brain className="h-4 w-4 text-primary" />
+                        <span className="text-xs font-semibold text-primary">
+                          {t("learn.explanation")}
+                        </span>
+                      </div>
 
-                    {loading && !explanation ? (
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-4/5" />
-                        <Skeleton className="h-4 w-3/5" />
-                        <Skeleton className="h-20 w-full mt-3" />
-                      </div>
-                    ) : (
-                      <div className="text-sm text-foreground/80 leading-relaxed [&_pre]:bg-[hsl(150_60%_10%)] [&_pre]:border [&_pre]:border-emerald-500/20 [&_pre]:rounded-lg [&_pre]:p-3 [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre_code]:text-emerald-400 [&_pre_code]:text-[11px] [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_code]:text-primary [&_code]:bg-primary/10 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[11px] [&_strong]:text-foreground [&_p]:mb-2 [&_p:last-child]:mb-0">
-                        <TermHighlightedMarkdown
-                          content={explanation}
-                          onTermClick={handleTermNavigate}
-                        />
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <AiResting className="mb-4" />
-                )}
+                      {loading && !explanation ? (
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-4 w-4/5" />
+                          <Skeleton className="h-4 w-3/5" />
+                          <Skeleton className="h-20 w-full mt-3" />
+                        </div>
+                      ) : (
+                        <div className="text-sm text-foreground/80 leading-relaxed [&_pre]:bg-[hsl(150_60%_10%)] [&_pre]:border [&_pre]:border-emerald-500/20 [&_pre]:rounded-lg [&_pre]:p-3 [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre_code]:text-emerald-400 [&_pre_code]:text-[11px] [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_code]:text-primary [&_code]:bg-primary/10 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[11px] [&_strong]:text-foreground [&_p]:mb-2 [&_p:last-child]:mb-0">
+                          <TermHighlightedMarkdown
+                            content={explanation}
+                            onTermClick={handleTermNavigate}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <AiResting className="mb-4" />
+                  )}
+                </ErrorBoundary>
 
                 {/* Navigation */}
                 <div className="flex items-center justify-between">

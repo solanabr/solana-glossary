@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { GlossaryTerm } from "@stbr/solana-glossary";
-import { streamChat, buildGlossaryContext } from "@/lib/ai-chat";
+import { streamChat } from "@/lib/ai-chat";
 import {
   Send,
   Bot,
@@ -121,7 +121,6 @@ export function ChatUI({ onTermClick, mode = "chat" }: ChatUIProps) {
       setInput("");
       setIsStreaming(true);
 
-      const glossaryContext = buildGlossaryContext(msgText, locale);
       let assistantContent = "";
 
       await streamChat({
@@ -129,7 +128,6 @@ export function ChatUI({ onTermClick, mode = "chat" }: ChatUIProps) {
           role: m.role,
           content: m.content,
         })),
-        glossaryContext,
         locale,
         mode,
         onDelta: (chunk) => {

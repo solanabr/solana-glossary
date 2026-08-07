@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react";
 import { searchTerms, GlossaryTerm } from "@stbr/solana-glossary";
-import { streamChat, buildGlossaryContext } from "@/lib/ai-chat";
+import { streamChat } from "@/lib/ai-chat";
 import {
   FileCode2,
   Loader2,
@@ -55,6 +55,14 @@ const CODE_EXTENSIONS = [
   ".bash",
 ];
 
+// Stay under the backend's 48 KB request-body cap (leaves room for the prompt).
+const MAX_FILE_BYTES = 40 * 1024;
+
+function hasAllowedExtension(name: string): boolean {
+  const dot = name.lastIndexOf(".");
+  return dot !== -1 && CODE_EXTENSIONS.includes(name.slice(dot).toLowerCase());
+}
+
 export function ExplainFilePanel({ onTermClick }: ExplainFilePanelProps) {
   const [code, setCode] = useState("");
   const [result, setResult] = useState("");
@@ -67,7 +75,20 @@ export function ExplainFilePanel({ onTermClick }: ExplainFilePanelProps) {
   const { t, locale } = useI18n();
   const aiEnabled = useAiEnabled("copilot");
 
+  // Guards both the picker and drag-drop: the `accept` attr only filters the
+  // picker UI, so re-check the extension and cap the size before reading.
   const handleFileRead = useCallback((file: File) => {
+    if (!hasAllowedExtension(file.name)) {
+      setError(`Unsupported file type. Allowed: ${CODE_EXTENSIONS.join(", ")}`);
+      return;
+    }
+    if (file.size > MAX_FILE_BYTES) {
+      setError(
+        `File is too large (${Math.ceil(file.size / 1024)} KB). Max ${MAX_FILE_BYTES / 1024} KB.`,
+      );
+      return;
+    }
+    setError(null);
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
@@ -127,12 +148,9 @@ export function ExplainFilePanel({ onTermClick }: ExplainFilePanelProps) {
       setResult("");
       setIsAnalyzing(true);
 
-      const glossaryContext = buildGlossaryContext(codeToAnalyze, locale);
-
       let content = "";
       await streamChat({
         messages: [{ role: "user", content: codeToAnalyze }],
-        glossaryContext,
         locale,
         mode: "explain-file",
         onDelta: (chunk) => {

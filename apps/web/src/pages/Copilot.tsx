@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import { ChatUI } from "@/components/ChatUI";
 import { ExplainFilePanel } from "@/components/ExplainFilePanel";
 import { TermDetailPanel } from "@/components/TermDetailPanel";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AiResting } from "@/components/AiResting";
 import { GlossaryTerm } from "@stbr/solana-glossary";
 import { AnimatePresence } from "framer-motion";
 import { MessageSquare, Code2, FileCode2 } from "lucide-react";
@@ -69,11 +71,12 @@ const Copilot = () => {
           {activeTab === "explain-file" ? (
             <ExplainFilePanel onTermClick={setSelectedTerm} />
           ) : (
-            <ChatUI
-              key={activeTab}
-              mode={activeTab === "explain-code" ? "explain-code" : "chat"}
-              onTermClick={setSelectedTerm}
-            />
+            <ErrorBoundary key={activeTab} fallback={<AiResting compact />}>
+              <ChatUI
+                mode={activeTab === "explain-code" ? "explain-code" : "chat"}
+                onTermClick={setSelectedTerm}
+              />
+            </ErrorBoundary>
           )}
         </div>
         <AnimatePresence>

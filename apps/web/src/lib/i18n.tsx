@@ -3,6 +3,14 @@ import { allTerms } from "@stbr/solana-glossary";
 
 export type Locale = "en" | "pt" | "es";
 
+const LOCALES: readonly Locale[] = ["en", "pt", "es"];
+
+function isLocale(value: unknown): value is Locale {
+  return (
+    typeof value === "string" && (LOCALES as readonly string[]).includes(value)
+  );
+}
+
 // Live glossary size, interpolated into any string containing `{count}`.
 // Keeps term counts from going stale as the SDK grows.
 const TERM_COUNT = allTerms.length;
@@ -457,7 +465,7 @@ const I18nContext = createContext<I18nContextType | null>(null);
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState<Locale>(() => {
     const saved = localStorage.getItem("locale");
-    return (saved as Locale) || "en";
+    return isLocale(saved) ? saved : "en";
   });
 
   const handleSetLocale = (l: Locale) => {
