@@ -2,7 +2,7 @@ import { type GlossaryTerm } from "@stbr/solana-glossary";
 
 /**
  * Generate a learning path starting from a term, using BFS on the related-terms graph.
- * Returns an ordered list of terms from foundational to advanced.
+ * Returns terms in breadth-first order from the start term outward.
  */
 export function generateLearningPath(
   startTermId: string,
@@ -18,17 +18,6 @@ export function generateLearningPath(
   const queue: string[] = [];
   const path: GlossaryTerm[] = [];
 
-  // First, collect all related terms recursively to find "roots" (foundational terms)
-  // We reverse-traverse: find terms that are prerequisites (terms whose related includes our start)
-  const reverseMap = new Map<string, string[]>();
-  for (const t of allTerms) {
-    for (const rel of t.related ?? []) {
-      if (!reverseMap.has(rel)) reverseMap.set(rel, []);
-      reverseMap.get(rel)!.push(t.id);
-    }
-  }
-
-  // BFS forward from start term
   queue.push(startTermId);
   visited.add(startTermId);
 

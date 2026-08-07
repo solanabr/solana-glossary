@@ -1,7 +1,5 @@
-import { type GlossaryTerm } from "@stbr/solana-glossary";
 import {
   buildLocalizedGlossaryContext,
-  getLocalizedTerms,
   type GlossaryLocale,
 } from "@/lib/glossary-i18n";
 import { buildAiHeaders, isRestingBody } from "@/lib/ai-session";
@@ -146,15 +144,4 @@ export function buildGlossaryContext(
   locale: GlossaryLocale = "en",
 ): string {
   return buildLocalizedGlossaryContext(input, locale);
-}
-
-export function findTermsInText(
-  text: string,
-  locale: GlossaryLocale = "en",
-): GlossaryTerm[] {
-  const lower = text.toLowerCase();
-  return getLocalizedTerms(locale).filter((term) => {
-    if (lower.includes(term.term.toLowerCase())) return true;
-    return term.aliases?.some((alias) => lower.includes(alias.toLowerCase()));
-  });
 }

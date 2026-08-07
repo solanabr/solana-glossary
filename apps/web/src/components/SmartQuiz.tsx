@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback } from "react";
 import { GlossaryTerm } from "@stbr/solana-glossary";
 import { useGlossary } from "@/hooks/useGlossary";
 import { useI18n } from "@/lib/i18n";
