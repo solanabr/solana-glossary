@@ -6,7 +6,7 @@ import ForceGraph2D, {
 } from "react-force-graph-2d";
 import { GlossaryTerm } from "@stbr/solana-glossary";
 import { useGlossary } from "@/hooks/useGlossary";
-import { X, Maximize2, Minimize2 } from "lucide-react";
+import { X, Maximize2, Minimize2, ZoomIn, ZoomOut, Scan } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 
@@ -185,6 +185,15 @@ export function KnowledgeGraph({
 
   const linkColor = useCallback(() => "rgba(148, 163, 184, 0.15)", []);
 
+  const zoomBy = useCallback((factor: number) => {
+    const graph = graphRef.current;
+    if (!graph) return;
+    graph.zoom(graph.zoom() * factor, 200);
+  }, []);
+  const fitView = useCallback(() => {
+    graphRef.current?.zoomToFit(400, 50);
+  }, []);
+
   return (
     <AnimatePresence>
       <motion.div
@@ -208,6 +217,32 @@ export function KnowledgeGraph({
             </p>
           </div>
           <div className="flex items-center gap-1">
+            {isFullscreen && (
+              <>
+                <button
+                  onClick={() => zoomBy(1.4)}
+                  aria-label="Zoom in"
+                  className="p-1.5 rounded-md hover:bg-surface-elevated text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ZoomIn className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={() => zoomBy(1 / 1.4)}
+                  aria-label="Zoom out"
+                  className="p-1.5 rounded-md hover:bg-surface-elevated text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ZoomOut className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={fitView}
+                  aria-label="Fit graph to view"
+                  className="p-1.5 rounded-md hover:bg-surface-elevated text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Scan className="h-3.5 w-3.5" />
+                </button>
+                <div className="w-px h-4 bg-border mx-0.5" />
+              </>
+            )}
             <button
               onClick={() => setIsFullscreen((f) => !f)}
               aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}

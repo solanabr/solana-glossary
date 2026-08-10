@@ -10,6 +10,7 @@ import Index from "./pages/Index.tsx";
 // eager. The secondary routes are split into their own on-demand chunks.
 const Copilot = lazy(() => import("./pages/Copilot.tsx"));
 const LearningPath = lazy(() => import("./pages/LearningPath.tsx"));
+const Swipe = lazy(() => import("./pages/Swipe.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/c/:category" element={<Index />} />
               <Route path="/copilot" element={<Copilot />} />
               <Route path="/learn" element={<LearningPath />} />
+              <Route path="/swipe" element={<Swipe />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

@@ -11,9 +11,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import { CategoryGrid } from "@/components/CategoryGrid";
 import { TermCard } from "@/components/TermCard";
 import { SmartHeroInput } from "@/components/SmartHeroInput";
-import { GlossaryTerm, Category, getCategories } from "@stbr/solana-glossary";
-import { AnimatePresence } from "framer-motion";
-import { Zap, Search } from "lucide-react";
+import {
+  GlossaryTerm,
+  Category,
+  getCategories,
+  type Depth,
+} from "@stbr/solana-glossary";
+import { AnimatePresence, motion } from "framer-motion";
+import { Zap, Search, ArrowUpDown } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useGlossary } from "@/hooks/useGlossary";
 
@@ -27,6 +32,19 @@ const TermPageModal = lazy(() =>
 
 const ITEMS_PER_PAGE = 60;
 const CATEGORY_SET = new Set<string>(getCategories());
+const DEPTHS: Depth[] = [1, 2, 3, 4, 5];
+
+type SortMode = "random" | "az" | "depth";
+
+/** Fisher–Yates over term ids — one stable shuffle per visit. */
+function shuffledRank(ids: string[]): Map<string, number> {
+  const a = [...ids];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return new Map(a.map((id, idx) => [id, idx]));
+}
 
 const Index = () => {
   const { id, category: categoryParam } = useParams<{
@@ -54,16 +72,56 @@ const Index = () => {
     [categoryParam],
   );
 
+  const [depthFilter, setDepthFilter] = useState<Depth | null>(null);
+  const [sortMode, setSortMode] = useState<SortMode>("random");
+  // Stable per-visit shuffle so the default view surfaces different terms each
+  // time without reordering under the user's cursor.
+  const [shuffleRank] = useState(() =>
+    shuffledRank(glossary.allTerms.map((term) => term.id)),
+  );
+
   const terms = useMemo(() => {
-    return activeCategory
+    const base = activeCategory
       ? glossary.getTermsByCategory(activeCategory)
       : glossary.getAllTerms();
-  }, [activeCategory, glossary]);
+    const filtered = depthFilter
+      ? base.filter((t) => t.depth === depthFilter)
+      : base;
+    const sorted = [...filtered];
+    if (sortMode === "az") {
+      sorted.sort((a, b) => a.term.localeCompare(b.term));
+    } else if (sortMode === "depth") {
+      sorted.sort((a, b) => a.depth - b.depth || a.term.localeCompare(b.term));
+    } else {
+      sorted.sort(
+        (a, b) => (shuffleRank.get(a.id) ?? 0) - (shuffleRank.get(b.id) ?? 0),
+      );
+    }
+    return sorted;
+  }, [activeCategory, depthFilter, sortMode, shuffleRank, glossary]);
 
-  // Reset paging when the category filter changes.
+  // Reset paging when the filters change.
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE);
-  }, [categoryParam]);
+  }, [categoryParam, depthFilter, sortMode]);
+
+  // Auto-load the next page when the sentinel under the grid scrolls near the
+  // viewport (800px lookahead keeps scrolling seamless).
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = loadMoreRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((c) => Math.min(c + ITEMS_PER_PAGE, terms.length));
+        }
+      },
+      { rootMargin: "800px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [terms.length, visibleCount]);
 
   // Scroll the glossary into view when a term is opened via the route — but
   // only when the section is still below the viewport (e.g. arriving from the
@@ -81,6 +139,16 @@ const Index = () => {
     [navigate],
   );
   const closeTerm = useCallback(() => navigate("/"), [navigate]);
+
+  // Esc closes the term panel (drawer on desktop, overlay on mobile).
+  useEffect(() => {
+    if (!selectedTerm) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeTerm();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedTerm, closeTerm]);
   const handleCategoryChange = useCallback(
     (cat: Category | null) => navigate(cat ? `/c/${cat}` : "/"),
     [navigate],
@@ -98,7 +166,9 @@ const Index = () => {
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      {/* No overflow-hidden here — it would clip the search results dropdown;
+          the decorative inset-0 gradients never overflow anyway. */}
+      <section className="relative z-20">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(162_72%_46%_/_0.08),_transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_hsl(262_60%_58%_/_0.05),_transparent_50%)]" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-14 pb-10 relative">
@@ -167,42 +237,102 @@ const Index = () => {
                 {terms.length} {t("category.terms_count")}
               </span>
             </div>
+            {/* Depth filter — SDK knowledge-depth rating, 1 (surface) → 5 (deep) —
+                plus list ordering */}
+            <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+              <div
+                className="flex items-center gap-1.5 flex-wrap"
+                role="group"
+                aria-label={t("depth.label")}
+              >
+                <span
+                  className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide"
+                  title={t("depth.hint")}
+                >
+                  {t("depth.label")}
+                </span>
+                <button
+                  onClick={() => setDepthFilter(null)}
+                  aria-pressed={depthFilter === null}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-medium border transition-all ${
+                    depthFilter === null
+                      ? "bg-primary/10 text-primary border-primary/30"
+                      : "bg-secondary/50 text-muted-foreground border-border hover:text-foreground"
+                  }`}
+                >
+                  {t("depth.all")}
+                </button>
+                {DEPTHS.map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setDepthFilter(depthFilter === d ? null : d)}
+                    aria-pressed={depthFilter === d}
+                    title={`${t("depth.label")} ${d}`}
+                    className={`w-7 py-1 rounded-md text-[11px] font-medium border transition-all ${
+                      depthFilter === d
+                        ? "bg-primary/10 text-primary border-primary/30"
+                        : "bg-secondary/50 text-muted-foreground border-border hover:text-foreground"
+                    }`}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+              <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <ArrowUpDown className="h-3 w-3" aria-hidden="true" />
+                <select
+                  value={sortMode}
+                  onChange={(e) => setSortMode(e.target.value as SortMode)}
+                  aria-label={t("sort.label")}
+                  className="bg-secondary border border-border rounded-md px-2 py-1 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+                >
+                  <option value="random">{t("sort.random")}</option>
+                  <option value="az">{t("sort.az")}</option>
+                  <option value="depth">{t("sort.depth")}</option>
+                </select>
+              </label>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {visibleTerms.map((term) => (
                 <TermCard key={term.id} term={term} onClick={openTerm} />
               ))}
             </div>
             {visibleCount < terms.length && (
-              <div className="flex justify-center mt-6">
-                <button
-                  onClick={() => setVisibleCount((c) => c + ITEMS_PER_PAGE)}
-                  className="px-6 py-2 rounded-lg bg-secondary border border-border text-sm font-medium text-foreground hover:bg-surface-hover transition-all"
-                >
-                  {t("category.load_more")} ({terms.length - visibleCount}{" "}
-                  {t("category.remaining")})
-                </button>
+              <div
+                ref={loadMoreRef}
+                className="flex justify-center mt-6 py-3 text-xs text-muted-foreground"
+              >
+                {t("category.load_more")}… ({terms.length - visibleCount}{" "}
+                {t("category.remaining")})
               </div>
             )}
           </div>
-
-          {/* Detail panel — sticky sidebar on desktop */}
-          <AnimatePresence>
-            {selectedTerm && (
-              <div className="hidden lg:block w-96 shrink-0">
-                <div className="sticky top-[4.5rem] h-[calc(100vh-5rem)]">
-                  <Suspense fallback={null}>
-                    <TermPageModal
-                      term={selectedTerm}
-                      onClose={closeTerm}
-                      onNavigate={openTerm}
-                    />
-                  </Suspense>
-                </div>
-              </div>
-            )}
-          </AnimatePresence>
         </div>
       </section>
+
+      {/* Detail panel — desktop "side peek": a fixed drawer over the right
+          edge (Linear/Notion pattern). The grid never reflows on open/close,
+          the panel is always in the same place, and Esc dismisses it. */}
+      <AnimatePresence>
+        {selectedTerm && (
+          <motion.aside
+            key="term-drawer"
+            initial={{ x: 64, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 64, opacity: 0 }}
+            transition={{ type: "tween", duration: 0.18, ease: "easeOut" }}
+            className="hidden lg:block fixed right-0 top-14 bottom-0 w-[26rem] z-40 border-l border-border bg-card shadow-2xl"
+          >
+            <Suspense fallback={null}>
+              <TermPageModal
+                term={selectedTerm}
+                onClose={closeTerm}
+                onNavigate={openTerm}
+              />
+            </Suspense>
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       {/* Detail panel — full-screen overlay below lg (the sidebar is hidden
           there, so without this a tapped term or shared /t/:id link would
