@@ -40,3 +40,6 @@ npm-debug.log*
 # Local tooling state
 .memsearch/
 .vercel/
+.superstack/
+CLAUDE.local.md
+.claude/settings.local.json
