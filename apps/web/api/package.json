@@ -1,0 +1,4 @@
+{
+  "type": "commonjs",
+  "//": "apps/web is type:module for Vite, but Vercel compiles each api/ function as an individual module where ESM's mandatory import extensions break our extensionless relative imports (ERR_MODULE_NOT_FOUND for ./_lib/*). CJS resolution accepts them, and the Node 24 runtime can require() ESM-only deps."
+}

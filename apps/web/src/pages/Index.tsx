@@ -34,7 +34,7 @@ const ITEMS_PER_PAGE = 60;
 const CATEGORY_SET = new Set<string>(getCategories());
 const DEPTHS: Depth[] = [1, 2, 3, 4, 5];
 
-type SortMode = "random" | "az" | "depth";
+type SortMode = "random" | "az" | "za" | "category";
 
 /** Fisher–Yates over term ids — one stable shuffle per visit. */
 function shuffledRank(ids: string[]): Map<string, number> {
@@ -90,8 +90,13 @@ const Index = () => {
     const sorted = [...filtered];
     if (sortMode === "az") {
       sorted.sort((a, b) => a.term.localeCompare(b.term));
-    } else if (sortMode === "depth") {
-      sorted.sort((a, b) => a.depth - b.depth || a.term.localeCompare(b.term));
+    } else if (sortMode === "za") {
+      sorted.sort((a, b) => b.term.localeCompare(a.term));
+    } else if (sortMode === "category") {
+      sorted.sort(
+        (a, b) =>
+          a.category.localeCompare(b.category) || a.term.localeCompare(b.term),
+      );
     } else {
       sorted.sort(
         (a, b) => (shuffleRank.get(a.id) ?? 0) - (shuffleRank.get(b.id) ?? 0),
@@ -159,10 +164,6 @@ const Index = () => {
     [terms, visibleCount],
   );
 
-  const categoryTitle = activeCategory
-    ? `${t(`cat.${activeCategory}`) || activeCategory} ${t("category.terms_suffix")}`
-    : t("category.all_terms");
-
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
       {/* Hero */}
@@ -229,16 +230,8 @@ const Index = () => {
         <div className="flex gap-6">
           {/* Terms grid */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-foreground">
-                {categoryTitle}
-              </h2>
-              <span className="text-xs text-muted-foreground">
-                {terms.length} {t("category.terms_count")}
-              </span>
-            </div>
             {/* Depth filter — SDK knowledge-depth rating, 1 (surface) → 5 (deep) —
-                plus list ordering */}
+                plus term count and list ordering */}
             <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
               <div
                 className="flex items-center gap-1.5 flex-wrap"
@@ -278,19 +271,25 @@ const Index = () => {
                   </button>
                 ))}
               </div>
-              <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                <ArrowUpDown className="h-3 w-3" aria-hidden="true" />
-                <select
-                  value={sortMode}
-                  onChange={(e) => setSortMode(e.target.value as SortMode)}
-                  aria-label={t("sort.label")}
-                  className="bg-secondary border border-border rounded-md px-2 py-1 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
-                >
-                  <option value="random">{t("sort.random")}</option>
-                  <option value="az">{t("sort.az")}</option>
-                  <option value="depth">{t("sort.depth")}</option>
-                </select>
-              </label>
+              <div className="flex items-center gap-2.5">
+                <span className="text-xs text-muted-foreground">
+                  {terms.length} {t("category.terms_count")}
+                </span>
+                <label className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <ArrowUpDown className="h-3 w-3" aria-hidden="true" />
+                  <select
+                    value={sortMode}
+                    onChange={(e) => setSortMode(e.target.value as SortMode)}
+                    aria-label={t("sort.label")}
+                    className="bg-secondary border border-border rounded-md px-2 py-1 text-[11px] text-foreground focus:outline-none focus:ring-1 focus:ring-primary/40"
+                  >
+                    <option value="random">{t("sort.random")}</option>
+                    <option value="az">{t("sort.az")}</option>
+                    <option value="za">{t("sort.za")}</option>
+                    <option value="category">{t("sort.category")}</option>
+                  </select>
+                </label>
+              </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {visibleTerms.map((term) => (

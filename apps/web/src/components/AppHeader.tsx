@@ -32,9 +32,11 @@ export function AppHeader() {
     <header className="h-14 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center gradient-border bg-background">
-            <Sparkles className="h-3.5 w-3.5 text-primary" />
-          </div>
+          <img
+            src="/favicon.svg"
+            alt=""
+            className="w-7 h-7 rounded-lg shrink-0"
+          />
           <span className="text-sm font-semibold gradient-text">
             Solana Glossary
           </span>

@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { Search, Code2, ArrowRight, Sparkles } from "lucide-react";
+import { Search, Code2, ArrowRight, Sparkles, X } from "lucide-react";
+import { categoryColors } from "@/lib/category-colors";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { GlossaryTerm } from "@stbr/solana-glossary";
@@ -166,13 +167,26 @@ export function SmartHeroInput({ onSelectTerm }: SmartHeroInputProps) {
                 ? Math.min(query.split("\n").length, 6)
                 : 1
             }
-            className="w-full min-h-[56px] max-h-[200px] pl-12 pr-4 py-4 bg-card/80 backdrop-blur-sm border border-border rounded-xl text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/30 transition-all text-sm resize-none font-sans focus:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.2)]"
+            className="w-full min-h-[56px] max-h-[200px] pl-12 pr-11 py-4 bg-card/80 backdrop-blur-sm border border-border rounded-xl text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/30 transition-all text-sm resize-none font-sans focus:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.2)]"
             style={{
               fontFamily: isCodeDetected
                 ? "'JetBrains Mono', monospace"
                 : undefined,
             }}
           />
+          {query.length > 0 && (
+            <button
+              onClick={() => {
+                setQuery("");
+                setIsOpen(false);
+                inputRef.current?.focus();
+              }}
+              aria-label="Clear search"
+              className="absolute right-3 top-[1.05rem] p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-elevated transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
         </div>
 
         {/* Code detected banner */}
@@ -225,7 +239,9 @@ export function SmartHeroInput({ onSelectTerm }: SmartHeroInputProps) {
                       <span className="text-sm font-medium text-foreground">
                         {term.term}
                       </span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                      <span
+                        className={`text-[10px] px-1.5 py-0.5 rounded-full border font-medium ${categoryColors[term.category] || "bg-muted text-muted-foreground"}`}
+                      >
                         {term.category}
                       </span>
                     </div>
@@ -240,11 +256,6 @@ export function SmartHeroInput({ onSelectTerm }: SmartHeroInputProps) {
           )}
         </AnimatePresence>
       </div>
-
-      {/* Helper text */}
-      <p className="text-center text-xs text-muted-foreground/60 mt-3">
-        {t("hero.helper_text")}
-      </p>
     </div>
   );
 }
