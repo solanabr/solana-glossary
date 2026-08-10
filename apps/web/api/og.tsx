@@ -178,7 +178,7 @@ function LogoMark() {
 // Handler
 // ---------------------------------------------------------------------------
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   try {
     const { searchParams } = new URL(req.url);
 
@@ -386,3 +386,7 @@ export default async function handler(req: Request): Promise<Response> {
     return new Response("Failed to generate image", { status: 500 });
   }
 }
+
+// Web-standard invocation on Vercel: a bare default-exported function would be
+// invoked Node-style (req, res); the { fetch } form selects the Request/Response path.
+export default { fetch: handler };

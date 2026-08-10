@@ -9,7 +9,7 @@ import {
   ogLocale,
   parseRoute,
   renderMetaTags,
-} from "./meta";
+} from "../meta";
 
 const sp = (q: string) => new URLSearchParams(q);
 

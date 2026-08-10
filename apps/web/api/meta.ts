@@ -437,7 +437,7 @@ function htmlHeaders(): Record<string, string> {
 
 const FALLBACK_HTML = `<!doctype html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>${SITE_NAME}</title><meta name="description" content="${HOME_DESC.en}" /></head><body><div id="root"></div></body></html>`;
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const host = req.headers.get("host");
   const origin = host ? `https://${host}` : url.origin;
@@ -465,3 +465,7 @@ export default async function handler(req: Request): Promise<Response> {
     }
   }
 }
+
+// Web-standard invocation on Vercel: a bare default-exported function would be
+// invoked Node-style (req, res); the { fetch } form selects the Request/Response path.
+export default { fetch: handler };

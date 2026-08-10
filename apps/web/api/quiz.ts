@@ -64,7 +64,7 @@ const SCHEMA = {
 const SYSTEM =
   "You are a Solana expert quiz generator. Produce accurate, practical questions grounded in the provided concept.";
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") return corsPreflight(req);
 
   const parsed = await readJson(req);
@@ -179,3 +179,7 @@ Difficulty: beginner → simple definitions · intermediate → relationships/ho
     );
   }
 }
+
+// Web-standard invocation on Vercel: a bare default-exported function would be
+// invoked Node-style (req, res); the { fetch } form selects the Request/Response path.
+export default { fetch: handler };

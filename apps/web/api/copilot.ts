@@ -142,7 +142,7 @@ function tokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") return corsPreflight(req);
 
   const parsed = await readJson(req);
@@ -255,3 +255,7 @@ export default async function handler(req: Request): Promise<Response> {
 
   return new Response(stream, { headers: sseHeaders(req) });
 }
+
+// Web-standard invocation on Vercel: a bare default-exported function would be
+// invoked Node-style (req, res); the { fetch } form selects the Request/Response path.
+export default { fetch: handler };

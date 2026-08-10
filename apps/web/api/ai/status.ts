@@ -10,7 +10,7 @@ import type { AiStatus, FeatureState } from "../_lib/types";
 
 export const config = { runtime: "nodejs" };
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") return corsPreflight(req);
 
   // Mirror the guard's prod fail-closed check so the client shows "disabled"
@@ -44,3 +44,7 @@ export default async function handler(req: Request): Promise<Response> {
     req,
   );
 }
+
+// Web-standard invocation on Vercel: a bare default-exported function would be
+// invoked Node-style (req, res); the { fetch } form selects the Request/Response path.
+export default { fetch: handler };

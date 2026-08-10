@@ -16,7 +16,7 @@ import type { SessionMintRequest, SessionMintResponse } from "../_lib/types";
 
 export const config = { runtime: "nodejs" };
 
-export default async function handler(req: Request): Promise<Response> {
+async function handler(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") return corsPreflight(req);
 
   // Prod fails closed: refuse to mint if the bot gate or session secret is
@@ -48,3 +48,7 @@ export default async function handler(req: Request): Promise<Response> {
   const response: SessionMintResponse = { token, expiresAt };
   return jsonResponse(response, 200, {}, req);
 }
+
+// Web-standard invocation on Vercel: a bare default-exported function would be
+// invoked Node-style (req, res); the { fetch } form selects the Request/Response path.
+export default { fetch: handler };
