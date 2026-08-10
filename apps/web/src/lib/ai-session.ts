@@ -134,12 +134,19 @@ async function solveTurnstile(): Promise<string> {
         sitekey: SITE_KEY as string,
         // Invisible unless Cloudflare decides a challenge is required.
         appearance: "interaction-only",
+        // We call execute() ourselves below — without this, render() auto-runs
+        // the challenge and the extra execute() double-fires ("already
+        // executing" console errors).
+        execution: "execute",
+        // Our timeout/error path owns retries; Turnstile's internal auto-retry
+        // would race our cleanup and reset() a removed widget.
+        retry: "never",
         callback: succeed,
-        "error-callback": () => fail("turnstile-error"),
+        "error-callback": (code) =>
+          fail(code ? `turnstile-error:${code}` : "turnstile-error"),
         "timeout-callback": () => fail("turnstile-timeout"),
         "expired-callback": () => fail("turnstile-expired"),
       });
-      // Explicit-execution widgets need a nudge; harmless otherwise.
       turnstile.execute(widgetId);
     } catch {
       fail("turnstile-render-failed");

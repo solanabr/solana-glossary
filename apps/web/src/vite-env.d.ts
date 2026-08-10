@@ -16,8 +16,10 @@ interface TurnstileRenderOptions {
   sitekey: string;
   size?: "normal" | "flexible" | "compact";
   appearance?: "always" | "execute" | "interaction-only";
+  execution?: "render" | "execute";
+  retry?: "auto" | "never";
   callback?: (token: string) => void;
-  "error-callback"?: () => void;
+  "error-callback"?: (code?: string) => void;
   "timeout-callback"?: () => void;
   "expired-callback"?: () => void;
 }
