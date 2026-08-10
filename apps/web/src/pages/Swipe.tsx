@@ -19,6 +19,13 @@ const Swipe = () => {
     feedRef.current = new SwipeFeed(glossary.allTerms);
   }
 
+  // The swipe hint overlays the card footer on small screens — show it briefly.
+  const [hintVisible, setHintVisible] = useState(true);
+  useEffect(() => {
+    const id = setTimeout(() => setHintVisible(false), 3500);
+    return () => clearTimeout(id);
+  }, []);
+
   const [cards, setCards] = useState<string[]>(() => {
     const feed = feedRef.current!;
     const first: string[] = [];
@@ -157,7 +164,7 @@ const Swipe = () => {
         );
       })}
 
-      {activeIdx === 0 && cards.length > 1 && (
+      {hintVisible && activeIdx === 0 && cards.length > 1 && (
         <div className="pointer-events-none fixed bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card/90 border border-border text-[11px] text-muted-foreground backdrop-blur-sm animate-bounce">
           {t("swipe.hint")}
           <ArrowDown className="h-3 w-3" />

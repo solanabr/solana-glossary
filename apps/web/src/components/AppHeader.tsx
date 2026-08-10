@@ -40,8 +40,8 @@ export function AppHeader() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-3">
-          <nav className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5 sm:gap-3">
+          <nav className="flex items-center gap-0.5 sm:gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = item.path.includes("?")
@@ -52,7 +52,7 @@ export function AppHeader() {
                   key={item.path}
                   to={item.path}
                   aria-label={item.label}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  className={`flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
                     isActive
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:text-foreground hover:bg-surface-elevated"
@@ -72,7 +72,7 @@ export function AppHeader() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${item.label} (opens in a new tab)`}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-surface-elevated transition-all"
+                  className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-surface-elevated transition-all"
                 >
                   <Icon className="h-3.5 w-3.5" />
                   <span className="hidden sm:inline">{item.label}</span>
@@ -83,7 +83,7 @@ export function AppHeader() {
 
           {/* Language selector */}
           <div className="flex items-center gap-0.5 px-1 py-0.5 rounded-md bg-secondary border border-border">
-            <Globe className="h-3 w-3 text-muted-foreground mr-0.5" />
+            <Globe className="hidden sm:block h-3 w-3 text-muted-foreground mr-0.5" />
             {LOCALES.map((l) => (
               <button
                 key={l}
