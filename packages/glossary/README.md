@@ -144,8 +144,8 @@ searchTerms("AMM");              // finds AMM-related terms
 Get all terms belonging to a specific category.
 
 ```typescript
-getTermsByCategory("defi");           // 135 terms
-getTermsByCategory("core-protocol");  // 86 terms
+getTermsByCategory("defi");           // 144 terms
+getTermsByCategory("core-protocol");  // 96 terms
 ```
 
 ### `getTermsByDepth(depth: Depth): GlossaryTerm[]`
@@ -328,7 +328,7 @@ const tooltip = getTerm("pda")?.definition;
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on adding terms, translations, and submitting PRs.
+See [CONTRIBUTING.md](https://github.com/solanabr/solana-glossary/blob/main/CONTRIBUTING.md) for guidelines on adding terms, translations, and submitting PRs.
 
 ```bash
 npm test        # Run tests

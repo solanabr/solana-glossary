@@ -4,7 +4,7 @@ Thanks for helping expand the Solana knowledge base! Here's how to contribute.
 
 ## Adding a New Term
 
-1. Find the right category file under `data/terms/<category>.json`
+1. Find the right category file under `packages/glossary/data/terms/<category>.json`
 2. Add your term object:
 
 ```json
@@ -34,7 +34,7 @@ Thanks for helping expand the Solana knowledge base! Here's how to contribute.
 
 ## Adding a Translation
 
-1. Create or edit `data/i18n/<locale>.json` (e.g., `pt.json`, `es.json`)
+1. Create or edit `packages/glossary/data/i18n/<locale>.json` (e.g., `pt.json`, `es.json`)
 2. Add entries keyed by term ID:
 
 ```json
@@ -72,17 +72,17 @@ npm run validate # Check for duplicates and dangling refs
 
 | Category | File |
 |----------|------|
-| core-protocol | `data/terms/core-protocol.json` |
-| programming-model | `data/terms/programming-model.json` |
-| token-ecosystem | `data/terms/token-ecosystem.json` |
-| defi | `data/terms/defi.json` |
-| zk-compression | `data/terms/zk-compression.json` |
-| infrastructure | `data/terms/infrastructure.json` |
-| security | `data/terms/security.json` |
-| dev-tools | `data/terms/dev-tools.json` |
-| network | `data/terms/network.json` |
-| blockchain-general | `data/terms/blockchain-general.json` |
-| web3 | `data/terms/web3.json` |
-| programming-fundamentals | `data/terms/programming-fundamentals.json` |
-| ai-ml | `data/terms/ai-ml.json` |
-| solana-ecosystem | `data/terms/solana-ecosystem.json` |
+| core-protocol | `packages/glossary/data/terms/core-protocol.json` |
+| programming-model | `packages/glossary/data/terms/programming-model.json` |
+| token-ecosystem | `packages/glossary/data/terms/token-ecosystem.json` |
+| defi | `packages/glossary/data/terms/defi.json` |
+| zk-compression | `packages/glossary/data/terms/zk-compression.json` |
+| infrastructure | `packages/glossary/data/terms/infrastructure.json` |
+| security | `packages/glossary/data/terms/security.json` |
+| dev-tools | `packages/glossary/data/terms/dev-tools.json` |
+| network | `packages/glossary/data/terms/network.json` |
+| blockchain-general | `packages/glossary/data/terms/blockchain-general.json` |
+| web3 | `packages/glossary/data/terms/web3.json` |
+| programming-fundamentals | `packages/glossary/data/terms/programming-fundamentals.json` |
+| ai-ml | `packages/glossary/data/terms/ai-ml.json` |
+| solana-ecosystem | `packages/glossary/data/terms/solana-ecosystem.json` |

@@ -17,7 +17,7 @@ This is an npm-workspaces monorepo. `packages/glossary` is the published package
 ```bash
 npm install                                   # installs all workspaces
 npm run build            -w @stbr/solana-glossary   # build the SDK (the app resolves its dist)
-npm run dev              -w @stbr/solana-glossary-web  # run the web app (http://localhost:5173)
+npm run dev              -w @stbr/solana-glossary-web  # run the web app (http://localhost:8080)
 ```
 
 Tests / typecheck:
