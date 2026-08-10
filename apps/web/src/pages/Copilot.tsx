@@ -25,12 +25,13 @@ const TAB_KEYS = {
   "explain-file": "tab.explain_file" as const,
 };
 
+const isTabId = (value: string | null): value is TabId =>
+  value !== null && (TAB_IDS as readonly string[]).includes(value);
+
 const Copilot = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const modeParam = (searchParams.get("mode") as TabId) || "chat";
-  const activeTab: TabId = TAB_IDS.includes(modeParam as any)
-    ? modeParam
-    : "chat";
+  const modeParam = searchParams.get("mode");
+  const activeTab: TabId = isTabId(modeParam) ? modeParam : "chat";
   const [selectedTerm, setSelectedTerm] = useState<GlossaryTerm | null>(null);
   const { t } = useI18n();
 

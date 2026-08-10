@@ -91,6 +91,7 @@ const LearningPath = () => {
 
     // Fast step navigation cancels the previous stream before starting a new one.
     return () => controller.abort();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-fetch only per step; locale/step fields are read once at fetch time
   }, [currentStep, step?.term.id, aiEnabled]);
 
   const handleNext = useCallback(() => {

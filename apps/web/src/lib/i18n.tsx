@@ -526,12 +526,14 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- context hook lives beside its provider
 export function useI18n() {
   const ctx = useContext(I18nContext);
   if (!ctx) throw new Error("useI18n must be used within I18nProvider");
   return ctx;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- locale-label map co-located with the provider
 export const LOCALE_LABELS: Record<Locale, string> = {
   en: "EN",
   pt: "PT",

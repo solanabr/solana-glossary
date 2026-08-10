@@ -144,7 +144,13 @@ export function KnowledgeGraph({
   );
 
   const nodeCanvasObject = useCallback(
-    (node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
+    (
+      node: NodeObject<GraphNode>,
+      ctx: CanvasRenderingContext2D,
+      globalScale: number,
+    ) => {
+      const { x, y } = node;
+      if (x === undefined || y === undefined) return;
       const label = node.name;
       const fontSize = node.isCenter ? 14 / globalScale : 11 / globalScale;
       const nodeR = node.isCenter ? 10 : node.val * 2;
@@ -153,14 +159,14 @@ export function KnowledgeGraph({
       // Glow for center
       if (node.isCenter) {
         ctx.beginPath();
-        ctx.arc(node.x, node.y, nodeR + 6, 0, 2 * Math.PI);
+        ctx.arc(x, y, nodeR + 6, 0, 2 * Math.PI);
         ctx.fillStyle = `${color}33`;
         ctx.fill();
       }
 
       // Node circle
       ctx.beginPath();
-      ctx.arc(node.x, node.y, nodeR, 0, 2 * Math.PI);
+      ctx.arc(x, y, nodeR, 0, 2 * Math.PI);
       ctx.fillStyle = node.isCenter ? color : `${color}cc`;
       ctx.fill();
       ctx.strokeStyle = `${color}66`;
@@ -172,7 +178,7 @@ export function KnowledgeGraph({
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "#e2e8f0";
-      ctx.fillText(label, node.x, node.y + nodeR + fontSize + 2);
+      ctx.fillText(label, x, y + nodeR + fontSize + 2);
     },
     [],
   );

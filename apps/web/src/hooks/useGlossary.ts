@@ -20,6 +20,7 @@ export function useGlossary() {
   // translation data arrives for the current locale.
   const localizedAllTerms = useMemo(
     () => getLocalizedTerms(glossaryLocale),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- see above
     [glossaryLocale, localeDataVersion],
   );
 

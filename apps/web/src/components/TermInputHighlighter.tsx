@@ -13,6 +13,7 @@ for (const t of allTerms) {
 termLookup.sort((a, b) => b.lower.length - a.lower.length);
 
 /** Find glossary terms in text with their positions */
+// eslint-disable-next-line react-refresh/only-export-components -- pure util shared with the component; HMR granularity is acceptable
 export function detectTermsInText(
   text: string,
 ): { term: GlossaryTerm; start: number; end: number }[] {

@@ -141,6 +141,7 @@ export function TermPageModal({
       controller.abort();
       if (insightFetched.current === term.id) insightFetched.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-fetch only per term; locale/term fields are read once at fetch time (insight cached per id)
   }, [term.id, copilotEnabled]);
 
   const handleCopyDefinition = useCallback(() => {
