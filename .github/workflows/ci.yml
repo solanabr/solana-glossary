@@ -19,3 +19,8 @@ jobs:
       - run: npm run build
       - run: npm run validate
       - run: npm test
+      - run: npm pack --dry-run -w @stbr/solana-glossary
+      - run: npm run lint -w @stbr/solana-glossary-web
+      - run: npm run typecheck -w @stbr/solana-glossary-web
+      - run: npm run build -w @stbr/solana-glossary-web
+      - run: npm run test -w @stbr/solana-glossary-web
