@@ -359,7 +359,7 @@ async function handler(req: Request): Promise<Response> {
                 color: MUTED,
               }}
             >
-              Dev Copilot · 14 categories
+              Solana Glossary · 14 categories
             </div>
           </div>
         </div>

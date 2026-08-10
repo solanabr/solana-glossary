@@ -1,4 +1,4 @@
-// POST /api/copilot — streaming Solana Dev Copilot. Re-emits OpenAI-shaped SSE
+// POST /api/copilot — streaming Solana Glossary copilot. Re-emits OpenAI-shaped SSE
 // deltas so the existing client parser is unchanged. Tiered by budget: normal
 // (Flash) → economy (Flash-Lite, tighter RAG/output) → canned/resting (free
 // deterministic glossary answer, zero LLM).
@@ -110,7 +110,7 @@ Keep it under 150 words. Ground it in real protocol design patterns.${block}`;
 
   return `${persona}
 
-You are "Solana Dev Copilot". Your response structure depends on the input:
+You are "Solana Glossary". Your response structure depends on the input:
 
 FOR CONCEPTS — use this structure:
 ## 🧠 High-Level Summary

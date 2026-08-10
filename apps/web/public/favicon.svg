@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="sol" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9945FF"/>
+      <stop offset="0.5" stop-color="#8752F3"/>
+      <stop offset="1" stop-color="#14F195"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#0D1117"/>
+  <!-- open book: left + right pages, Solana gradient -->
+  <path d="M31 17.5c-4.6-2.8-10.6-4.2-16.5-4.2-.8 0-1.5.7-1.5 1.5v28c0 .9.7 1.5 1.5 1.5 5.9 0 11.9 1.4 16.5 4.2V17.5z" fill="url(#sol)"/>
+  <path d="M33 17.5c4.6-2.8 10.6-4.2 16.5-4.2.8 0 1.5.7 1.5 1.5v28c0 .9-.7 1.5-1.5 1.5-5.9 0-11.9 1.4-16.5 4.2V17.5z" fill="url(#sol)" opacity="0.62"/>
+  <!-- text lines on the left page -->
+  <g fill="#0D1117" opacity="0.55">
+    <rect x="17.5" y="21.5" width="10" height="2.2" rx="1.1"/>
+    <rect x="17.5" y="26.5" width="8" height="2.2" rx="1.1"/>
+    <rect x="17.5" y="31.5" width="9.5" height="2.2" rx="1.1"/>
+  </g>
+</svg>

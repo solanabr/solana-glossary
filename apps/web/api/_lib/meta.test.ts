@@ -7,6 +7,7 @@ import {
   escapeHtml,
   injectMeta,
   ogLocale,
+  OG_VERSION,
   parseRoute,
   renderMetaTags,
 } from "../meta";
@@ -117,7 +118,7 @@ describe("buildImageUrl", () => {
     expect(q.get("kind")).toBe("term");
     expect(q.get("category")).toBe("Core Protocol");
     expect(q.get("lang")).toBe("en");
-    expect(q.get("v")).toBe("1");
+    expect(q.get("v")).toBe(OG_VERSION);
   });
 });
 

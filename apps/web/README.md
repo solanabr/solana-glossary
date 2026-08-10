@@ -1,4 +1,4 @@
-# Solana Glossary — Dev Copilot
+# Solana Glossary
 
 > An AI-powered Solana developer assistant built on the official `@stbr/solana-glossary` SDK.
 

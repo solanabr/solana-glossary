@@ -24,8 +24,8 @@ import { getLocalizedTerms } from "@stbr/solana-glossary/i18n";
 export const config = { runtime: "nodejs" };
 
 type Locale = "en" | "pt" | "es";
-const SITE_NAME = "Solana Glossary — Dev Copilot";
-const OG_VERSION = "1"; // bump to invalidate every cached OG image at once
+const SITE_NAME = "Solana Glossary";
+export const OG_VERSION = "2"; // bump to invalidate every cached OG image at once
 const IMG_W = "1200";
 const IMG_H = "630";
 
@@ -173,9 +173,9 @@ const HOME_DESC: Record<Locale, string> = {
 };
 
 const COPILOT_TITLE: Record<Locale, string> = {
-  en: "Solana Dev Copilot",
-  pt: "Solana Dev Copilot",
-  es: "Solana Dev Copilot",
+  en: "Solana Glossary — AI Copilot",
+  pt: "Solana Glossary — AI Copilot",
+  es: "Solana Glossary — AI Copilot",
 };
 const COPILOT_DESC: Record<Locale, string> = {
   en: "Ask anything about Solana development — glossary-grounded, contextual AI answers with real code.",
@@ -365,12 +365,12 @@ function composeFields(
     ogType: "website",
     url: `${origin}/`,
     image: buildImageUrl(origin, {
-      title: "Solana Glossary — Dev Copilot",
+      title: "Solana Glossary",
       subtitle: clampText(description, 180),
       kind: "default",
       lang: locale,
     }),
-    imageAlt: "Solana Glossary — Dev Copilot",
+    imageAlt: "Solana Glossary",
     locale,
   };
 }
