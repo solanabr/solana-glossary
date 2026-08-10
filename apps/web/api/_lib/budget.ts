@@ -10,10 +10,10 @@ import {
   moreRestrictiveTier,
   tierFromPct,
   type Config,
-} from "./config";
-import { getRedis } from "./redis";
-import type { RedisLike } from "./redis";
-import type { Tier } from "./types";
+} from "./config.js";
+import { getRedis } from "./redis.js";
+import type { RedisLike } from "./redis.js";
+import type { Tier } from "./types.js";
 
 export interface BudgetEvaluation {
   tier: Tier;

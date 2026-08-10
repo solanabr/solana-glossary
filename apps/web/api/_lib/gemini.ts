@@ -3,7 +3,7 @@
 // (thinkingBudget: 0) and every call carries a hard maxOutputTokens cap.
 
 import { GoogleGenAI, Type, type Schema } from "@google/genai";
-import { config, costMicros, type Config } from "./config";
+import { config, costMicros, type Config } from "./config.js";
 
 // Re-export so routes build response schemas without importing the SDK directly.
 export { Type };

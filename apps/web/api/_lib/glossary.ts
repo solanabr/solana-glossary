@@ -5,7 +5,7 @@
 import { createHash } from "node:crypto";
 import { allTerms, getTerm, type GlossaryTerm } from "@stbr/solana-glossary";
 import { getLocalizedTerms } from "@stbr/solana-glossary/i18n";
-import type { CannedAnswer, Locale } from "./types";
+import type { CannedAnswer, Locale } from "./types.js";
 
 /** Compact RAG block plus the canonical ids that produced it (for cache keys). */
 export interface RagResult {

@@ -3,7 +3,7 @@
 // AI call, so there is no siteverify network round-trip per request.
 
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { config, type Config } from "./config";
+import { config, type Config } from "./config.js";
 
 const SITEVERIFY_URL =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";

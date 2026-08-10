@@ -1,7 +1,7 @@
 // Test-only helpers (not a route, not bundled). An in-memory RedisLike so
 // budget/cache/guard tests run with zero cloud creds.
 
-import type { RedisLike } from "./redis";
+import type { RedisLike } from "./redis.js";
 
 export class FakeRedis implements RedisLike {
   store = new Map<string, string | number>();

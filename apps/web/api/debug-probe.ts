@@ -12,12 +12,15 @@ async function handler(): Promise<Response> {
     "npm:@vercel/edge-config": () => import("@vercel/edge-config"),
     "npm:@vercel/og": () => import("@vercel/og"),
     "npm:@google/genai": () => import("@google/genai"),
-    "lib:config": () => import("./_lib/config"),
-    "lib:redis": () => import("./_lib/redis"),
-    "lib:turnstile": () => import("./_lib/turnstile"),
-    "lib:budget": () => import("./_lib/budget"),
-    "lib:guard": () => import("./_lib/guard"),
-    "lib:gemini": () => import("./_lib/gemini"),
+    "lib:config": () => import("./_lib/config.js"),
+    "lib:redis": () => import("./_lib/redis.js"),
+    "lib:turnstile": () => import("./_lib/turnstile.js"),
+    "lib:budget": () => import("./_lib/budget.js"),
+    "lib:guard": () => import("./_lib/guard.js"),
+    "lib:gemini": () => import("./_lib/gemini.js"),
+    "mod:meta": () => import("./meta.js"),
+    "mod:og": () => import("./og.js"),
+    "mod:status": () => import("./ai/status.js"),
   };
   for (const [name, run] of Object.entries(probes)) {
     try {

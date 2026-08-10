@@ -4,9 +4,9 @@
 
 import { Ratelimit } from "@upstash/ratelimit";
 import type { Redis } from "@upstash/redis";
-import { config, type Config } from "./config";
-import { getRedis } from "./redis";
-import type { AiFeature } from "./types";
+import { config, type Config } from "./config.js";
+import { getRedis } from "./redis.js";
+import type { AiFeature } from "./types.js";
 
 export interface RateResult {
   ok: boolean;

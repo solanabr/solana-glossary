@@ -6,14 +6,14 @@
 
 import { createHash } from "node:crypto";
 import { get as edgeGet } from "@vercel/edge-config";
-import { config, type Config } from "./config";
-import { budget as defaultBudget, type Budget } from "./budget";
+import { config, type Config } from "./config.js";
+import { budget as defaultBudget, type Budget } from "./budget.js";
 import {
   rateLimiter as defaultRateLimiter,
   type RateLimiter,
-} from "./ratelimit";
-import { turnstile as defaultTurnstile, type Turnstile } from "./turnstile";
-import type { AiFeature, GuardOutcome, Locale } from "./types";
+} from "./ratelimit.js";
+import { turnstile as defaultTurnstile, type Turnstile } from "./turnstile.js";
+import type { AiFeature, GuardOutcome, Locale } from "./types.js";
 
 const LOCALES: Locale[] = ["en", "pt", "es"];
 

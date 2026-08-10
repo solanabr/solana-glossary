@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { createBudget } from "./budget";
-import { costMicros, loadConfig } from "./config";
-import { FakeRedis, throwingRedis } from "./testutil";
+import { createBudget } from "./budget.js";
+import { costMicros, loadConfig } from "./config.js";
+import { FakeRedis, throwingRedis } from "./testutil.js";
 
 // Metered config: $10/day, high per-user cap so global-ladder tests aren't
 // swamped by the per-identity cap.

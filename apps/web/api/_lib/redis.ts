@@ -3,7 +3,7 @@
 // not configured so callers fall back to their degraded paths.
 
 import { Redis } from "@upstash/redis";
-import { config } from "./config";
+import { config } from "./config.js";
 
 /** The subset of Upstash Redis that budget/cache rely on (fakeable in tests). */
 export interface RedisLike {

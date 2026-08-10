@@ -6,7 +6,7 @@ import {
   modelForTier,
   moreRestrictiveTier,
   tierFromPct,
-} from "./config";
+} from "./config.js";
 
 describe("tierFromPct — budget ladder", () => {
   const cfg = loadConfig({});

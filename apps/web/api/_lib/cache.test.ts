@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { createCache } from "./cache";
-import { canonicalizePrompt, searchRag } from "./glossary";
-import { loadConfig } from "./config";
-import { FakeRedis } from "./testutil";
+import { createCache } from "./cache.js";
+import { canonicalizePrompt, searchRag } from "./glossary.js";
+import { loadConfig } from "./config.js";
+import { FakeRedis } from "./testutil.js";
 
 const cfg = loadConfig({});
 

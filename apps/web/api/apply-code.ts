@@ -2,22 +2,27 @@
 // structured JSON. Runs on Flash (drops to Flash-Lite under the economy tier).
 // Canned/resting return a mode marker; the client renders its resting state.
 
-import { corsPreflight, jsonResponse, readJson, withGuard } from "./_lib/guard";
-import { gemini, Type } from "./_lib/gemini";
-import { budget } from "./_lib/budget";
-import { cache } from "./_lib/cache";
+import {
+  corsPreflight,
+  jsonResponse,
+  readJson,
+  withGuard,
+} from "./_lib/guard.js";
+import { gemini, Type } from "./_lib/gemini.js";
+import { budget } from "./_lib/budget.js";
+import { cache } from "./_lib/cache.js";
 import {
   config as cfg,
   costMicros,
   maxOutForTier,
   modelForTier,
-} from "./_lib/config";
+} from "./_lib/config.js";
 import {
   canonicalizePrompt,
   lookupTerm,
   relatedTermNames,
-} from "./_lib/glossary";
-import type { ApplyCodeResponse, Locale } from "./_lib/types";
+} from "./_lib/glossary.js";
+import type { ApplyCodeResponse, Locale } from "./_lib/types.js";
 
 export const config = { runtime: "nodejs" };
 

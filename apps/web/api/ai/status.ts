@@ -2,11 +2,11 @@
 // budget numbers. Cached ~30s at the edge; the client falls back to
 // VITE_AI_ENABLED when the fetch fails.
 
-import { corsPreflight, jsonResponse } from "../_lib/guard";
-import { config as cfg } from "../_lib/config";
-import { budget } from "../_lib/budget";
-import { turnstile } from "../_lib/turnstile";
-import type { AiStatus, FeatureState } from "../_lib/types";
+import { corsPreflight, jsonResponse } from "../_lib/guard.js";
+import { config as cfg } from "../_lib/config.js";
+import { budget } from "../_lib/budget.js";
+import { turnstile } from "../_lib/turnstile.js";
+import type { AiStatus, FeatureState } from "../_lib/types.js";
 
 export const config = { runtime: "nodejs" };
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { loadConfig } from "./config";
-import { createTurnstile } from "./turnstile";
+import { loadConfig } from "./config.js";
+import { createTurnstile } from "./turnstile.js";
 
 // Build a Turnstile with a fixed HMAC secret + Turnstile enforced, overridable.
 function makeTurnstile(

@@ -4,11 +4,11 @@
 // has already spent a rate-limit token, since cache lookup follows rate check).
 
 import { createHash } from "node:crypto";
-import { config, type Config } from "./config";
-import { CORPUS_VERSION } from "./glossary";
-import { getRedis } from "./redis";
-import type { RedisLike } from "./redis";
-import type { AiFeature, Locale } from "./types";
+import { config, type Config } from "./config.js";
+import { CORPUS_VERSION } from "./glossary.js";
+import { getRedis } from "./redis.js";
+import type { RedisLike } from "./redis.js";
+import type { AiFeature, Locale } from "./types.js";
 
 export interface Cache {
   key(

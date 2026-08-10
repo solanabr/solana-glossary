@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createRateLimiter, __resetMemory } from "./ratelimit";
-import { loadConfig } from "./config";
+import { createRateLimiter, __resetMemory } from "./ratelimit.js";
+import { loadConfig } from "./config.js";
 
 // No Upstash → the in-memory best-effort limiter (contract §3, §5).
 const cfg = loadConfig({ GEMINI_API_KEY: "k" });

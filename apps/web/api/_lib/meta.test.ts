@@ -10,7 +10,7 @@ import {
   OG_VERSION,
   parseRoute,
   renderMetaTags,
-} from "../meta";
+} from "../meta.js";
 
 const sp = (q: string) => new URLSearchParams(q);
 

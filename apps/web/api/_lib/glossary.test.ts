@@ -5,7 +5,7 @@ import {
   freeAnswer,
   relatedTermNames,
   searchRag,
-} from "./glossary";
+} from "./glossary.js";
 
 describe("freeAnswer — zero-LLM deterministic path", () => {
   it("resolves a natural-language question to a real definition", () => {

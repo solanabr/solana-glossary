@@ -3,7 +3,7 @@
 // the wired `config` singleton (or takes a Config via a factory in tests).
 
 import { randomBytes } from "node:crypto";
-import type { AiFeature, Tier } from "./types";
+import type { AiFeature, Tier } from "./types.js";
 
 /** USD per 1M tokens for a model. */
 export interface Prices {

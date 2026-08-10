@@ -9,10 +9,10 @@ import {
   ipIdentity,
   jsonResponse,
   readJson,
-} from "../_lib/guard";
-import { config as cfg } from "../_lib/config";
-import { turnstile } from "../_lib/turnstile";
-import type { SessionMintRequest, SessionMintResponse } from "../_lib/types";
+} from "../_lib/guard.js";
+import { config as cfg } from "../_lib/config.js";
+import { turnstile } from "../_lib/turnstile.js";
+import type { SessionMintRequest, SessionMintResponse } from "../_lib/types.js";
 
 export const config = { runtime: "nodejs" };
 

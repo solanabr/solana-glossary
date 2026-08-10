@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { clientIp, createGuard, encodeSseDelta, sseFromText } from "./guard";
-import { createBudget } from "./budget";
-import { createTurnstile } from "./turnstile";
-import { loadConfig } from "./config";
-import { FakeRedis, throwingRedis } from "./testutil";
-import type { RateLimiter } from "./ratelimit";
+import { clientIp, createGuard, encodeSseDelta, sseFromText } from "./guard.js";
+import { createBudget } from "./budget.js";
+import { createTurnstile } from "./turnstile.js";
+import { loadConfig } from "./config.js";
+import { FakeRedis, throwingRedis } from "./testutil.js";
+import type { RateLimiter } from "./ratelimit.js";
 
 function req(headers: Record<string, string> = {}): Request {
   return new Request("http://localhost/api/copilot", {
