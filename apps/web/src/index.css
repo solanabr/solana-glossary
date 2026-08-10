@@ -2,8 +2,91 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Light is the `:root` default so a stylesheet-only render (no JS, no class)
+   still lands on a readable theme; `.dark` is applied to <html> before first
+   paint by the inline script in index.html. See src/lib/theme.ts. */
 @layer base {
   :root {
+    color-scheme: light;
+
+    --background: 220 24% 98%;
+    --foreground: 221 31% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 221 31% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 221 31% 12%;
+
+    /* Solana green, dropped to 23% L — 4.8:1 even on a /20 chip. */
+    --primary: 162 84% 23%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 220 22% 94%;
+    --secondary-foreground: 221 25% 22%;
+
+    --muted: 220 22% 95%;
+    --muted-foreground: 215 12% 40%;
+
+    /* Solana purple, dropped to 48% L for 7.7:1 on white. */
+    --accent: 262 72% 48%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 18% 88%;
+    --input: 220 18% 88%;
+    --ring: 162 84% 23%;
+
+    --sidebar-background: 220 24% 97%;
+    --sidebar-foreground: 221 25% 25%;
+    --sidebar-primary: 162 84% 23%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 22% 94%;
+    --sidebar-accent-foreground: 221 25% 22%;
+    --sidebar-border: 220 18% 88%;
+    --sidebar-ring: 162 84% 23%;
+
+    /* Custom tokens */
+    --glow-primary: 162 84% 30%;
+    --glow-accent: 262 72% 52%;
+    /* Glows read as tinted elevation on paper, so they carry less alpha here
+       than the neon halo they draw on a dark canvas. */
+    --glow-alpha-strong: 0.18;
+    --glow-alpha-soft: 0.1;
+    --surface-elevated: 220 24% 95%;
+    --surface-hover: 220 22% 92%;
+    --text-subtle: 218 9% 46%;
+    --scrollbar-thumb: 220 14% 78%;
+    --gradient-solana: linear-gradient(135deg, hsl(162 84% 23%), hsl(262 72% 48%));
+    --gradient-surface: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 24% 97%));
+
+    /* Tailwind palette rungs used as chip/icon text (see the note in
+       tailwind.config.ts). Solved against the tinted chip each one sits on
+       — `bg-<hue>-500/10` lifts the background toward the text hue, so plain
+       white is the wrong thing to measure. All clear 4.6:1 there. */
+    --pal-slate-400: 215 19% 35%;
+    --pal-red-300: 0 74% 42%;
+    --pal-red-400: 0 74% 42%;
+    --pal-orange-400: 15 79% 34%;
+    --pal-yellow-400: 32 81% 29%;
+    --pal-emerald-300: 163 88% 20%;
+    --pal-emerald-400: 163 94% 24%;
+    --pal-teal-400: 175 77% 26%;
+    --pal-cyan-400: 193 82% 31%;
+    --pal-sky-400: 201 96% 32%;
+    --pal-blue-400: 224 76% 48%;
+    --pal-indigo-400: 243 75% 59%;
+    --pal-violet-300: 263 70% 50%;
+    --pal-violet-400: 262 83% 58%;
+    --pal-purple-400: 272 72% 47%;
+    --pal-pink-400: 335 78% 42%;
+  }
+
+  .dark {
+    color-scheme: dark;
+
     --background: 220 16% 6%;
     --foreground: 210 20% 92%;
 
@@ -32,8 +115,6 @@
     --input: 220 12% 16%;
     --ring: 162 72% 46%;
 
-    --radius: 0.625rem;
-
     --sidebar-background: 220 14% 8%;
     --sidebar-foreground: 210 20% 82%;
     --sidebar-primary: 162 72% 46%;
@@ -46,11 +127,40 @@
     /* Custom tokens */
     --glow-primary: 162 72% 46%;
     --glow-accent: 262 60% 58%;
+    --glow-alpha-strong: 0.3;
+    --glow-alpha-soft: 0.15;
     --surface-elevated: 220 14% 12%;
     --surface-hover: 220 14% 16%;
     --text-subtle: 215 12% 44%;
+    --scrollbar-thumb: 220 12% 24%;
     --gradient-solana: linear-gradient(135deg, hsl(162 72% 46%), hsl(262 60% 58%));
     --gradient-surface: linear-gradient(180deg, hsl(220 14% 11%), hsl(220 14% 8%));
+
+    /* Stock Tailwind values — the tones these classes were authored against. */
+    --pal-slate-400: 215 20% 65%;
+    --pal-red-300: 0 94% 82%;
+    --pal-red-400: 0 91% 71%;
+    --pal-orange-400: 27 96% 61%;
+    --pal-yellow-400: 48 96% 53%;
+    --pal-emerald-300: 156 72% 67%;
+    --pal-emerald-400: 158 64% 52%;
+    --pal-teal-400: 172 66% 50%;
+    --pal-cyan-400: 188 86% 53%;
+    --pal-sky-400: 198 93% 60%;
+    --pal-blue-400: 213 94% 68%;
+    --pal-indigo-400: 234 89% 74%;
+    --pal-violet-300: 252 95% 85%;
+    --pal-violet-400: 255 92% 76%;
+    --pal-purple-400: 270 95% 75%;
+    --pal-pink-400: 329 86% 70%;
+  }
+
+  /* Theme-independent. Code blocks stay dark in both themes — a terminal
+     should read as a terminal, and it keeps snippets legible on paper. */
+  :root {
+    --radius: 0.625rem;
+    --code-bg: 216 28% 7%;
+    --code-fg: 156 72% 67%;
   }
 }
 
@@ -67,17 +177,22 @@
   code, pre, .font-mono {
     font-family: 'JetBrains Mono', monospace;
   }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+    color: hsl(var(--foreground));
+  }
 }
 
 @layer utilities {
   .glow-primary {
-    box-shadow: 0 0 20px -4px hsl(var(--glow-primary) / 0.3),
-                0 0 60px -8px hsl(var(--glow-primary) / 0.15);
+    box-shadow: 0 0 20px -4px hsl(var(--glow-primary) / var(--glow-alpha-strong)),
+                0 0 60px -8px hsl(var(--glow-primary) / var(--glow-alpha-soft));
   }
 
   .glow-accent {
-    box-shadow: 0 0 20px -4px hsl(var(--glow-accent) / 0.3),
-                0 0 60px -8px hsl(var(--glow-accent) / 0.15);
+    box-shadow: 0 0 20px -4px hsl(var(--glow-accent) / var(--glow-alpha-strong)),
+                0 0 60px -8px hsl(var(--glow-accent) / var(--glow-alpha-soft));
   }
 
   .gradient-text {
@@ -107,7 +222,7 @@
 
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: hsl(var(--border)) transparent;
+    scrollbar-color: hsl(var(--scrollbar-thumb)) transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
@@ -119,7 +234,11 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
+    background: hsl(var(--scrollbar-thumb));
     border-radius: 2px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--text-subtle));
   }
 }

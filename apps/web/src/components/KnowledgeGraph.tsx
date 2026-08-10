@@ -9,6 +9,7 @@ import { useGlossary } from "@/hooks/useGlossary";
 import { X, Maximize2, Minimize2, ZoomIn, ZoomOut, Scan } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
+import { useTheme, type Theme } from "@/lib/theme";
 
 interface KnowledgeGraphProps {
   centerTerm: GlossaryTerm;
@@ -16,21 +17,57 @@ interface KnowledgeGraphProps {
   onClose: () => void;
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  "core-protocol": "#34d399",
-  "programming-model": "#60a5fa",
-  "token-ecosystem": "#facc15",
-  defi: "#34d399",
-  "zk-compression": "#a78bfa",
-  infrastructure: "#fb923c",
-  security: "#f87171",
-  "dev-tools": "#22d3ee",
-  network: "#2dd4bf",
-  "blockchain-general": "#94a3b8",
-  web3: "#f472b6",
-  "programming-fundamentals": "#818cf8",
-  "ai-ml": "#c084fc",
-  "solana-ecosystem": "#a78bfa",
+// Canvas can't read Tailwind classes, so the node palette is spelled out here.
+// It mirrors the category chips: the `-400` rung on dark, its light-surface
+// counterpart on paper (the same pairs index.css maps to `--pal-*`).
+const CATEGORY_COLORS: Record<Theme, Record<string, string>> = {
+  dark: {
+    "core-protocol": "#34d399",
+    "programming-model": "#60a5fa",
+    "token-ecosystem": "#facc15",
+    defi: "#34d399",
+    "zk-compression": "#a78bfa",
+    infrastructure: "#fb923c",
+    security: "#f87171",
+    "dev-tools": "#22d3ee",
+    network: "#2dd4bf",
+    "blockchain-general": "#94a3b8",
+    web3: "#f472b6",
+    "programming-fundamentals": "#818cf8",
+    "ai-ml": "#c084fc",
+    "solana-ecosystem": "#a78bfa",
+  },
+  light: {
+    "core-protocol": "#047857",
+    "programming-model": "#1d4ed8",
+    "token-ecosystem": "#854d0e",
+    defi: "#047857",
+    "zk-compression": "#7c3aed",
+    infrastructure: "#9a3412",
+    security: "#b91c1c",
+    "dev-tools": "#0e7490",
+    network: "#0f766e",
+    "blockchain-general": "#475569",
+    web3: "#be185d",
+    "programming-fundamentals": "#4f46e5",
+    "ai-ml": "#7e22ce",
+    "solana-ecosystem": "#7c3aed",
+  },
+};
+
+const FALLBACK_COLOR: Record<Theme, string> = {
+  dark: "#94a3b8",
+  light: "#475569",
+};
+
+const LABEL_COLOR: Record<Theme, string> = {
+  dark: "#e2e8f0",
+  light: "#1e293b",
+};
+
+const LINK_COLOR: Record<Theme, string> = {
+  dark: "rgba(148, 163, 184, 0.15)",
+  light: "rgba(71, 85, 105, 0.25)",
 };
 
 interface GraphNode {
@@ -54,6 +91,7 @@ export function KnowledgeGraph({
 }: KnowledgeGraphProps) {
   const glossary = useGlossary();
   const { t } = useI18n();
+  const theme = useTheme();
   const graphRef =
     useRef<ForceGraphMethods<NodeObject<GraphNode>, LinkObject<GraphNode>>>();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -154,7 +192,8 @@ export function KnowledgeGraph({
       const label = node.name;
       const fontSize = node.isCenter ? 14 / globalScale : 11 / globalScale;
       const nodeR = node.isCenter ? 10 : node.val * 2;
-      const color = CATEGORY_COLORS[node.category] || "#94a3b8";
+      const color =
+        CATEGORY_COLORS[theme][node.category] || FALLBACK_COLOR[theme];
 
       // Glow for center
       if (node.isCenter) {
@@ -177,13 +216,13 @@ export function KnowledgeGraph({
       ctx.font = `${node.isCenter ? "600" : "400"} ${fontSize}px Inter, sans-serif`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = "#e2e8f0";
+      ctx.fillStyle = LABEL_COLOR[theme];
       ctx.fillText(label, x, y + nodeR + fontSize + 2);
     },
-    [],
+    [theme],
   );
 
-  const linkColor = useCallback(() => "rgba(148, 163, 184, 0.15)", []);
+  const linkColor = useCallback(() => LINK_COLOR[theme], [theme]);
 
   const zoomBy = useCallback((factor: number) => {
     const graph = graphRef.current;

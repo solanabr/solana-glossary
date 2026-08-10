@@ -181,7 +181,7 @@ export function ApplyCode({
             <Copy className="h-3 w-3 text-muted-foreground" />
           )}
         </button>
-        <pre className="bg-[#0d1117] rounded-lg p-3 overflow-x-auto text-[11px] leading-relaxed font-mono text-emerald-300 border border-emerald-500/10">
+        <pre className="bg-code rounded-lg p-3 overflow-x-auto text-[11px] leading-relaxed font-mono text-code-foreground border border-emerald-500/10">
           <code>{result.code}</code>
         </pre>
       </div>

@@ -41,6 +41,10 @@ const translations = {
     // Nav
     "nav.glossary": "Glossary",
     "nav.code": "Code",
+    // Theme
+    "theme.label": "Dark theme",
+    "theme.to_light": "Switch to light theme",
+    "theme.to_dark": "Switch to dark theme",
     "depth.label": "Depth",
     "depth.all": "All",
     "depth.hint": "Knowledge depth — 1 (surface) to 5 (deep)",
@@ -202,6 +206,9 @@ const translations = {
     "btn.browse_glossary": "Explorar Glossário",
     "nav.glossary": "Glossário",
     "nav.code": "Código",
+    "theme.label": "Tema escuro",
+    "theme.to_light": "Mudar para o tema claro",
+    "theme.to_dark": "Mudar para o tema escuro",
     "depth.label": "Profundidade",
     "depth.all": "Todas",
     "depth.hint":
@@ -352,6 +359,9 @@ const translations = {
     "btn.browse_glossary": "Explorar Glosario",
     "nav.glossary": "Glosario",
     "nav.code": "Código",
+    "theme.label": "Tema oscuro",
+    "theme.to_light": "Cambiar al tema claro",
+    "theme.to_dark": "Cambiar al tema oscuro",
     "depth.label": "Profundidad",
     "depth.all": "Todas",
     "depth.hint": "Profundidad de conocimiento — 1 (superficie) a 5 (profundo)",

@@ -1,6 +1,15 @@
 import type { Config } from "tailwindcss";
+import palette from "tailwindcss/colors";
 import animate from "tailwindcss-animate";
 import typography from "@tailwindcss/typography";
+
+// The `-300`/`-400` rungs below are used as chip and icon *text* on tinted
+// surfaces (src/lib/category-colors.ts and its consumers). Stock Tailwind tunes
+// them for dark backgrounds, where they fail on light ones — so those rungs
+// alone resolve through CSS variables that each theme redefines in index.css.
+// Every other rung stays stock.
+const themedText = (name: string, shade: number) =>
+  `hsl(var(--pal-${name}-${shade}) / <alpha-value>)`;
 
 export default {
   darkMode: ["class"],
@@ -73,6 +82,36 @@ export default {
           hover: "hsl(var(--surface-hover))",
         },
         subtle: "hsl(var(--text-subtle))",
+        code: {
+          DEFAULT: "hsl(var(--code-bg) / <alpha-value>)",
+          foreground: "hsl(var(--code-fg) / <alpha-value>)",
+        },
+
+        slate: { ...palette.slate, 400: themedText("slate", 400) },
+        red: {
+          ...palette.red,
+          300: themedText("red", 300),
+          400: themedText("red", 400),
+        },
+        orange: { ...palette.orange, 400: themedText("orange", 400) },
+        yellow: { ...palette.yellow, 400: themedText("yellow", 400) },
+        emerald: {
+          ...palette.emerald,
+          300: themedText("emerald", 300),
+          400: themedText("emerald", 400),
+        },
+        teal: { ...palette.teal, 400: themedText("teal", 400) },
+        cyan: { ...palette.cyan, 400: themedText("cyan", 400) },
+        sky: { ...palette.sky, 400: themedText("sky", 400) },
+        blue: { ...palette.blue, 400: themedText("blue", 400) },
+        indigo: { ...palette.indigo, 400: themedText("indigo", 400) },
+        violet: {
+          ...palette.violet,
+          300: themedText("violet", 300),
+          400: themedText("violet", 400),
+        },
+        purple: { ...palette.purple, 400: themedText("purple", 400) },
+        pink: { ...palette.pink, 400: themedText("pink", 400) },
       },
       borderRadius: {
         lg: "var(--radius)",

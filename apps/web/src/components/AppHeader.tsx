@@ -9,6 +9,7 @@ import {
   Code2,
 } from "lucide-react";
 import { useI18n, LOCALE_LABELS, Locale } from "@/lib/i18n";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const LOCALES: Locale[] = ["en", "pt", "es"];
 
@@ -33,13 +34,19 @@ export function AppHeader() {
   return (
     <header className="h-14 border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto h-full flex items-center justify-between px-4 sm:px-6">
-        <Link to="/" className="flex items-center gap-2.5">
+        <Link
+          to="/"
+          aria-label="Solana Glossary"
+          className="flex items-center gap-2.5"
+        >
           <img
             src="/favicon.svg"
             alt=""
             className="w-7 h-7 rounded-lg shrink-0"
           />
-          <span className="text-sm font-semibold gradient-text">
+          {/* Below `sm` the right-hand cluster needs the full row, so the
+              wordmark collapses to the mark (it wrapped to two lines there). */}
+          <span className="hidden sm:inline text-sm font-semibold gradient-text">
             Solana Glossary
           </span>
         </Link>
@@ -84,6 +91,8 @@ export function AppHeader() {
               );
             })}
           </nav>
+
+          <ThemeToggle />
 
           {/* Language selector */}
           <div className="flex items-center gap-0.5 px-1 py-0.5 rounded-md bg-secondary border border-border">

@@ -287,7 +287,7 @@ const LearningPath = () => {
                           <Skeleton className="h-20 w-full mt-3" />
                         </div>
                       ) : (
-                        <div className="text-sm text-foreground/80 leading-relaxed [&_pre]:bg-[hsl(150_60%_10%)] [&_pre]:border [&_pre]:border-emerald-500/20 [&_pre]:rounded-lg [&_pre]:p-3 [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre_code]:text-emerald-400 [&_pre_code]:text-[11px] [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_code]:text-primary [&_code]:bg-primary/10 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[11px] [&_strong]:text-foreground [&_p]:mb-2 [&_p:last-child]:mb-0">
+                        <div className="text-sm text-foreground/80 leading-relaxed [&_pre]:bg-code [&_pre]:border [&_pre]:border-emerald-500/20 [&_pre]:rounded-lg [&_pre]:p-3 [&_pre]:my-2 [&_pre]:overflow-x-auto [&_pre_code]:text-code-foreground [&_pre_code]:text-[11px] [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_code]:text-primary [&_code]:bg-primary/10 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[11px] [&_strong]:text-foreground [&_p]:mb-2 [&_p:last-child]:mb-0">
                           <TermHighlightedMarkdown
                             content={explanation}
                             onTermClick={handleTermNavigate}

@@ -4,6 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Theme, resolved before first paint so the page never flashes the wrong
+         palette. Precedence: stored choice → OS preference → dark (brand
+         default). Kept in sync with resolveTheme() in src/lib/theme.ts. -->
+    <script>
+      (function () {
+        var dark = true;
+        try {
+          var stored = localStorage.getItem("theme");
+          dark =
+            stored === "dark" ||
+            (stored !== "light" &&
+              !window.matchMedia("(prefers-color-scheme: light)").matches);
+        } catch (e) {
+          /* storage blocked — fall back to the dark default */
+        }
+        document.documentElement.classList.toggle("dark", dark);
+      })();
+    </script>
+
     <!-- Fonts: preconnect + async stylesheet so the download never blocks render. -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
