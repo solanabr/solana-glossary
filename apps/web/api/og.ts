@@ -6,14 +6,17 @@
 // Google's gstatic CDN and memoized at module scope for the function's warm
 // lifetime. The rendered PNG is immutable and cached for a year — bump the
 // caller's `v=` param to invalidate.
+//
+// Plain .ts with React.createElement, NOT .tsx: @vercel/node does not
+// JSX-compile vanilla api/ .tsx functions — the file dies at parse and every
+// invocation returns FUNCTION_INVOCATION_FAILED (verified in production).
 
-// React must be in scope: @vercel/node compiles vanilla .tsx with the classic
-// JSX runtime (React.createElement), and without this the function crashes at
-// invocation with "React is not defined". Unused-import lint is off here.
 import React from "react";
 import { ImageResponse } from "@vercel/og";
 
 export const config = { runtime: "nodejs" };
+
+const h = React.createElement;
 
 const WIDTH = 1200;
 const HEIGHT = 630;
@@ -142,39 +145,64 @@ function titleSize(title: string): number {
 // not), so the wordmark gradient lives here rather than in text styling.
 // ---------------------------------------------------------------------------
 
-function LogoMark() {
-  return (
-    <svg
-      width="52"
-      height="52"
-      viewBox="0 0 48 48"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        <linearGradient
-          id="markGradient"
-          x1="0"
-          y1="0"
-          x2="48"
-          y2="48"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop offset="0" stopColor={GREEN} />
-          <stop offset="1" stopColor={PURPLE} />
-        </linearGradient>
-      </defs>
-      <rect
-        x="0"
-        y="0"
-        width="48"
-        height="48"
-        rx="13"
-        fill="url(#markGradient)"
-      />
-      <rect x="12" y="15" width="24" height="4.5" rx="2.25" fill={BG} />
-      <rect x="12" y="22" width="24" height="4.5" rx="2.25" fill={BG} />
-      <rect x="12" y="29" width="15" height="4.5" rx="2.25" fill={BG} />
-    </svg>
+function logoMark(): React.ReactElement {
+  return h(
+    "svg",
+    {
+      width: "52",
+      height: "52",
+      viewBox: "0 0 48 48",
+      xmlns: "http://www.w3.org/2000/svg",
+    },
+    h(
+      "defs",
+      null,
+      h(
+        "linearGradient",
+        {
+          id: "markGradient",
+          x1: "0",
+          y1: "0",
+          x2: "48",
+          y2: "48",
+          gradientUnits: "userSpaceOnUse",
+        },
+        h("stop", { offset: "0", stopColor: GREEN }),
+        h("stop", { offset: "1", stopColor: PURPLE }),
+      ),
+    ),
+    h("rect", {
+      x: "0",
+      y: "0",
+      width: "48",
+      height: "48",
+      rx: "13",
+      fill: "url(#markGradient)",
+    }),
+    h("rect", {
+      x: "12",
+      y: "15",
+      width: "24",
+      height: "4.5",
+      rx: "2.25",
+      fill: BG,
+    }),
+    h("rect", {
+      x: "12",
+      y: "22",
+      width: "24",
+      height: "4.5",
+      rx: "2.25",
+      fill: BG,
+    }),
+    h("rect", {
+      x: "12",
+      y: "29",
+      width: "15",
+      height: "4.5",
+      rx: "2.25",
+      fill: BG,
+    }),
   );
 }
 
@@ -211,9 +239,179 @@ async function handler(req: Request): Promise<Response> {
 
     const fonts = await loadFonts();
 
-    return new ImageResponse(
-      <div
-        style={{
+    const accentBar = h("div", {
+      style: {
+        display: "flex",
+        width: "100%",
+        height: 10,
+        backgroundImage: GRADIENT,
+      },
+    });
+
+    const brandRow = h(
+      "div",
+      { style: { display: "flex", alignItems: "center", gap: 18 } },
+      logoMark(),
+      h(
+        "div",
+        {
+          style: {
+            display: "flex",
+            fontFamily: "JetBrains Mono",
+            fontWeight: 500,
+            fontSize: 26,
+            letterSpacing: 0.5,
+            color: FG,
+          },
+        },
+        "solana glossary",
+      ),
+    );
+
+    const eyebrowEl = eyebrow
+      ? h(
+          "div",
+          {
+            style: {
+              display: "flex",
+              alignSelf: "flex-start",
+              alignItems: "center",
+              padding: "8px 16px",
+              marginBottom: 22,
+              borderRadius: 999,
+              border: `1px solid rgba(33,202,151,0.28)`,
+              backgroundColor: "rgba(33,202,151,0.10)",
+              color: GREEN,
+              fontFamily: "JetBrains Mono",
+              fontWeight: 500,
+              fontSize: 20,
+              letterSpacing: 1,
+              textTransform: "uppercase",
+            },
+          },
+          eyebrow,
+        )
+      : null;
+
+    const titleEl = h(
+      "div",
+      {
+        style: {
+          display: "flex",
+          fontWeight: 700,
+          fontSize: titleSize(title),
+          lineHeight: 1.08,
+          color: FG,
+          letterSpacing: -0.5,
+          maxWidth: 1000,
+        },
+      },
+      title,
+    );
+
+    const subtitleEl = subtitle
+      ? h(
+          "div",
+          {
+            style: {
+              display: "flex",
+              marginTop: 24,
+              fontSize: 28,
+              lineHeight: 1.4,
+              color: MUTED,
+              maxWidth: 940,
+            },
+          },
+          subtitle,
+        )
+      : null;
+
+    const centerBlock = h(
+      "div",
+      {
+        style: {
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          justifyContent: "center",
+        },
+      },
+      eyebrowEl,
+      titleEl,
+      subtitleEl,
+    );
+
+    const footer = h(
+      "div",
+      {
+        style: {
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingTop: 26,
+          borderTop: `1px solid ${BORDER}`,
+        },
+      },
+      h(
+        "div",
+        { style: { display: "flex", alignItems: "center", gap: 12 } },
+        h("div", {
+          style: {
+            display: "flex",
+            width: 12,
+            height: 12,
+            borderRadius: 6,
+            backgroundImage: GRADIENT,
+          },
+        }),
+        h(
+          "div",
+          {
+            style: {
+              display: "flex",
+              fontFamily: "JetBrains Mono",
+              fontWeight: 500,
+              fontSize: 22,
+              color: FG,
+            },
+          },
+          footerLabel,
+        ),
+      ),
+      h(
+        "div",
+        {
+          style: {
+            display: "flex",
+            fontFamily: "JetBrains Mono",
+            fontWeight: 500,
+            fontSize: 20,
+            color: MUTED,
+          },
+        },
+        "Solana Glossary · 14 categories",
+      ),
+    );
+
+    const body = h(
+      "div",
+      {
+        style: {
+          display: "flex",
+          flexDirection: "column",
+          flex: 1,
+          padding: "62px 76px",
+        },
+      },
+      brandRow,
+      centerBlock,
+      footer,
+    );
+
+    const root = h(
+      "div",
+      {
+        style: {
           width: "100%",
           height: "100%",
           display: "flex",
@@ -222,169 +420,28 @@ async function handler(req: Request): Promise<Response> {
           backgroundColor: BG,
           backgroundImage: `radial-gradient(1000px 480px at 88% -8%, rgba(131,84,212,0.18), transparent 60%), radial-gradient(900px 460px at -6% 108%, rgba(33,202,151,0.16), transparent 58%)`,
           fontFamily: "Inter",
-        }}
-      >
-        {/* Top gradient accent bar */}
-        <div
-          style={{
-            display: "flex",
-            width: "100%",
-            height: 10,
-            backgroundImage: GRADIENT,
-          }}
-        />
-
-        {/* Body */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            padding: "62px 76px",
-          }}
-        >
-          {/* Brand row */}
-          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-            <LogoMark />
-            <div
-              style={{
-                display: "flex",
-                fontFamily: "JetBrains Mono",
-                fontWeight: 500,
-                fontSize: 26,
-                letterSpacing: 0.5,
-                color: FG,
-              }}
-            >
-              solana glossary
-            </div>
-          </div>
-
-          {/* Center block */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              flex: 1,
-              justifyContent: "center",
-            }}
-          >
-            {eyebrow ? (
-              <div
-                style={{
-                  display: "flex",
-                  alignSelf: "flex-start",
-                  alignItems: "center",
-                  padding: "8px 16px",
-                  marginBottom: 22,
-                  borderRadius: 999,
-                  border: `1px solid rgba(33,202,151,0.28)`,
-                  backgroundColor: "rgba(33,202,151,0.10)",
-                  color: GREEN,
-                  fontFamily: "JetBrains Mono",
-                  fontWeight: 500,
-                  fontSize: 20,
-                  letterSpacing: 1,
-                  textTransform: "uppercase",
-                }}
-              >
-                {eyebrow}
-              </div>
-            ) : null}
-
-            <div
-              style={{
-                display: "flex",
-                fontWeight: 700,
-                fontSize: titleSize(title),
-                lineHeight: 1.08,
-                color: FG,
-                letterSpacing: -0.5,
-                maxWidth: 1000,
-              }}
-            >
-              {title}
-            </div>
-
-            {subtitle ? (
-              <div
-                style={{
-                  display: "flex",
-                  marginTop: 24,
-                  fontSize: 28,
-                  lineHeight: 1.4,
-                  color: MUTED,
-                  maxWidth: 940,
-                }}
-              >
-                {subtitle}
-              </div>
-            ) : null}
-          </div>
-
-          {/* Footer */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingTop: 26,
-              borderTop: `1px solid ${BORDER}`,
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <div
-                style={{
-                  display: "flex",
-                  width: 12,
-                  height: 12,
-                  borderRadius: 6,
-                  backgroundImage: GRADIENT,
-                }}
-              />
-              <div
-                style={{
-                  display: "flex",
-                  fontFamily: "JetBrains Mono",
-                  fontWeight: 500,
-                  fontSize: 22,
-                  color: FG,
-                }}
-              >
-                {footerLabel}
-              </div>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                fontFamily: "JetBrains Mono",
-                fontWeight: 500,
-                fontSize: 20,
-                color: MUTED,
-              }}
-            >
-              Solana Glossary · 14 categories
-            </div>
-          </div>
-        </div>
-      </div>,
-      {
-        width: WIDTH,
-        height: HEIGHT,
-        fonts: fonts.length
-          ? fonts.map((f) => ({
-              name: f.name,
-              data: f.data,
-              weight: f.weight,
-              style: f.style,
-            }))
-          : undefined,
-        headers: {
-          "Cache-Control":
-            "public, max-age=31536000, s-maxage=31536000, immutable",
         },
       },
+      accentBar,
+      body,
     );
+
+    return new ImageResponse(root, {
+      width: WIDTH,
+      height: HEIGHT,
+      fonts: fonts.length
+        ? fonts.map((f) => ({
+            name: f.name,
+            data: f.data,
+            weight: f.weight,
+            style: f.style,
+          }))
+        : undefined,
+      headers: {
+        "Cache-Control":
+          "public, max-age=31536000, s-maxage=31536000, immutable",
+      },
+    });
   } catch (err) {
     console.error("[og] render error:", err);
     return new Response("Failed to generate image", { status: 500 });
