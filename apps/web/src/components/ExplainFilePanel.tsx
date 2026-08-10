@@ -1,5 +1,6 @@
-import { useState, useCallback, useRef } from "react";
-import { searchTerms, GlossaryTerm } from "@stbr/solana-glossary";
+import { useState, useCallback, useMemo, useRef } from "react";
+import { GlossaryTerm } from "@stbr/solana-glossary";
+import { detectTermsInText } from "@/components/TermInputHighlighter";
 import { streamChat } from "@/lib/ai-chat";
 import {
   FileCode2,
@@ -171,6 +172,20 @@ export function ExplainFilePanel({ onTermClick }: ExplainFilePanelProps) {
     [code, isAnalyzing, locale],
   );
 
+  // Terms mentioned in the pasted code (word-boundary scan), deduped, max 8.
+  const detectedTerms = useMemo(() => {
+    if (!code.trim()) return [];
+    const seen = new Set<string>();
+    const unique: GlossaryTerm[] = [];
+    for (const { term } of detectTermsInText(code)) {
+      if (seen.has(term.id)) continue;
+      seen.add(term.id);
+      unique.push(term);
+      if (unique.length === 8) break;
+    }
+    return unique;
+  }, [code]);
+
   if (!aiEnabled) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-6">
@@ -178,8 +193,6 @@ export function ExplainFilePanel({ onTermClick }: ExplainFilePanelProps) {
       </div>
     );
   }
-
-  const detectedTerms = code.trim() ? searchTerms(code).slice(0, 8) : [];
 
   return (
     <div className="flex flex-col h-full">
