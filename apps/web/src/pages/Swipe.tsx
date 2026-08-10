@@ -2,6 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowDown, Expand, Layers } from "lucide-react";
 import { SwipeFeed } from "@/lib/swipe-feed";
+import {
+  categoryColors,
+  categoryCardAccent,
+  depthColors,
+} from "@/lib/category-colors";
 import { useGlossary } from "@/hooks/useGlossary";
 import { useI18n } from "@/lib/i18n";
 
@@ -115,13 +120,17 @@ const Swipe = () => {
             key={id}
             className="h-full snap-start flex items-center justify-center px-4 py-4"
           >
-            <article className="w-full max-w-lg h-full sm:max-h-[36rem] flex flex-col rounded-2xl border border-border bg-card shadow-xl p-5 sm:p-6">
+            <article
+              className={`w-full max-w-lg h-full sm:max-h-[36rem] flex flex-col rounded-2xl border bg-card shadow-xl p-5 sm:p-6 ${categoryCardAccent[term.category] || "border-border"}`}
+            >
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium border border-primary/20">
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[11px] font-medium border ${categoryColors[term.category] || "bg-muted text-muted-foreground"}`}
+                >
                   {t(`cat.${term.category}`) || term.category}
                 </span>
                 <span
-                  className="px-2 py-0.5 rounded-full bg-secondary text-muted-foreground text-[11px] font-medium border border-border"
+                  className={`px-2 py-0.5 rounded-full text-[11px] font-medium border ${depthColors[term.depth] || "bg-secondary text-muted-foreground border-border"}`}
                   title={t("depth.hint")}
                 >
                   <Layers className="h-2.5 w-2.5 inline mr-1" />

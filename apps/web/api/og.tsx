@@ -7,6 +7,10 @@
 // lifetime. The rendered PNG is immutable and cached for a year — bump the
 // caller's `v=` param to invalidate.
 
+// React must be in scope: @vercel/node compiles vanilla .tsx with the classic
+// JSX runtime (React.createElement), and without this the function crashes at
+// invocation with "React is not defined". Unused-import lint is off here.
+import React from "react";
 import { ImageResponse } from "@vercel/og";
 
 export const config = { runtime: "nodejs" };

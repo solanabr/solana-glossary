@@ -11,6 +11,7 @@ import Index from "./pages/Index.tsx";
 const Copilot = lazy(() => import("./pages/Copilot.tsx"));
 const LearningPath = lazy(() => import("./pages/LearningPath.tsx"));
 const Swipe = lazy(() => import("./pages/Swipe.tsx"));
+const Code = lazy(() => import("./pages/Code.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/copilot" element={<Copilot />} />
               <Route path="/learn" element={<LearningPath />} />
               <Route path="/swipe" element={<Swipe />} />
+              <Route path="/code" element={<Code />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

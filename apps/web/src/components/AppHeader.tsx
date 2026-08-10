@@ -6,6 +6,7 @@ import {
   GraduationCap,
   Mountain,
   GalleryVerticalEnd,
+  Code2,
 } from "lucide-react";
 import { useI18n, LOCALE_LABELS, Locale } from "@/lib/i18n";
 
@@ -18,6 +19,7 @@ export function AppHeader() {
   const navItems = [
     { path: "/", label: t("nav.glossary"), icon: BookOpen },
     { path: "/swipe", label: "Swipe", icon: GalleryVerticalEnd },
+    { path: "/code", label: t("nav.code"), icon: Code2 },
   ];
 
   // The AI surfaces stay reachable from the glossary itself (term insights,

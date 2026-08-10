@@ -19,7 +19,6 @@ async function handler(): Promise<Response> {
     "lib:guard": () => import("./_lib/guard.js"),
     "lib:gemini": () => import("./_lib/gemini.js"),
     "mod:meta": () => import("./meta.js"),
-    "mod:og": () => import("./og.js"),
     "mod:status": () => import("./ai/status.js"),
   };
   for (const [name, run] of Object.entries(probes)) {

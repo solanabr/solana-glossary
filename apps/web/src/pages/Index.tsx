@@ -17,7 +17,6 @@ import {
   getCategories,
   type Depth,
 } from "@stbr/solana-glossary";
-import { AnimatePresence, motion } from "framer-motion";
 import { Zap, Search, ArrowUpDown } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useGlossary } from "@/hooks/useGlossary";
@@ -164,6 +163,10 @@ const Index = () => {
     [terms, visibleCount],
   );
 
+  // "Dashboard mode": once a term is open, the hero collapses to just the
+  // search bar and the layout becomes term-card (left / top) + browse pane.
+  const browsing = selectedTerm !== null;
+
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
       {/* Hero */}
@@ -172,21 +175,27 @@ const Index = () => {
       <section className="relative z-20">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_hsl(162_72%_46%_/_0.08),_transparent_60%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_hsl(262_60%_58%_/_0.05),_transparent_50%)]" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-14 pb-10 relative">
-          <div className="text-center max-w-2xl mx-auto mb-8">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium mb-4 border border-primary/20">
-              <Zap className="h-3 w-3" />
-              {glossary.allTerms.length} {t("hero.badge")}
+        <div
+          className={`max-w-7xl mx-auto px-4 sm:px-6 relative ${
+            browsing ? "pt-5 pb-5" : "pt-14 pb-10"
+          }`}
+        >
+          {!browsing && (
+            <div className="text-center max-w-2xl mx-auto mb-8">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[11px] font-medium mb-4 border border-primary/20">
+                <Zap className="h-3 w-3" />
+                {glossary.allTerms.length} {t("hero.badge")}
+              </div>
+              <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-3 tracking-tight leading-tight">
+                {t("hero.title.before")}{" "}
+                <span className="gradient-text">{t("hero.title.solana")}</span>{" "}
+                {t("hero.title.after")}
+              </h1>
+              <p className="text-base text-muted-foreground leading-relaxed max-w-lg mx-auto">
+                {t("hero.subtitle")}
+              </p>
             </div>
-            <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-3 tracking-tight leading-tight">
-              {t("hero.title.before")}{" "}
-              <span className="gradient-text">{t("hero.title.solana")}</span>{" "}
-              {t("hero.title.after")}
-            </h1>
-            <p className="text-base text-muted-foreground leading-relaxed max-w-lg mx-auto">
-              {t("hero.subtitle")}
-            </p>
-          </div>
+          )}
 
           <SmartHeroInput onSelectTerm={openTerm} />
         </div>
@@ -216,20 +225,35 @@ const Index = () => {
           </div>
         )}
 
-        <div className="mb-5">
-          <h2 className="text-sm font-semibold text-foreground mb-2.5 flex items-center gap-2">
-            <Search className="h-3.5 w-3.5 text-primary" />
-            {t("category.categories")}
-          </h2>
-          <CategoryGrid
-            onSelectCategory={handleCategoryChange}
-            activeCategory={activeCategory}
-          />
-        </div>
+        <div className={browsing ? "lg:flex lg:items-start lg:gap-6" : ""}>
+          {/* Open term — left pane on desktop, main card above the browse
+              content on mobile */}
+          {selectedTerm && (
+            <div className="mb-6 lg:mb-0 lg:w-[26rem] lg:shrink-0">
+              <div className="h-[70vh] lg:h-[calc(100vh-6rem)] lg:sticky lg:top-[4.25rem]">
+                <Suspense fallback={null}>
+                  <TermPageModal
+                    term={selectedTerm}
+                    onClose={closeTerm}
+                    onNavigate={openTerm}
+                  />
+                </Suspense>
+              </div>
+            </div>
+          )}
 
-        <div className="flex gap-6">
-          {/* Terms grid */}
-          <div className="flex-1 min-w-0">
+          {/* Browse pane: categories, filters, term grid */}
+          <div className={browsing ? "flex-1 min-w-0" : ""}>
+            <div className="mb-5">
+              <h2 className="text-sm font-semibold text-foreground mb-2.5 flex items-center gap-2">
+                <Search className="h-3.5 w-3.5 text-primary" />
+                {t("category.categories")}
+              </h2>
+              <CategoryGrid
+                onSelectCategory={handleCategoryChange}
+                activeCategory={activeCategory}
+              />
+            </div>
             {/* Depth filter — SDK knowledge-depth rating, 1 (surface) → 5 (deep) —
                 plus term count and list ordering */}
             <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
@@ -308,47 +332,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-
-      {/* Detail panel — desktop "side peek": a fixed drawer over the right
-          edge (Linear/Notion pattern). The grid never reflows on open/close,
-          the panel is always in the same place, and Esc dismisses it. */}
-      <AnimatePresence>
-        {selectedTerm && (
-          <motion.aside
-            key="term-drawer"
-            initial={{ x: 64, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 64, opacity: 0 }}
-            transition={{ type: "tween", duration: 0.18, ease: "easeOut" }}
-            className="hidden lg:block fixed right-0 top-14 bottom-0 w-[26rem] z-40 border-l border-border bg-card shadow-2xl"
-          >
-            <Suspense fallback={null}>
-              <TermPageModal
-                term={selectedTerm}
-                onClose={closeTerm}
-                onNavigate={openTerm}
-              />
-            </Suspense>
-          </motion.aside>
-        )}
-      </AnimatePresence>
-
-      {/* Detail panel — full-screen overlay below lg (the sidebar is hidden
-          there, so without this a tapped term or shared /t/:id link would
-          show nothing on phones/tablets). */}
-      {selectedTerm && (
-        <div className="lg:hidden fixed inset-0 z-50 bg-background/95 backdrop-blur-sm p-3 overscroll-contain">
-          <div className="h-full max-w-lg mx-auto">
-            <Suspense fallback={null}>
-              <TermPageModal
-                term={selectedTerm}
-                onClose={closeTerm}
-                onNavigate={openTerm}
-              />
-            </Suspense>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
