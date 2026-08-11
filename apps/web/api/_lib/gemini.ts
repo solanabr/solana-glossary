@@ -1,12 +1,12 @@
-// The only module that talks to @google/genai. Wraps streaming (copilot) and
-// structured JSON (quiz/apply-code) generation. Thinking is always disabled
-// (thinkingBudget: 0) and every call carries a hard maxOutputTokens cap.
+// The only module that talks to @google/genai. Uses the Interactions API
+// (POST /v1beta/interactions): generateContent is refused for API keys created
+// after mid-2026 ("no longer available to new users"), so every call goes
+// through interactions.create. Thinking is pinned to "minimal" (Gemini 3.5+
+// dropped thinkingBudget), every call carries a hard max_output_tokens cap,
+// and interactions are never stored server-side (store: false).
 
-import { GoogleGenAI, Type, type Schema } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { config, costMicros, type Config } from "./config.js";
-
-// Re-export so routes build response schemas without importing the SDK directly.
-export { Type };
 
 export interface TokenUsage {
   inputTokens: number;
@@ -31,7 +31,6 @@ export interface Gemini {
     system: string;
     messages: ChatTurn[];
     maxOutputTokens: number;
-    temperature?: number;
   }): StreamHandle;
 
   generateStructured<T>(opts: {
@@ -40,34 +39,77 @@ export interface Gemini {
     prompt: string;
     schema: unknown;
     maxOutputTokens: number;
-    temperature?: number;
   }): Promise<{ data: T; usage: TokenUsage }>;
 
   /** Micro-dollar cost for a usage split on a model (via config prices). */
   cost(model: string, usage: TokenUsage): number;
 }
 
-interface UsageMetadataLike {
-  promptTokenCount?: number;
-  candidatesTokenCount?: number;
+// ── minimal structural views of Interactions responses ───────
+// (The SDK's own unions are broad; we only touch these fields.)
+interface InteractionUsage {
+  total_input_tokens?: number;
+  total_output_tokens?: number;
+  total_thought_tokens?: number;
 }
 
+interface InteractionStep {
+  type?: string;
+  content?: Array<{ type?: string; text?: string }>;
+}
+
+interface InteractionLike {
+  usage?: InteractionUsage;
+  output_text?: string;
+  steps?: InteractionStep[];
+}
+
+interface InteractionEvent {
+  event_type?: string;
+  delta?: { type?: string; text?: string };
+  metadata?: { total_usage?: InteractionUsage };
+  interaction?: InteractionLike;
+}
+
+/** Thought tokens bill at the output rate, so they count as output here. */
 function toUsage(
-  meta: UsageMetadataLike | undefined,
+  u: InteractionUsage | undefined,
   prev: TokenUsage,
 ): TokenUsage {
-  if (!meta) return prev;
+  if (!u) return prev;
   return {
-    inputTokens: meta.promptTokenCount ?? prev.inputTokens,
-    outputTokens: meta.candidatesTokenCount ?? prev.outputTokens,
+    inputTokens: u.total_input_tokens ?? prev.inputTokens,
+    outputTokens:
+      (u.total_output_tokens ?? 0) + (u.total_thought_tokens ?? 0) ||
+      prev.outputTokens,
   };
 }
 
-function toContents(messages: ChatTurn[]) {
+// The serving API is steps-based: turn-list input is rejected with
+// "use step_list input format instead of turn_list".
+function toSteps(messages: ChatTurn[]) {
   return messages.map((m) => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content }],
+    type:
+      m.role === "assistant"
+        ? ("model_output" as const)
+        : ("user_input" as const),
+    content: [{ type: "text" as const, text: m.content }],
   }));
+}
+
+/** Model output text: `output_text` when present, else the model_output steps. */
+function interactionText(interaction: InteractionLike): string {
+  if (typeof interaction.output_text === "string" && interaction.output_text) {
+    return interaction.output_text;
+  }
+  const parts: string[] = [];
+  for (const step of interaction.steps ?? []) {
+    if (step.type !== "model_output") continue;
+    for (const c of step.content ?? []) {
+      if (c.type === "text" && c.text) parts.push(c.text);
+    }
+  }
+  return parts.join("");
 }
 
 /**
@@ -91,21 +133,33 @@ export function createGemini(deps: {
       let usage: TokenUsage = { inputTokens: 0, outputTokens: 0 };
 
       async function* run(): AsyncGenerator<string> {
-        const response = await requireClient().models.generateContentStream({
+        const events = await requireClient().interactions.create({
           model: opts.model,
-          contents: toContents(opts.messages),
-          config: {
-            systemInstruction: opts.system,
-            maxOutputTokens: opts.maxOutputTokens,
-            temperature: opts.temperature ?? 0.6,
-            thinkingConfig: { thinkingBudget: 0 },
+          input: toSteps(opts.messages),
+          system_instruction: opts.system,
+          store: false,
+          stream: true,
+          generation_config: {
+            max_output_tokens: opts.maxOutputTokens,
+            thinking_level: "minimal",
           },
         });
 
-        for await (const chunk of response) {
-          usage = toUsage(chunk.usageMetadata, usage);
-          const text = chunk.text;
-          if (text) yield text;
+        for await (const raw of events) {
+          const event = raw as InteractionEvent;
+          if (event.metadata?.total_usage) {
+            usage = toUsage(event.metadata.total_usage, usage);
+          }
+          if (event.event_type === "interaction.completed") {
+            usage = toUsage(event.interaction?.usage, usage);
+          }
+          if (
+            event.event_type === "step.delta" &&
+            event.delta?.type === "text" &&
+            event.delta.text
+          ) {
+            yield event.delta.text;
+          }
         }
       }
 
@@ -118,26 +172,28 @@ export function createGemini(deps: {
       prompt: string;
       schema: unknown;
       maxOutputTokens: number;
-      temperature?: number;
     }): Promise<{ data: T; usage: TokenUsage }> {
-      const response = await requireClient().models.generateContent({
+      const interaction = (await requireClient().interactions.create({
         model: opts.model,
-        contents: opts.prompt,
-        config: {
-          systemInstruction: opts.system,
-          maxOutputTokens: opts.maxOutputTokens,
-          temperature: opts.temperature ?? 0.7,
-          thinkingConfig: { thinkingBudget: 0 },
-          responseMimeType: "application/json",
-          responseSchema: opts.schema as Schema,
+        input: opts.prompt,
+        system_instruction: opts.system,
+        store: false,
+        response_format: {
+          type: "text",
+          mime_type: "application/json",
+          schema: opts.schema as Record<string, unknown>,
         },
-      });
+        generation_config: {
+          max_output_tokens: opts.maxOutputTokens,
+          thinking_level: "minimal",
+        },
+      })) as InteractionLike;
 
-      const usage = toUsage(response.usageMetadata, {
+      const usage = toUsage(interaction.usage, {
         inputTokens: 0,
         outputTokens: 0,
       });
-      const raw = (response.text ?? "").trim();
+      const raw = interactionText(interaction).trim();
       const data = JSON.parse(stripFences(raw)) as T;
       return { data, usage };
     },
@@ -148,7 +204,7 @@ export function createGemini(deps: {
   };
 }
 
-/** Defensive: peel ```json fences if the model ignores responseMimeType. */
+/** Defensive: peel ```json fences if the model ignores the response format. */
 function stripFences(text: string): string {
   return text
     .replace(/^```(?:json)?\s*/i, "")

@@ -9,7 +9,7 @@ import {
   readJson,
   withGuard,
 } from "./_lib/guard.js";
-import { gemini, Type } from "./_lib/gemini.js";
+import { gemini } from "./_lib/gemini.js";
 import { budget } from "./_lib/budget.js";
 import { cache } from "./_lib/cache.js";
 import {
@@ -33,28 +33,22 @@ const LANGUAGE: Record<Locale, string> = {
   es: "Write questions and explanations in Spanish (es).",
 };
 
+// Plain JSON Schema — the Interactions API `response_format.schema` dialect.
 const SCHEMA = {
-  type: Type.OBJECT,
+  type: "object",
   properties: {
     questions: {
-      type: Type.ARRAY,
+      type: "array",
       items: {
-        type: Type.OBJECT,
+        type: "object",
         properties: {
-          question: { type: Type.STRING },
-          options: { type: Type.ARRAY, items: { type: Type.STRING } },
-          correct: { type: Type.INTEGER },
-          explanation: { type: Type.STRING },
-          relatedTerms: { type: Type.ARRAY, items: { type: Type.STRING } },
+          question: { type: "string" },
+          options: { type: "array", items: { type: "string" } },
+          correct: { type: "integer" },
+          explanation: { type: "string" },
+          relatedTerms: { type: "array", items: { type: "string" } },
         },
         required: [
-          "question",
-          "options",
-          "correct",
-          "explanation",
-          "relatedTerms",
-        ],
-        propertyOrdering: [
           "question",
           "options",
           "correct",

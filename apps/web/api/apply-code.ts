@@ -9,7 +9,7 @@ import {
   readJson,
   withGuard,
 } from "./_lib/guard.js";
-import { gemini, Type } from "./_lib/gemini.js";
+import { gemini } from "./_lib/gemini.js";
 import { budget } from "./_lib/budget.js";
 import { cache } from "./_lib/cache.js";
 import {
@@ -33,17 +33,17 @@ const LANGUAGE: Record<Locale, string> = {
   es: "Write everything in Spanish (es).",
 };
 
+// Plain JSON Schema — the Interactions API `response_format.schema` dialect.
 const SCHEMA = {
-  type: Type.OBJECT,
+  type: "object",
   properties: {
-    title: { type: Type.STRING },
-    code: { type: Type.STRING },
-    language: { type: Type.STRING },
-    explanation: { type: Type.STRING },
-    keyConcepts: { type: Type.ARRAY, items: { type: Type.STRING } },
+    title: { type: "string" },
+    code: { type: "string" },
+    language: { type: "string" },
+    explanation: { type: "string" },
+    keyConcepts: { type: "array", items: { type: "string" } },
   },
   required: ["title", "code", "language", "explanation", "keyConcepts"],
-  propertyOrdering: ["title", "code", "language", "explanation", "keyConcepts"],
 };
 
 const SYSTEM =

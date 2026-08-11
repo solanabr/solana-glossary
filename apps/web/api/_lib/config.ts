@@ -69,12 +69,14 @@ export interface Config {
   warnings: string[];
 }
 
-const DEFAULT_MODEL = "gemini-2.5-flash";
-const DEFAULT_MODEL_LITE = "gemini-2.5-flash-lite";
+// Gemini 2.5 models are refused for API keys created after mid-2026 ("no
+// longer available to new users"); 3.5 is the current stable pair.
+const DEFAULT_MODEL = "gemini-3.5-flash";
+const DEFAULT_MODEL_LITE = "gemini-3.5-flash-lite";
 
-// Published Gemini list prices (USD per 1M tokens), see contract §1.
-const FLASH_PRICES: Prices = { in: 0.3, out: 2.5 };
-const FLASH_LITE_PRICES: Prices = { in: 0.1, out: 0.4 };
+// Published Gemini list prices (USD per 1M tokens, thinking billed as output).
+const FLASH_PRICES: Prices = { in: 1.5, out: 9.0 };
+const FLASH_LITE_PRICES: Prices = { in: 0.3, out: 2.5 };
 
 /** Ordered restrictiveness — index 0 is the most generous tier. */
 export const TIER_ORDER: Tier[] = ["normal", "economy", "canned", "resting"];

@@ -32,20 +32,20 @@ describe("moreRestrictiveTier", () => {
 
 describe("costMicros", () => {
   const cfg = loadConfig({});
-  it("prices Flash at $0.30 in / $2.50 out per 1M tokens", () => {
-    expect(costMicros(cfg.geminiModel, 1_000_000, 0, cfg)).toBe(300_000);
-    expect(costMicros(cfg.geminiModel, 0, 1_000_000, cfg)).toBe(2_500_000);
+  it("prices Flash at $1.50 in / $9.00 out per 1M tokens", () => {
+    expect(costMicros(cfg.geminiModel, 1_000_000, 0, cfg)).toBe(1_500_000);
+    expect(costMicros(cfg.geminiModel, 0, 1_000_000, cfg)).toBe(9_000_000);
     expect(costMicros(cfg.geminiModel, 1_000_000, 1_000_000, cfg)).toBe(
-      2_800_000,
+      10_500_000,
     );
   });
   it("prices Flash-Lite cheaper", () => {
     expect(costMicros(cfg.geminiModelLite, 1_000_000, 1_000_000, cfg)).toBe(
-      500_000,
+      2_800_000,
     );
   });
   it("defaults unknown models to Flash pricing", () => {
-    expect(costMicros("mystery-model", 0, 1_000_000, cfg)).toBe(2_500_000);
+    expect(costMicros("mystery-model", 0, 1_000_000, cfg)).toBe(9_000_000);
   });
 });
 
