@@ -227,11 +227,22 @@ async function killSwitchActive(
 }
 
 // ── the guard ────────────────────────────────────────────────
+export interface GuardOptions {
+  /**
+   * `false` skips the rate-limit and budget steps (still enforcing origin,
+   * honeypot, flags/kill-switch, and session). Routes pass this when they can
+   * serve a cached answer — a $0 Redis hit must not spend a rate token, or
+   * ambient surfaces (per-term insights) starve deliberate ones (chat).
+   */
+  metered?: boolean;
+}
+
 export interface Guard {
   withGuard(
     feature: AiFeature,
     req: Request,
     body: Record<string, unknown>,
+    opts?: GuardOptions,
   ): Promise<GuardOutcome>;
 }
 
@@ -251,7 +262,8 @@ export function createGuard(deps: {
   }
 
   return {
-    async withGuard(feature, req, body): Promise<GuardOutcome> {
+    async withGuard(feature, req, body, opts): Promise<GuardOutcome> {
+      const metered = opts?.metered !== false;
       const locale = pickLocale(body.locale);
 
       // 1. cheap structural checks
@@ -296,6 +308,10 @@ export function createGuard(deps: {
         }
         identity = verified.identity ?? identity;
       }
+
+      // Unmetered (cache-hit) path: authenticated + policy-checked, but no
+      // rate/budget spend. Tier is irrelevant — the caller serves the cache.
+      if (!metered) return { ok: true, tier: "normal", identity, locale };
 
       // 4. rate limit
       const rl = await rateLimiter.check(feature, identity, ip);

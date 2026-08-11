@@ -99,6 +99,7 @@ const translations = {
     "chat.placeholder": "Ask about Solana concepts…",
     "chat.explain_placeholder": "Paste Solana code to explain…",
     "chat.thinking": "Thinking…",
+    "chat.rate_limited": "High demand right now — try again in ~{s}s.",
     // Chat demo questions
     "chat.demo.pda": "What is PDA in Solana?",
     "chat.demo.accounts": "Explain accounts like I'm a beginner",
@@ -260,6 +261,7 @@ const translations = {
     "chat.placeholder": "Pergunte sobre conceitos Solana…",
     "chat.explain_placeholder": "Cole código Solana para explicar…",
     "chat.thinking": "Pensando…",
+    "chat.rate_limited": "Alta demanda no momento — tente de novo em ~{s}s.",
     "chat.demo.pda": "O que é PDA na Solana?",
     "chat.demo.accounts": "Explique accounts como se eu fosse iniciante",
     "chat.demo.poh": "Como funciona o Proof of History?",
@@ -412,6 +414,8 @@ const translations = {
     "chat.placeholder": "Pregunta sobre conceptos Solana…",
     "chat.explain_placeholder": "Pega código Solana para explicar…",
     "chat.thinking": "Pensando…",
+    "chat.rate_limited":
+      "Alta demanda ahora mismo — intenta de nuevo en ~{s}s.",
     "chat.demo.pda": "¿Qué es PDA en Solana?",
     "chat.demo.accounts": "Explica accounts como si fuera principiante",
     "chat.demo.poh": "¿Cómo funciona Proof of History?",

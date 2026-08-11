@@ -206,7 +206,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     },
 
     rateLimits: {
-      copilot: { perMin: 5, perHour: 40, perDay: 150 },
+      // Copilot also serves the ambient per-term insight, so its windows are
+      // sized for browsing (cache hits don't spend tokens; this covers the
+      // cold path of uncached terms).
+      copilot: { perMin: 12, perHour: 80, perDay: 250 },
       quiz: { perMin: 4, perHour: 30, perDay: 100 },
       "apply-code": { perMin: 4, perHour: 30, perDay: 100 },
     },

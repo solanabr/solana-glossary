@@ -15,6 +15,7 @@ export async function streamChat({
   onDone,
   onError,
   onResting,
+  onRateLimited,
 }: {
   messages: Msg[];
   locale?: GlossaryLocale;
@@ -24,8 +25,12 @@ export async function streamChat({
   onDelta: (text: string) => void;
   onDone: () => void;
   onError: (error: string) => void;
-  /** Copilot tier dropped to resting (HTTP 429 or a `{mode:"resting"}` body). */
+  /** Copilot tier dropped to resting (`{mode:"resting"}` body, or a 429 when
+      `onRateLimited` isn't provided). */
   onResting: () => void;
+  /** HTTP 429 with the server's Retry-After — lets deliberate surfaces (chat)
+      say "try again in Ns" instead of silently showing the resting card. */
+  onRateLimited?: (retryAfterSec: number) => void;
 }) {
   try {
     const resp = await fetch(CHAT_URL, {
@@ -41,9 +46,17 @@ export async function streamChat({
       signal,
     });
 
-    // Budget paused / rate-limited → show the resting state, never spin.
+    // Rate-limited → tell the caller when to retry; without a handler, fall
+    // back to the resting state. Never spin.
     if (resp.status === 429) {
-      onResting();
+      if (onRateLimited) {
+        const retryAfter = Number(resp.headers.get("Retry-After"));
+        onRateLimited(
+          Number.isFinite(retryAfter) && retryAfter > 0 ? retryAfter : 30,
+        );
+      } else {
+        onResting();
+      }
       return;
     }
 

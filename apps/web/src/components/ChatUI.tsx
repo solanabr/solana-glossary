@@ -56,6 +56,7 @@ export function ChatUI({ onTermClick, mode = "chat" }: ChatUIProps) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resting, setResting] = useState(false);
+  const [retryInSec, setRetryInSec] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { t, locale } = useI18n();
@@ -110,6 +111,7 @@ export function ChatUI({ onTermClick, mode = "chat" }: ChatUIProps) {
 
       setError(null);
       setResting(false);
+      setRetryInSec(null);
       const userMsg: Message = {
         id: crypto.randomUUID(),
         role: "user",
@@ -158,6 +160,10 @@ export function ChatUI({ onTermClick, mode = "chat" }: ChatUIProps) {
         },
         onResting: () => {
           setResting(true);
+          setIsStreaming(false);
+        },
+        onRateLimited: (retryAfterSec) => {
+          setRetryInSec(retryAfterSec);
           setIsStreaming(false);
         },
       });
@@ -299,6 +305,23 @@ export function ChatUI({ onTermClick, mode = "chat" }: ChatUIProps) {
             </div>
             <div className="bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3">
               <p className="text-xs text-destructive">{error}</p>
+            </div>
+          </motion.div>
+        )}
+
+        {retryInSec !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex gap-3"
+          >
+            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <AlertCircle className="h-3.5 w-3.5 text-primary" />
+            </div>
+            <div className="bg-primary/10 border border-primary/20 rounded-lg px-4 py-3">
+              <p className="text-xs text-foreground">
+                {t("chat.rate_limited").replace("{s}", String(retryInSec))}
+              </p>
             </div>
           </motion.div>
         )}

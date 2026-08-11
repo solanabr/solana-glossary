@@ -7,8 +7,9 @@
  *     and the backend decides whether to allow them.
  *   - Site key present: on first AI use we inject the invisible Cloudflare
  *     Turnstile widget, solve it, exchange the Turnstile token for a short-lived
- *     HMAC session token via `POST /api/ai/session`, and cache that token in
- *     memory until shortly before it expires.
+ *     HMAC session token via `POST /api/ai/session`, and cache that token
+ *     (memory + sessionStorage, so reloads reuse it) until shortly before it
+ *     expires.
  *
  * The widget never blocks glossary browsing: it is parked zero-size and only
  * runs when an AI request actually needs a token. If Cloudflare escalates the
@@ -36,7 +37,32 @@ interface CachedSession {
   expiresAt: number;
 }
 
-let cached: CachedSession | null = null;
+/** Survive reloads within the tab so one checkbox click covers the full TTL. */
+const STORAGE_KEY = "ai-session";
+
+function loadStoredSession(): CachedSession | null {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const v = JSON.parse(raw) as CachedSession;
+    if (typeof v?.token !== "string" || typeof v?.expiresAt !== "number") {
+      return null;
+    }
+    return v;
+  } catch {
+    return null; // SSR / storage disabled / corrupt entry
+  }
+}
+
+function storeSession(session: CachedSession): void {
+  try {
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+  } catch {
+    /* storage full/disabled — memory cache still works */
+  }
+}
+
+let cached: CachedSession | null = loadStoredSession();
 let inFlight: Promise<string | null> | null = null;
 let scriptPromise: Promise<void> | null = null;
 
@@ -191,6 +217,7 @@ async function mintSession(): Promise<string | null> {
   const data = (await resp.json()) as SessionMintResponse;
   if (!data || typeof data.token !== "string") return null;
   cached = { token: data.token, expiresAt: data.expiresAt };
+  storeSession(cached);
   return data.token;
 }
 

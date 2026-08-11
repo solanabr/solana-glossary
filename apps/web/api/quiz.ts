@@ -5,6 +5,7 @@
 import {
   corsPreflight,
   jsonResponse,
+  pickLocale,
   readJson,
   withGuard,
 } from "./_lib/guard.js";
@@ -75,10 +76,6 @@ async function handler(req: Request): Promise<Response> {
   const parsed = await readJson(req);
   if (!parsed.ok) return parsed.response;
 
-  const guard = await withGuard("quiz", req, parsed.body);
-  if (!guard.ok) return guard.response as Response;
-  const { tier, identity, locale } = guard;
-
   const b = parsed.body as {
     term?: string;
     category?: string;
@@ -86,27 +83,19 @@ async function handler(req: Request): Promise<Response> {
     relatedTerms?: string[];
     difficulty?: string;
     mode?: string;
+    locale?: unknown;
   };
 
   const term = String(b.term ?? "").trim();
   if (!term)
     return jsonResponse({ error: "Missing term", questions: [] }, 400, {}, req);
 
+  const locale = pickLocale(b.locale);
   const difficulty = String(b.difficulty ?? "intermediate");
   const quizMode = String(b.mode ?? "concept");
 
-  if (tier === "canned" || tier === "resting") {
-    return jsonResponse({ mode: tier, questions: [] }, 200, {}, req);
-  }
-
   // Enrich context from the SDK when the client didn't supply it.
   const known = lookupTerm(term, locale);
-  const category = String(b.category ?? known?.category ?? "");
-  const definition = String(b.definition ?? known?.definition ?? "");
-  const related =
-    Array.isArray(b.relatedTerms) && b.relatedTerms.length
-      ? b.relatedTerms
-      : relatedTermNames(term, locale);
 
   const { norm } = canonicalizePrompt(term, locale);
   const key = cache.key(
@@ -115,14 +104,34 @@ async function handler(req: Request): Promise<Response> {
     `${norm}|${difficulty}|${quizMode}`,
     known?.related ?? [],
   );
+  let cached: unknown = null;
   const hit = await cache.get(key);
   if (hit) {
     try {
-      return jsonResponse(JSON.parse(hit), 200, {}, req);
+      cached = JSON.parse(hit);
     } catch {
-      /* fall through to regenerate */
+      /* corrupt entry → regenerate */
     }
   }
+
+  // A cache hit is a $0 answer — pass the guard unmetered so a replayed quiz
+  // doesn't spend the rate/budget a fresh generation needs.
+  const guard = await withGuard("quiz", req, parsed.body, { metered: !cached });
+  if (!guard.ok) return guard.response as Response;
+  const { tier, identity } = guard;
+
+  if (cached) return jsonResponse(cached, 200, {}, req);
+
+  if (tier === "canned" || tier === "resting") {
+    return jsonResponse({ mode: tier, questions: [] }, 200, {}, req);
+  }
+
+  const category = String(b.category ?? known?.category ?? "");
+  const definition = String(b.definition ?? known?.definition ?? "");
+  const related =
+    Array.isArray(b.relatedTerms) && b.relatedTerms.length
+      ? b.relatedTerms
+      : relatedTermNames(term, locale);
 
   if (!cfg.hasGemini)
     return jsonResponse({ mode: "disabled", questions: [] }, 200, {}, req);

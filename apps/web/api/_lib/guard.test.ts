@@ -118,6 +118,61 @@ describe("withGuard — session gating", () => {
   });
 });
 
+describe("withGuard — unmetered (cache-hit) mode", () => {
+  it("skips the rate limiter entirely", async () => {
+    const cfg = loadConfig(meteredEnv);
+    const guard = createGuard({
+      config: cfg,
+      turnstile: createTurnstile({ config: cfg }),
+      rateLimiter: denyRL, // would 429 any metered request
+      budget: createBudget({ config: cfg, redis: new FakeRedis() }),
+    });
+    const outcome = await guard.withGuard(
+      "copilot",
+      req(),
+      { locale: "en" },
+      { metered: false },
+    );
+    expect(outcome.ok).toBe(true);
+  });
+
+  it("still requires a session when Turnstile is configured", async () => {
+    const cfg = loadConfig({ ...meteredEnv, TURNSTILE_SECRET_KEY: "s" });
+    const guard = createGuard({
+      config: cfg,
+      turnstile: createTurnstile({ config: cfg }),
+      rateLimiter: passRL,
+      budget: createBudget({ config: cfg, redis: new FakeRedis() }),
+    });
+    const outcome = await guard.withGuard(
+      "copilot",
+      req(),
+      { locale: "en" },
+      { metered: false },
+    );
+    expect(outcome.ok).toBe(false);
+    expect(outcome.response?.status).toBe(401);
+  });
+
+  it("still honors the feature flag", async () => {
+    const cfg = loadConfig({ GEMINI_API_KEY: "k", COPILOT_ENABLED: "false" });
+    const guard = createGuard({
+      config: cfg,
+      turnstile: createTurnstile({ config: cfg }),
+      rateLimiter: passRL,
+      budget: createBudget({ config: cfg, redis: new FakeRedis() }),
+    });
+    const outcome = await guard.withGuard(
+      "copilot",
+      req(),
+      { locale: "en" },
+      { metered: false },
+    );
+    expect(outcome.ok).toBe(false);
+    expect(await outcome.response?.json()).toEqual({ mode: "disabled" });
+  });
+});
+
 describe("SSE helpers — client wire contract", () => {
   it("encodeSseDelta emits the OpenAI delta shape", () => {
     expect(encodeSseDelta("hi")).toBe(

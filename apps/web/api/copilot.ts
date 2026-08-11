@@ -6,6 +6,7 @@
 import {
   corsPreflight,
   encodeSseDelta,
+  pickLocale,
   readJson,
   SSE_DONE,
   sseFromText,
@@ -148,15 +149,13 @@ async function handler(req: Request): Promise<Response> {
   const parsed = await readJson(req);
   if (!parsed.ok) return parsed.response;
 
-  const guard = await withGuard("copilot", req, parsed.body);
-  if (!guard.ok) return guard.response as Response;
-  const { tier, identity, locale } = guard;
-
   const body = parsed.body as {
     messages?: CopilotMessage[];
     mode?: unknown;
+    locale?: unknown;
   };
   const mode = validMode(body.mode);
+  const locale = pickLocale(body.locale);
 
   const messages = (Array.isArray(body.messages) ? body.messages : [])
     .filter(
@@ -173,22 +172,34 @@ async function handler(req: Request): Promise<Response> {
     [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
 
   // Build RAG from the canonical token so alias-equivalent prompts share cache
-  // keys ("what's an AMM" / "define amm" → same slot).
+  // keys ("what's an AMM" / "define amm" → same slot). The cache key always
+  // uses the normal-tier RAG set: only normal-tier calls write entries, so any
+  // other k would just miss them.
   const { norm } = canonicalizePrompt(query, locale);
-  const k = tier === "economy" ? cfg.ragK.economy : cfg.ragK.normal;
-  const rag = searchRag(norm || query, locale, k);
+  const cacheRag = searchRag(norm || query, locale, cfg.ragK.normal);
+  const cacheable = mode === "chat" || mode === "usage-example";
+  const key = cache.key(`copilot:${mode}`, locale, norm, cacheRag.ids);
+  const hit = cacheable ? await cache.get(key) : null;
+
+  // A cache hit is a $0 answer — pass the guard unmetered so ambient surfaces
+  // (per-term insights) don't spend the rate/budget that chat needs.
+  const guard = await withGuard("copilot", req, parsed.body, {
+    metered: !hit,
+  });
+  if (!guard.ok) return guard.response as Response;
+  const { tier, identity } = guard;
+
+  if (hit) return sseFromText(hit, req);
 
   // Canned / resting → free deterministic answer (zero LLM), streamed as SSE.
   if (tier === "canned" || tier === "resting") {
     return sseFromText(freeAnswer(query, locale)?.text ?? "", req);
   }
 
-  const cacheable = mode === "chat" || mode === "usage-example";
-  const key = cache.key(`copilot:${mode}`, locale, norm, rag.ids);
-  if (cacheable) {
-    const hit = await cache.get(key);
-    if (hit) return sseFromText(hit, req);
-  }
+  const rag =
+    tier === "economy"
+      ? searchRag(norm || query, locale, cfg.ragK.economy)
+      : cacheRag;
 
   // Defensive: guard should have disabled without a key, but never spend blind.
   if (!cfg.hasGemini) {

@@ -1,7 +1,8 @@
 // Answer cache in Redis. Keyed by feature + locale + corpus version +
 // sha256(canonical-prompt | sorted-rag-ids), so alias-equivalent prompts share
-// a slot. Only Normal-tier answers are written; a hit bills $0 (but the guard
-// has already spent a rate-limit token, since cache lookup follows rate check).
+// a slot. Only Normal-tier answers are written. Routes look the cache up
+// BEFORE the metered guard steps: a hit bills $0 and spends no rate token
+// (the guard still runs unmetered — origin/flags/session are enforced).
 
 import { createHash } from "node:crypto";
 import { config, type Config } from "./config.js";
