@@ -23,7 +23,8 @@ import { useTheme, type Theme } from "@/lib/theme";
 interface KnowledgeGraphProps {
   centerTerm: GlossaryTerm;
   onSelectTerm: (term: GlossaryTerm) => void;
-  onClose: () => void;
+  /** When omitted the graph is a permanent card section — no dismiss X. */
+  onClose?: () => void;
 }
 
 // Canvas can't read Tailwind classes, so the node palette is spelled out here.
@@ -309,13 +310,15 @@ export function KnowledgeGraph({
                 <Maximize2 className="h-3.5 w-3.5" />
               )}
             </button>
-            <button
-              onClick={onClose}
-              aria-label="Close knowledge graph"
-              className="p-1.5 rounded-md hover:bg-surface-elevated text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
+            {onClose && (
+              <button
+                onClick={onClose}
+                aria-label="Close knowledge graph"
+                className="p-1.5 rounded-md hover:bg-surface-elevated text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
         </div>
 

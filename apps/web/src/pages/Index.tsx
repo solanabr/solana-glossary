@@ -293,19 +293,17 @@ const Index = () => {
 
         <div className={browsing ? "lg:flex lg:items-start lg:gap-6" : ""}>
           {/* Open term — left pane on desktop, main card above the browse
-              content on mobile. On desktop the card takes its natural height
+              content on mobile. The card takes its natural height everywhere
               so the whole explainer is visible without an inner scrollbar. */}
           {selectedTerm && (
             <div className="mb-6 lg:mb-0 lg:w-[26rem] lg:shrink-0">
-              <div className="h-[70vh] lg:h-auto">
-                <Suspense fallback={null}>
-                  <TermPageModal
-                    term={selectedTerm}
-                    onClose={closeTerm}
-                    onNavigate={openTerm}
-                  />
-                </Suspense>
-              </div>
+              <Suspense fallback={null}>
+                <TermPageModal
+                  term={selectedTerm}
+                  onClose={closeTerm}
+                  onNavigate={openTerm}
+                />
+              </Suspense>
             </div>
           )}
 

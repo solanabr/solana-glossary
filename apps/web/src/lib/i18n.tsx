@@ -130,7 +130,6 @@ const translations = {
     "term.cta_simplify": "Simplify (ELI5)",
     "term.cta_code": "Use in real code",
     "term.cta_compare": "Compare",
-    "term.cta_graph": "View Knowledge Graph",
     // Graph
     "graph.title": "Knowledge Graph",
     "graph.back": "Back",
@@ -287,7 +286,6 @@ const translations = {
     "term.cta_simplify": "Simplificar (ELI5)",
     "term.cta_code": "Usar em código",
     "term.cta_compare": "Comparar",
-    "term.cta_graph": "Ver Grafo de Conhecimento",
     "graph.title": "Grafo de Conhecimento",
     "graph.back": "Voltar",
     "learn.mode": "Modo Aprendizado",
@@ -441,7 +439,6 @@ const translations = {
     "term.cta_simplify": "Simplificar (ELI5)",
     "term.cta_code": "Usar en código",
     "term.cta_compare": "Comparar",
-    "term.cta_graph": "Ver Grafo de Conocimiento",
     "graph.title": "Grafo de Conocimiento",
     "graph.back": "Volver",
     "learn.mode": "Modo Aprendizaje",

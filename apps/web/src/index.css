@@ -242,3 +242,17 @@
     background: hsl(var(--text-subtle));
   }
 }
+
+/* iOS/iPadOS Safari zooms the whole page when a focused text control's font
+   is under 16px, leaving the layout viewport wider than the screen — the
+   page then scrolls horizontally until the user pinches back out. Keeping
+   touch-device text controls at 16px suppresses that zoom (the a11y-friendly
+   alternative to viewport maximum-scale, which Android would enforce).
+   !important so it outranks Tailwind text-* utility classes. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}

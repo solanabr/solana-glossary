@@ -55,7 +55,8 @@ export function CategoryGrid({
   const { t } = useI18n();
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+    // Phones get 5 narrow columns so all 14 categories fit in 3 rows.
+    <div className="grid grid-cols-5 sm:grid-cols-4 lg:grid-cols-7 gap-1.5 sm:gap-2">
       {categories.map((cat, i) => {
         const meta = categoryIcons[cat] || {
           icon: Blocks,
@@ -73,17 +74,20 @@ export function CategoryGrid({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: i * 0.02 }}
             onClick={() => onSelectCategory(isActive ? null : cat)}
-            className={`p-2.5 rounded-lg border text-left transition-all ${
+            title={`${label} (${count})`}
+            className={`p-1.5 sm:p-2.5 rounded-lg border text-left transition-all min-w-0 ${
               isActive
                 ? "bg-surface-elevated border-primary/30 glow-primary"
                 : "bg-card border-border hover:bg-surface-elevated hover:border-primary/10"
             }`}
           >
             <Icon className={`h-3.5 w-3.5 mb-1 ${meta.color}`} />
-            <p className="text-[11px] font-medium text-foreground truncate">
+            <p className="text-[10px] sm:text-[11px] font-medium text-foreground truncate">
               {label}
             </p>
-            <p className="text-[10px] text-muted-foreground">{count}</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">
+              {count}
+            </p>
           </motion.button>
         );
       })}

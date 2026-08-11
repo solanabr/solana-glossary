@@ -18,7 +18,6 @@ import {
   Brain,
   MessageSquare,
   Zap,
-  Globe,
   Copy,
   Check,
 } from "lucide-react";
@@ -81,7 +80,6 @@ export function TermPageModal({
   const catColor =
     categoryColors[term.category] || "text-muted-foreground bg-muted";
 
-  const [showGraph, setShowGraph] = useState(false);
   const [aiInsight, setAiInsight] = useState<string>(
     insightCache.get(term.id) || "",
   );
@@ -90,6 +88,16 @@ export function TermPageModal({
   );
   const [insightResting, setInsightResting] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+
+  // The graph always renders at the bottom of the card; the quiz's "explore
+  // graph" CTA just brings it into view.
+  const graphSectionRef = useRef<HTMLDivElement>(null);
+  const scrollToGraph = useCallback(() => {
+    graphSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, []);
 
   // Auto-generate AI insight
   const insightFetched = useRef<string | null>(null);
@@ -188,7 +196,7 @@ export function TermPageModal({
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="bg-card border border-border rounded-xl overflow-hidden flex flex-col h-full lg:h-auto"
+      className="bg-card border border-border rounded-xl overflow-hidden"
     >
       {/* Header */}
       <div className="p-5 border-b border-border">
@@ -240,9 +248,9 @@ export function TermPageModal({
         </button>
       </div>
 
-      {/* Content — scrolls inside the card on mobile (fixed-height overlay);
-          on desktop the card grows to fit so everything is visible at once. */}
-      <div className="flex-1 lg:flex-none overflow-y-auto lg:overflow-visible scrollbar-thin p-5 space-y-5">
+      {/* Content — the card grows to fit on every viewport so the whole
+          explainer is visible without an inner scrollbar. */}
+      <div className="p-5 space-y-5">
         {!copilotEnabled && !quizEnabled && <AiResting />}
 
         {copilotEnabled && (
@@ -357,7 +365,7 @@ export function TermPageModal({
           <SmartQuiz
             term={term}
             onNavigate={onNavigate}
-            onOpenGraph={() => setShowGraph(true)}
+            onOpenGraph={scrollToGraph}
             onExplainCode={(code) => {
               sessionStorage.setItem("explain-code-input", code);
               navigate("/copilot?mode=explain-code");
@@ -365,18 +373,8 @@ export function TermPageModal({
           />
         )}
 
-        {/* Knowledge Graph button */}
-        <button
-          onClick={() => setShowGraph(true)}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 text-sm font-medium text-foreground hover:from-primary/20 hover:to-accent/20 transition-all group"
-        >
-          <Globe className="h-4 w-4 text-primary" />
-          {t("term.cta_graph")}
-          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-        </button>
-
-        {/* Graph view */}
-        {showGraph && (
+        {/* Knowledge graph — loads with the card */}
+        <div ref={graphSectionRef} className="scroll-mt-16">
           <Suspense
             fallback={
               <div className="h-[400px] flex items-center justify-center">
@@ -385,14 +383,10 @@ export function TermPageModal({
             }
           >
             <ErrorBoundary fallback={<AiResting compact />}>
-              <KnowledgeGraph
-                centerTerm={term}
-                onSelectTerm={onNavigate}
-                onClose={() => setShowGraph(false)}
-              />
+              <KnowledgeGraph centerTerm={term} onSelectTerm={onNavigate} />
             </ErrorBoundary>
           </Suspense>
-        )}
+        </div>
       </div>
     </motion.div>
   );
