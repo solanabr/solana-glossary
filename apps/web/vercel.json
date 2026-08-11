@@ -11,6 +11,10 @@
       "source": "/c/:category",
       "destination": "/api/meta?path=category&category=:category"
     },
+    {
+      "source": "/c/:category/t/:id",
+      "destination": "/api/meta?path=term&id=:id"
+    },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

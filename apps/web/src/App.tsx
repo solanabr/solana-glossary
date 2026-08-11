@@ -6,8 +6,9 @@ import { AppHeader } from "@/components/AppHeader";
 import { I18nProvider } from "@/lib/i18n";
 import Index from "./pages/Index.tsx";
 
-// Index is the home route (also serves /t/:id and /c/:category) so it stays
-// eager. The secondary routes are split into their own on-demand chunks.
+// Index is the home route (also serves /t/:id, /c/:category and the combined
+// /c/:category/t/:id) so it stays eager. The secondary routes are split into
+// their own on-demand chunks.
 const Copilot = lazy(() => import("./pages/Copilot.tsx"));
 const LearningPath = lazy(() => import("./pages/LearningPath.tsx"));
 const Swipe = lazy(() => import("./pages/Swipe.tsx"));
@@ -27,6 +28,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/t/:id" element={<Index />} />
               <Route path="/c/:category" element={<Index />} />
+              <Route path="/c/:category/t/:id" element={<Index />} />
               <Route path="/copilot" element={<Copilot />} />
               <Route path="/learn" element={<LearningPath />} />
               <Route path="/swipe" element={<Swipe />} />

@@ -53,6 +53,8 @@ const translations = {
     "sort.az": "A–Z",
     "sort.za": "Z–A",
     "sort.category": "Category",
+    "filter.tags": "Tags",
+    "filter.clear": "Clear filters",
     "swipe.hint": "Scroll or swipe for the next term",
     "swipe.open": "Open full view",
     // Copilot tabs
@@ -131,8 +133,7 @@ const translations = {
     "term.cta_graph": "View Knowledge Graph",
     // Graph
     "graph.title": "Knowledge Graph",
-    "graph.subtitle":
-      "Explore how concepts connect across the Solana ecosystem.",
+    "graph.back": "Back",
     // Learning Path
     "learn.mode": "Learning Mode",
     "learn.title": "Learning Path",
@@ -214,6 +215,8 @@ const translations = {
     "depth.hint":
       "Profundidade de conhecimento — 1 (superfície) a 5 (profundo)",
     "sort.label": "Ordenar",
+    "filter.tags": "Tags",
+    "filter.clear": "Limpar filtros",
     "sort.random": "Aleatório",
     "sort.az": "A–Z",
     "sort.za": "Z–A",
@@ -286,8 +289,7 @@ const translations = {
     "term.cta_compare": "Comparar",
     "term.cta_graph": "Ver Grafo de Conhecimento",
     "graph.title": "Grafo de Conhecimento",
-    "graph.subtitle":
-      "Explore como conceitos se conectam no ecossistema Solana.",
+    "graph.back": "Voltar",
     "learn.mode": "Modo Aprendizado",
     "learn.title": "Trilha de Aprendizado",
     "learn.steps_label": "passos",
@@ -366,6 +368,8 @@ const translations = {
     "depth.all": "Todas",
     "depth.hint": "Profundidad de conocimiento — 1 (superficie) a 5 (profundo)",
     "sort.label": "Ordenar",
+    "filter.tags": "Etiquetas",
+    "filter.clear": "Limpiar filtros",
     "sort.random": "Aleatorio",
     "sort.az": "A–Z",
     "sort.za": "Z–A",
@@ -439,8 +443,7 @@ const translations = {
     "term.cta_compare": "Comparar",
     "term.cta_graph": "Ver Grafo de Conocimiento",
     "graph.title": "Grafo de Conocimiento",
-    "graph.subtitle":
-      "Explora cómo se conectan los conceptos en el ecosistema Solana.",
+    "graph.back": "Volver",
     "learn.mode": "Modo Aprendizaje",
     "learn.title": "Ruta de Aprendizaje",
     "learn.steps_label": "pasos",

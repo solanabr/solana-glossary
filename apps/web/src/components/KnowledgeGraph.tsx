@@ -1,4 +1,5 @@
 import { useRef, useCallback, useMemo, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import ForceGraph2D, {
   type ForceGraphMethods,
   type NodeObject,
@@ -6,7 +7,15 @@ import ForceGraph2D, {
 } from "react-force-graph-2d";
 import { GlossaryTerm } from "@stbr/solana-glossary";
 import { useGlossary } from "@/hooks/useGlossary";
-import { X, Maximize2, Minimize2, ZoomIn, ZoomOut, Scan } from "lucide-react";
+import {
+  X,
+  Maximize2,
+  Minimize2,
+  ZoomIn,
+  ZoomOut,
+  Scan,
+  ArrowLeft,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
 import { useTheme, type Theme } from "@/lib/theme";
@@ -233,7 +242,7 @@ export function KnowledgeGraph({
     graphRef.current?.zoomToFit(400, 50);
   }, []);
 
-  return (
+  const graph = (
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
@@ -241,19 +250,26 @@ export function KnowledgeGraph({
         exit={{ opacity: 0, scale: 0.95 }}
         className={`${
           isFullscreen
-            ? "fixed inset-0 z-50"
+            ? "fixed inset-0 z-[60]"
             : "relative rounded-xl overflow-hidden border border-border"
         } bg-background`}
       >
         {/* Header */}
         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-background via-background/90 to-transparent">
-          <div>
+          <div className="flex items-center gap-2">
+            {isFullscreen && (
+              <button
+                onClick={() => setIsFullscreen(false)}
+                aria-label={t("graph.back")}
+                className="flex items-center gap-1 px-2 py-1 -ml-1 rounded-md bg-secondary/70 border border-border text-[11px] font-medium text-foreground hover:bg-surface-hover transition-colors"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                {t("graph.back")}
+              </button>
+            )}
             <h3 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
               🌐 {t("graph.title")}
             </h3>
-            <p className="text-[10px] text-muted-foreground mt-0.5">
-              {t("graph.subtitle")}
-            </p>
           </div>
           <div className="flex items-center gap-1">
             {isFullscreen && (
@@ -326,4 +342,10 @@ export function KnowledgeGraph({
       </motion.div>
     </AnimatePresence>
   );
+
+  // Fullscreen renders in a body portal: ancestors of the inline card (the
+  // sticky browse pane, mid-animation framer transforms) create stacking
+  // contexts that would otherwise trap the overlay beneath the app header —
+  // hiding these very controls and leaving no way out of fullscreen.
+  return isFullscreen ? createPortal(graph, document.body) : graph;
 }

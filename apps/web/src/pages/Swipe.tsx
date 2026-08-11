@@ -120,8 +120,11 @@ const Swipe = () => {
             key={id}
             className="h-full snap-start flex items-center justify-center px-4 py-4"
           >
+            {/* Phones: the card hugs its content (capped at the viewport) so a
+                short definition doesn't stretch into a screen-tall shell;
+                sm+ keeps the uniform fixed-height card. */}
             <article
-              className={`w-full max-w-lg h-full sm:max-h-[36rem] flex flex-col rounded-2xl border bg-card shadow-xl p-5 sm:p-6 ${categoryCardAccent[term.category] || "border-border"}`}
+              className={`w-full max-w-lg max-h-full sm:h-full sm:max-h-[36rem] flex flex-col rounded-2xl border bg-card shadow-xl p-5 sm:p-6 ${categoryCardAccent[term.category] || "border-border"}`}
             >
               <div className="flex items-center gap-2 flex-wrap">
                 <span

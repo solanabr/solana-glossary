@@ -11,13 +11,14 @@ import { useParams, useNavigate } from "react-router-dom";
 import { CategoryGrid } from "@/components/CategoryGrid";
 import { TermCard } from "@/components/TermCard";
 import { SmartHeroInput } from "@/components/SmartHeroInput";
+import { TagFilterDropdown } from "@/components/TagFilterDropdown";
 import {
   GlossaryTerm,
   Category,
   getCategories,
   type Depth,
 } from "@stbr/solana-glossary";
-import { Zap, Search, ArrowUpDown } from "lucide-react";
+import { Zap, Search, ArrowUpDown, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useGlossary } from "@/hooks/useGlossary";
 
@@ -72,6 +73,7 @@ const Index = () => {
   );
 
   const [depthFilter, setDepthFilter] = useState<Depth | null>(null);
+  const [tagFilter, setTagFilter] = useState<string[]>([]);
   const [sortMode, setSortMode] = useState<SortMode>("random");
   // Stable per-visit shuffle so the default view surfaces different terms each
   // time without reordering under the user's cursor.
@@ -79,13 +81,27 @@ const Index = () => {
     shuffledRank(glossary.allTerms.map((term) => term.id)),
   );
 
+  const tagData = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const term of glossary.allTerms) {
+      for (const tag of term.tags ?? []) {
+        counts.set(tag, (counts.get(tag) ?? 0) + 1);
+      }
+    }
+    return { tags: [...counts.keys()].sort(), counts };
+  }, [glossary]);
+
   const terms = useMemo(() => {
     const base = activeCategory
       ? glossary.getTermsByCategory(activeCategory)
       : glossary.getAllTerms();
-    const filtered = depthFilter
+    const byDepth = depthFilter
       ? base.filter((t) => t.depth === depthFilter)
       : base;
+    // Multi-select tags are OR'd: a term matches if it carries any of them.
+    const filtered = tagFilter.length
+      ? byDepth.filter((t) => tagFilter.some((tag) => t.tags?.includes(tag)))
+      : byDepth;
     const sorted = [...filtered];
     if (sortMode === "az") {
       sorted.sort((a, b) => a.term.localeCompare(b.term));
@@ -102,47 +118,83 @@ const Index = () => {
       );
     }
     return sorted;
-  }, [activeCategory, depthFilter, sortMode, shuffleRank, glossary]);
+  }, [activeCategory, depthFilter, tagFilter, sortMode, shuffleRank, glossary]);
 
-  // Reset paging when the filters change.
+  // "Dashboard mode": once a term is open, the hero collapses to just the
+  // search bar and the layout becomes term-card (left / top) + browse pane.
+  const browsing = selectedTerm !== null;
+
+  // Tracks the lg breakpoint — the desktop dashboard scrolls the grid inside
+  // its own pane, which changes both the infinite-scroll root and the
+  // open-term scroll behavior.
+  const [isDesktop, setIsDesktop] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 1024px)").matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  // Reset paging (and the pane's own scroll position) when the filters change.
+  const gridScrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE);
-  }, [categoryParam, depthFilter, sortMode]);
+    gridScrollRef.current?.scrollTo({ top: 0 });
+  }, [categoryParam, depthFilter, tagFilter, sortMode]);
 
   // Auto-load the next page when the sentinel under the grid scrolls near the
-  // viewport (800px lookahead keeps scrolling seamless).
+  // viewport (800px lookahead keeps scrolling seamless). In the desktop
+  // dashboard the grid scrolls inside its own pane, so that pane must be the
+  // observer root — a viewport-rooted margin can't see through the pane's clip.
   const loadMoreRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = loadMoreRef.current;
     if (!el) return;
+    const root = browsing && isDesktop ? gridScrollRef.current : null;
     const io = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
           setVisibleCount((c) => Math.min(c + ITEMS_PER_PAGE, terms.length));
         }
       },
-      { rootMargin: "800px 0px" },
+      { root, rootMargin: "800px 0px" },
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [terms.length, visibleCount]);
+  }, [terms.length, visibleCount, browsing, isDesktop]);
 
-  // Scroll the glossary into view when a term is opened via the route — but
-  // only when the section is still below the viewport (e.g. arriving from the
-  // hero or a fresh deep-link). If the user is already browsing the grid, the
-  // sticky panel is visible and jumping the page is just disorienting.
+  // Scroll the glossary into view when a term is opened via the route — when
+  // the section is still below the viewport (arriving from the hero or a fresh
+  // deep-link) on any device, or above it on mobile: there the card renders at
+  // the top of the section, so tapping a term deep in the grid would otherwise
+  // leave the user staring at an unchanged grid.
   useEffect(() => {
     const section = glossarySectionRef.current;
-    if (id && section && section.getBoundingClientRect().top > 80) {
+    if (!id || !section) return;
+    const top = section.getBoundingClientRect().top;
+    const mobile = !window.matchMedia("(min-width: 1024px)").matches;
+    if (top > 80 || (mobile && top < 0)) {
       section.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [id]);
 
+  // Term and category are both route state, so navigations preserve whichever
+  // half is already active (picking a category must not close an open term).
   const openTerm = useCallback(
-    (term: GlossaryTerm) => navigate(`/t/${term.id}`),
-    [navigate],
+    (term: GlossaryTerm) =>
+      navigate(
+        activeCategory ? `/c/${activeCategory}/t/${term.id}` : `/t/${term.id}`,
+      ),
+    [navigate, activeCategory],
   );
-  const closeTerm = useCallback(() => navigate("/"), [navigate]);
+  const closeTerm = useCallback(
+    () => navigate(activeCategory ? `/c/${activeCategory}` : "/"),
+    [navigate, activeCategory],
+  );
 
   // Esc closes the term panel (drawer on desktop, overlay on mobile).
   useEffect(() => {
@@ -154,18 +206,32 @@ const Index = () => {
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedTerm, closeTerm]);
   const handleCategoryChange = useCallback(
-    (cat: Category | null) => navigate(cat ? `/c/${cat}` : "/"),
-    [navigate],
+    (cat: Category | null) => {
+      if (selectedTerm) {
+        navigate(
+          cat ? `/c/${cat}/t/${selectedTerm.id}` : `/t/${selectedTerm.id}`,
+        );
+      } else {
+        navigate(cat ? `/c/${cat}` : "/");
+      }
+    },
+    [navigate, selectedTerm],
   );
+
+  const hasFilters =
+    activeCategory !== null || depthFilter !== null || tagFilter.length > 0;
+  const clearFilters = useCallback(() => {
+    setDepthFilter(null);
+    setTagFilter([]);
+    if (activeCategory) {
+      navigate(selectedTerm ? `/t/${selectedTerm.id}` : "/");
+    }
+  }, [activeCategory, selectedTerm, navigate]);
 
   const visibleTerms = useMemo(
     () => terms.slice(0, visibleCount),
     [terms, visibleCount],
   );
-
-  // "Dashboard mode": once a term is open, the hero collapses to just the
-  // search bar and the layout becomes term-card (left / top) + browse pane.
-  const browsing = selectedTerm !== null;
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
@@ -227,10 +293,11 @@ const Index = () => {
 
         <div className={browsing ? "lg:flex lg:items-start lg:gap-6" : ""}>
           {/* Open term — left pane on desktop, main card above the browse
-              content on mobile */}
+              content on mobile. On desktop the card takes its natural height
+              so the whole explainer is visible without an inner scrollbar. */}
           {selectedTerm && (
             <div className="mb-6 lg:mb-0 lg:w-[26rem] lg:shrink-0">
-              <div className="h-[70vh] lg:h-[calc(100vh-6rem)] lg:sticky lg:top-[4.25rem]">
+              <div className="h-[70vh] lg:h-auto">
                 <Suspense fallback={null}>
                   <TermPageModal
                     term={selectedTerm}
@@ -242,9 +309,17 @@ const Index = () => {
             </div>
           )}
 
-          {/* Browse pane: categories, filters, term grid */}
-          <div className={browsing ? "flex-1 min-w-0" : ""}>
-            <div className="mb-5">
+          {/* Browse pane: categories, filters, term grid. While a term is
+              open on desktop, the pane pins to the viewport and only the term
+              grid scrolls — the page itself stays put. */}
+          <div
+            className={
+              browsing
+                ? "flex-1 min-w-0 lg:sticky lg:top-14 lg:h-[calc(100vh-3.5rem)] lg:flex lg:flex-col lg:pt-px lg:pb-4"
+                : ""
+            }
+          >
+            <div className="mb-5 lg:shrink-0">
               <h2 className="text-sm font-semibold text-foreground mb-2.5 flex items-center gap-2">
                 <Search className="h-3.5 w-3.5 text-primary" />
                 {t("category.categories")}
@@ -255,8 +330,8 @@ const Index = () => {
               />
             </div>
             {/* Depth filter — SDK knowledge-depth rating, 1 (surface) → 5 (deep) —
-                plus term count and list ordering */}
-            <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+                plus tag filter, term count and list ordering */}
+            <div className="flex items-center justify-between gap-3 mb-3 flex-wrap lg:shrink-0">
               <div
                 className="flex items-center gap-1.5 flex-wrap"
                 role="group"
@@ -294,6 +369,23 @@ const Index = () => {
                     {d}
                   </button>
                 ))}
+                <div className="ml-1">
+                  <TagFilterDropdown
+                    tags={tagData.tags}
+                    counts={tagData.counts}
+                    selected={tagFilter}
+                    onChange={setTagFilter}
+                  />
+                </div>
+                {hasFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium text-muted-foreground hover:text-foreground border border-transparent hover:border-border transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                    {t("filter.clear")}
+                  </button>
+                )}
               </div>
               <div className="flex items-center gap-2.5">
                 <span className="text-xs text-muted-foreground">
@@ -315,20 +407,29 @@ const Index = () => {
                 </label>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-              {visibleTerms.map((term) => (
-                <TermCard key={term.id} term={term} onClick={openTerm} />
-              ))}
-            </div>
-            {visibleCount < terms.length && (
-              <div
-                ref={loadMoreRef}
-                className="flex justify-center mt-6 py-3 text-xs text-muted-foreground"
-              >
-                {t("category.load_more")}… ({terms.length - visibleCount}{" "}
-                {t("category.remaining")})
+            <div
+              ref={gridScrollRef}
+              className={
+                browsing
+                  ? "lg:flex-1 lg:min-h-0 lg:overflow-y-auto scrollbar-thin lg:pr-1"
+                  : ""
+              }
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {visibleTerms.map((term) => (
+                  <TermCard key={term.id} term={term} onClick={openTerm} />
+                ))}
               </div>
-            )}
+              {visibleCount < terms.length && (
+                <div
+                  ref={loadMoreRef}
+                  className="flex justify-center mt-6 py-3 text-xs text-muted-foreground"
+                >
+                  {t("category.load_more")}… ({terms.length - visibleCount}{" "}
+                  {t("category.remaining")})
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>

@@ -188,7 +188,7 @@ export function TermPageModal({
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="bg-card border border-border rounded-xl overflow-hidden flex flex-col h-full"
+      className="bg-card border border-border rounded-xl overflow-hidden flex flex-col h-full lg:h-auto"
     >
       {/* Header */}
       <div className="p-5 border-b border-border">
@@ -240,8 +240,9 @@ export function TermPageModal({
         </button>
       </div>
 
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin p-5 space-y-5">
+      {/* Content — scrolls inside the card on mobile (fixed-height overlay);
+          on desktop the card grows to fit so everything is visible at once. */}
+      <div className="flex-1 lg:flex-none overflow-y-auto lg:overflow-visible scrollbar-thin p-5 space-y-5">
         {!copilotEnabled && !quizEnabled && <AiResting />}
 
         {copilotEnabled && (
