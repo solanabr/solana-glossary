@@ -27,8 +27,18 @@ export function AppHeader() {
   // quiz, code explain via the hero input); the header promotes the external
   // Superteam properties instead.
   const externalLinks = [
-    { href: "https://st.academy", label: "Academy", icon: GraduationCap },
-    { href: "https://solanaiceberg.com", label: "Iceberg", icon: Mountain },
+    {
+      href: "https://st.academy",
+      label: "Academy",
+      icon: GraduationCap,
+      glint: "nav-glint-academy",
+    },
+    {
+      href: "https://solanaiceberg.com",
+      label: "Iceberg",
+      icon: Mountain,
+      glint: "nav-glint-iceberg",
+    },
   ];
 
   return (
@@ -86,7 +96,9 @@ export function AppHeader() {
                   className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-surface-elevated transition-all"
                 >
                   <Icon className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">{item.label}</span>
+                  <span className={`hidden sm:inline nav-glint ${item.glint}`}>
+                    {item.label}
+                  </span>
                 </a>
               );
             })}

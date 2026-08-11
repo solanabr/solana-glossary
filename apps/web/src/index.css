@@ -202,6 +202,43 @@
     background-clip: text;
   }
 
+  /* Idle nav glints — every few seconds a soft brand-colored band sweeps
+     through the label (Academy green, Iceberg purple), staggered a half-cycle
+     apart so they alternate. The label rests at the same muted tone as its
+     siblings; hovering/focusing the link hands color back to the anchor. */
+  .nav-glint {
+    background: linear-gradient(
+      105deg,
+      hsl(var(--muted-foreground)) 0%,
+      hsl(var(--muted-foreground)) 42%,
+      hsl(var(--glint)) 50%,
+      hsl(var(--muted-foreground)) 58%,
+      hsl(var(--muted-foreground)) 100%
+    );
+    background-size: 300% 100%;
+    background-position: 100% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: nav-glint 9s ease-in-out infinite;
+  }
+
+  .nav-glint-academy {
+    --glint: var(--primary);
+  }
+
+  .nav-glint-iceberg {
+    --glint: var(--accent);
+    animation-delay: -4.5s;
+  }
+
+  a:hover > .nav-glint,
+  a:focus-visible > .nav-glint {
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+
   .gradient-border {
     position: relative;
   }
@@ -240,6 +277,27 @@
 
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--text-subtle));
+  }
+}
+
+/* Sweep spends ~2s crossing, then rests — a periodic glint, not a crawl. */
+@keyframes nav-glint {
+  0% {
+    background-position: 100% 0;
+  }
+  22% {
+    background-position: 0% 0;
+  }
+  100% {
+    background-position: 0% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-glint {
+    animation: none;
+    background: none;
+    -webkit-text-fill-color: currentColor;
   }
 }
 

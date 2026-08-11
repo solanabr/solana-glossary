@@ -10,8 +10,11 @@
  *     HMAC session token via `POST /api/ai/session`, and cache that token in
  *     memory until shortly before it expires.
  *
- * The widget never blocks glossary browsing: it is rendered off-screen and only
- * runs when an AI request actually needs a token.
+ * The widget never blocks glossary browsing: it is parked zero-size and only
+ * runs when an AI request actually needs a token. If Cloudflare escalates the
+ * challenge to interactive (its "verify you are human" checkbox), the widget
+ * docks bottom-right so the user can actually click it — an off-screen
+ * interactive challenge would silently dead-end every AI call.
  */
 import type { RestingBody, SessionMintResponse } from "@/lib/ai-types";
 
@@ -22,6 +25,8 @@ const SCRIPT_SRC =
 const SCRIPT_ID = "cf-turnstile-script";
 /** Give up on a Turnstile solve after this long so callers never hang. */
 const SOLVE_TIMEOUT_MS = 20_000;
+/** Once the checkbox is visible, give the human time to notice and click it. */
+const INTERACTIVE_TIMEOUT_MS = 90_000;
 /** Refresh the session token this many seconds before it actually expires. */
 const EXPIRY_SKEW_S = 30;
 
@@ -90,12 +95,18 @@ async function solveTurnstile(): Promise<string> {
   if (!turnstile) throw new Error("turnstile-unavailable");
 
   return new Promise<string>((resolve, reject) => {
+    // Parked zero-size (NOT pointer-events:none) while Cloudflare solves
+    // invisibly; before-interactive-callback un-parks it so an escalated
+    // checkbox challenge is visible and clickable instead of dead-ending in a
+    // 0×0 box until timeout.
     const container = document.createElement("div");
-    container.style.position = "absolute";
+    container.style.position = "fixed";
+    container.style.bottom = "1rem";
+    container.style.right = "1rem";
+    container.style.zIndex = "9999";
     container.style.width = "0";
     container.style.height = "0";
     container.style.overflow = "hidden";
-    container.style.pointerEvents = "none";
     document.body.appendChild(container);
 
     let widgetId = "";
@@ -121,13 +132,17 @@ async function solveTurnstile(): Promise<string> {
       if (settled) return;
       settled = true;
       cleanup();
+      // Surface the reason — a swallowed code (110200, timeout, …) makes
+      // "AI silently 401s" undiagnosable from the console.
+      console.warn(`[ai-session] Turnstile solve failed: ${reason}`);
       reject(new Error(reason));
     };
+    const armTimer = (ms: number) => {
+      if (timer) window.clearTimeout(timer);
+      timer = window.setTimeout(() => fail("turnstile-timeout"), ms);
+    };
 
-    timer = window.setTimeout(
-      () => fail("turnstile-timeout"),
-      SOLVE_TIMEOUT_MS,
-    );
+    armTimer(SOLVE_TIMEOUT_MS);
 
     try {
       widgetId = turnstile.render(container, {
@@ -146,6 +161,14 @@ async function solveTurnstile(): Promise<string> {
           fail(code ? `turnstile-error:${code}` : "turnstile-error"),
         "timeout-callback": () => fail("turnstile-timeout"),
         "expired-callback": () => fail("turnstile-expired"),
+        "before-interactive-callback": () => {
+          container.style.width = "";
+          container.style.height = "";
+          container.style.overflow = "";
+          container.style.borderRadius = "0.75rem";
+          container.style.boxShadow = "0 8px 24px rgb(0 0 0 / 0.25)";
+          armTimer(INTERACTIVE_TIMEOUT_MS);
+        },
       });
       turnstile.execute(widgetId);
     } catch {
@@ -161,7 +184,10 @@ async function mintSession(): Promise<string | null> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ turnstileToken }),
   });
-  if (!resp.ok) return null;
+  if (!resp.ok) {
+    console.warn(`[ai-session] session mint rejected: HTTP ${resp.status}`);
+    return null;
+  }
   const data = (await resp.json()) as SessionMintResponse;
   if (!data || typeof data.token !== "string") return null;
   cached = { token: data.token, expiresAt: data.expiresAt };

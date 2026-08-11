@@ -22,6 +22,9 @@ interface TurnstileRenderOptions {
   "error-callback"?: (code?: string) => void;
   "timeout-callback"?: () => void;
   "expired-callback"?: () => void;
+  /** Fires when the challenge escalates to an interactive (visible) check. */
+  "before-interactive-callback"?: () => void;
+  "after-interactive-callback"?: () => void;
 }
 
 interface TurnstileApi {
