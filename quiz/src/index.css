@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+:root {
+  --accent: 153 69 255;
+  --bg: 10 10 14;
+  --fg: 237 237 242;
+  --muted: 107 114 128;
+  --border: 39 39 52;
+  --card: 18 18 24;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: rgb(var(--bg));
+  color: rgb(var(--fg));
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
